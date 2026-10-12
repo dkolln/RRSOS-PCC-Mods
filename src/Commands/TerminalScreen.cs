@@ -16,7 +16,7 @@ namespace RRSOS.PCC.Commands
     {
         public const string Prompt = "C:\\>";
 
-        private const int MaxLines = 9;
+        private const int MaxLines = 14;   // an upper bound; how many really fit is measured
         private const float SettleSeconds = 0.8f;
         private const float BlinkSeconds = 0.5f;
 
@@ -33,6 +33,7 @@ namespace RRSOS.PCC.Commands
         private float _nextBlink;
         private bool _cursor = true;
         private string _shown;
+        private string _renderedTyped;
 
         public void Init(WorldObject wo)
         {
@@ -112,12 +113,33 @@ namespace RRSOS.PCC.Commands
                 _shown = null;
             }
 
-            var visible = _lines.Skip(System.Math.Max(0, _lines.Count - (MaxLines - 1)));
-            var screen = string.Join("\n", visible.ToArray()) + "\n" + Prompt + typed + (_cursor ? "_" : " ");
-            if (screen != _shown)
+            // Redraw only when the lines, the typed text or the cursor changed (a null _shown means the lines or the cursor did).
+            if (_shown != null && typed == _renderedTyped)
+                return;
+
+            _renderedTyped = typed;
+            _shown = Fit(typed + (_cursor ? "_" : " "));
+            _display.text = _shown;
+        }
+
+        /// <summary>
+        /// The most recent lines that fit the panel, with the prompt line always at the bottom. The font's real line height decides how many that is, so it is measured
+        /// (wrapped lines count too) and the oldest lines are dropped until the whole text fits.
+        /// </summary>
+        private string Fit(string tail)
+        {
+            var prompt = Prompt + tail;
+            var rect = _display.rectTransform.rect;
+            var width = rect.width - _display.margin.x - _display.margin.z;
+            var limit = rect.height - _display.margin.y - _display.margin.w;
+
+            var take = System.Math.Min(_lines.Count, MaxLines);
+            while (true)
             {
-                _display.text = screen;
-                _shown = screen;
+                var screen = take > 0 ? string.Join("\n", _lines.Skip(_lines.Count - take).ToArray()) + "\n" + prompt : prompt;
+                if (take == 0 || _display.GetPreferredValues(screen, width, 0f).y <= limit)
+                    return screen;
+                take--;
             }
         }
     }
