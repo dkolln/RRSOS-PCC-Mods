@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/AutoFill/AutoFill.csproj" />
     <Project Path="src/Base/Base.csproj" />
+    <Project Path="src/Commands/Commands.csproj" />
     <Project Path="src/Loadout/Loadout.csproj" />
     <Project Path="src/StackedCrate/StackedCrate.csproj" />
   </Folder>

@@ -78,7 +78,15 @@ namespace RRSOS.PCC.StackedCrate
                 data.name = NewId;
                 data.id = NewId;
                 data.recipeIngredients = Enumerable.Repeat(ironData, Levels).ToList();
-                data.icon = ComposeIcon(sourceData.icon) ?? sourceData.icon;
+                var icon = CustomIcons.Load(NewId, sourceData.icon != null ? sourceData.icon.pixelsPerUnit : 100f);
+                if (icon == null)
+                {
+                    icon = ComposeIcon(sourceData.icon);
+                    if (icon != null)
+                        CustomIcons.Save(NewId, icon);
+                }
+
+                data.icon = icon ?? sourceData.icon;
 
                 var group = new GroupConstructible(data);
                 group.SetRecipe(new Recipe(data.recipeIngredients));
