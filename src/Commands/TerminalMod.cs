@@ -22,6 +22,20 @@ namespace RRSOS.PCC.Commands
 
         private Group _group;
         private ChatHandler _listeningTo;
+        private readonly System.Collections.Generic.HashSet<int> _enlargedGhosts = new System.Collections.Generic.HashSet<int>();
+        private static readonly System.Reflection.FieldInfo GhostGroup = typeof(ConstructibleGhost).GetField("_groupConstructible", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+        /// <summary>
+        /// Makes a terminal (or its build ghost) larger: width and height by the Scale setting, depth unchanged so it still sits on its wall like a sign. Its colliders
+        /// and its text grow with it.
+        /// </summary>
+        internal static void Enlarge(Transform terminal)
+        {
+            var scale = Mathf.Max(1f, Plugin.Scale.Value);
+
+            // A sign's panel faces along its own x axis: x is the depth, y the height, z the width.
+            terminal.localScale = new Vector3(1f, scale, scale);
+        }
 
         private IEnumerator Start()
         {
@@ -37,6 +51,7 @@ namespace RRSOS.PCC.Commands
                     EnsureRegistered();
                     ListenToChat();
                     GiveScreens();
+                    EnlargeGhost();
                 }
                 catch (Exception e)
                 {
@@ -78,6 +93,21 @@ namespace RRSOS.PCC.Commands
                 _listeningTo.OnChatMessageReceived -= TerminalShell.OnChatMessage;
             chat.OnChatMessageReceived += TerminalShell.OnChatMessage;
             _listeningTo = chat;
+        }
+
+        // The see-through preview that follows you while you place the terminal is made by the game from the sign's model; make it the same size as the real thing.
+        private void EnlargeGhost()
+        {
+            if (_group == null || GhostGroup == null)
+                return;
+
+            foreach (var ghost in UnityEngine.Object.FindObjectsByType<ConstructibleGhost>(FindObjectsSortMode.None))
+            {
+                if (GhostGroup.GetValue(ghost) != _group || !_enlargedGhosts.Add(ghost.GetInstanceID()))
+                    continue;
+
+                Enlarge(ghost.transform);
+            }
         }
 
         private void GiveScreens()

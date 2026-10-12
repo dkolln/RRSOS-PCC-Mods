@@ -51,10 +51,18 @@ namespace RRSOS.PCC.Commands
             _display.gameObject.SetActive(true);
             _display.color = new Color(0.45f, 1f, 0.45f);
             _display.alignment = TextAlignmentOptions.TopLeft;
-            _display.fontSize = Mathf.Max(4f, original.fontSize * 0.5f);
+
+            // The sign's panel is about 2.75 times wider than tall, and its one line of text covers a quarter of it. Measured in the prefab: the face is 200 x 75 text units
+            // (the sign's own text box is 200 x 50), which fits nine lines at this size.
+            _display.rectTransform.sizeDelta = new Vector2(200f, 75f);
+            _display.margin = new Vector4(4f, 2f, 4f, 2f);
+            _display.enableAutoSizing = false;
+            _display.fontSize = 7f;
             _display.textWrappingMode = TextWrappingModes.Normal;
             _display.overflowMode = TextOverflowModes.Truncate;
             original.gameObject.SetActive(false);
+
+            TerminalMod.Enlarge(transform);
 
             Print("RRSOS Terminal " + Plugin.Version);
             Print("Type help for the commands.");

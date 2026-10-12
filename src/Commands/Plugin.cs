@@ -16,11 +16,13 @@ namespace RRSOS.PCC.Commands
         public const string Version = "0.1.0";
 
         internal static ConfigEntry<bool> Enabled;
+        internal static ConfigEntry<float> Scale;
 
         private void Awake()
         {
             ModLog.Init("Commands", Logger);
             Enabled = Config.Bind("General", "Enabled", false, "Add the Terminal to the build menu (1 Iron, 1 Silicon, 1 Titanium, 1 Cobalt). Writes into the running game.");
+            Scale = Config.Bind("General", "Scale", 2.5f, "How much larger than a sign the terminal's screen is (width and height; it stays as thin as a sign). Takes effect when the game starts.");
             gameObject.AddComponent<TerminalMod>();
             ModLog.Note($"{Name} {Version} loaded. Enabled: {Enabled.Value}. Log: {ModLog.LogFile}");
         }
