@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>RRSOS.PCC.GiveItem</AssemblyName>
+    <RootNamespace>RRSOS.PCC.GiveItem</RootNamespace>
+    <Description>/giveitem on the terminal: puts an item into the backpack</Description>
+    <Version>0.1.0</Version>
+    <ModFolder>RRSOS-PCC-GiveItem</ModFolder>
+  </PropertyGroup>
+
+  <Import Project="..\Mod.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
+    <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
+    <Compile Include="..\Shared\ItemLookup.cs" Link="Shared\ItemLookup.cs" />
+    <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
+    <!-- The built-in extra names for items, read at start-up. -->
+    <EmbeddedResource Include="..\Shared\DefaultNames.txt" LogicalName="DefaultNames.txt" />
+  </ItemGroup>
+
+</Project>
