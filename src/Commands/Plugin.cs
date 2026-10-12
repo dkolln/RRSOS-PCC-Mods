@@ -30,6 +30,9 @@ namespace RRSOS.PCC.Commands
             TopMargin = Config.Bind("Screen", "TopMargin", 8f, "Space above the first line of text, in text units (the whole text area is 75 high). Raise it to push the text down. Takes effect when the game starts.");
             LeftMargin = Config.Bind("Screen", "LeftMargin", 7f, "Space left of the text, in text units (the text area is 200 wide). Takes effect when the game starts.");
             gameObject.AddComponent<TerminalMod>();
+            gameObject.AddComponent<BootGreeting>();
+            if (Enabled.Value)
+                Boot.Announce(Boot.Commands);
             ModLog.Note($"{Name} {Version} loaded. Enabled: {Enabled.Value}. Log: {ModLog.LogFile}");
         }
     }

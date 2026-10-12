@@ -1,8 +1,8 @@
 {
   "id": "com.rrsos.pcc.base",
   "name": "RRSOS PCC Base",
-  "version": "0.1.0",
-  "description": "Places the main base in the running game: at planetfall, or on request. Stage 1 so far (the anchor lamp on its foundation, one more foundation, one pod) at the Prime template location, once per save and only on an empty site.",
+  "version": "0.2.0",
+  "description": "Builds the T0 base in the running game at the Prime template location: at planetfall, or on request. T0 is as much of the base as can be built before the first drill, heater or vegetube, using only what is unlocked at the very start (foundations, pods, wind turbines, crates with their labels, furniture, screens, the anchor lamp, and the Terminal when its mod is installed). Crates are stocked from their labels. Once per save and only on an empty site.",
   "plugin": "RRSOS.PCC.Base.dll",
   "pluginFolder": "RRSOS-PCC-Base",
   "config": "com.rrsos.pcc.base.cfg",

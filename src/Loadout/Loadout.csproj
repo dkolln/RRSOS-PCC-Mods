@@ -4,7 +4,7 @@
     <AssemblyName>RRSOS.PCC.Loadout</AssemblyName>
     <RootNamespace>RRSOS.PCC.Loadout</RootNamespace>
     <Description>The /loadout chat command: fits the top tier of every piece of personal gear</Description>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <ModFolder>RRSOS-PCC-Loadout</ModFolder>
   </PropertyGroup>
 
@@ -13,6 +13,9 @@
   <ItemGroup>
     <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
     <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
+    <Compile Include="..\Shared\Boot.cs" Link="Shared\Boot.cs" />
+    <Compile Include="..\Shared\Welcome.cs" Link="Shared\Welcome.cs" />
+    <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
   </ItemGroup>
 
 </Project>
