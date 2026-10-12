@@ -1,6 +1,6 @@
 {
     "name":  "Growth",
-    "capturedFrom":  "Stage-Locker.json",
+    "capturedFrom":  "Stage-Vegetube3.json",
     "anchor":  [
                    766,
                    29,
@@ -547,6 +547,96 @@
                        "text":  "Trash",
                        "op":  "add",
                        "needs":  "Container2"
+                   },
+                   {
+                       "g":  "VegetubeOutside1",
+                       "x":  41.8,
+                       "y":  2.52,
+                       "z":  -2.3,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetubeOutside1",
+                       "fill":  "SeedGold"
+                   },
+                   {
+                       "g":  "VegetubeOutside1",
+                       "x":  41.8,
+                       "y":  2.52,
+                       "z":  -0.1,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetubeOutside1",
+                       "fill":  "SeedGold"
+                   },
+                   {
+                       "g":  "VegetubeOutside1",
+                       "x":  41.8,
+                       "y":  2.52,
+                       "z":  2.1,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetubeOutside1",
+                       "fill":  "SeedGold"
+                   },
+                   {
+                       "g":  "VegetubeOutside1",
+                       "x":  44,
+                       "y":  2.52,
+                       "z":  -2.3,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetubeOutside1",
+                       "fill":  "SeedGold"
+                   },
+                   {
+                       "g":  "VegetubeOutside1",
+                       "x":  44,
+                       "y":  2.52,
+                       "z":  -0.1,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetubeOutside1",
+                       "fill":  "SeedGold"
+                   },
+                   {
+                       "g":  "VegetubeOutside1",
+                       "x":  44,
+                       "y":  2.52,
+                       "z":  2.1,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetubeOutside1",
+                       "fill":  "SeedGold"
+                   },
+                   {
+                       "g":  "VegetubeOutside1",
+                       "x":  46.2,
+                       "y":  2.52,
+                       "z":  -2.3,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetubeOutside1",
+                       "fill":  "SeedGold"
+                   },
+                   {
+                       "g":  "VegetubeOutside1",
+                       "x":  46.2,
+                       "y":  2.52,
+                       "z":  -0.1,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetubeOutside1",
+                       "fill":  "SeedGold"
+                   },
+                   {
+                       "g":  "VegetubeOutside1",
+                       "x":  46.2,
+                       "y":  2.52,
+                       "z":  2.1,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetubeOutside1",
+                       "fill":  "SeedGold"
                    }
                ]
 }
