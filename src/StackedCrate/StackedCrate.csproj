@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>RRSOS.PCC.StackedCrate</AssemblyName>
+    <RootNamespace>RRSOS.PCC.StackedCrate</RootNamespace>
+    <Description>A Stacked crate in the build menu: 3 Iron, three Container1 on top of each other</Description>
+    <Version>0.1.0</Version>
+    <ModFolder>RRSOS-PCC-StackedCrate</ModFolder>
+  </PropertyGroup>
+
+  <Import Project="..\Mod.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
+    <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
+    <Compile Include="..\Shared\Placement.cs" Link="Shared\Placement.cs" />
+    <!-- Only for ChatHook.Say (a message in the chat); this mod adds no chat commands. -->
+    <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
+  </ItemGroup>
+
+</Project>

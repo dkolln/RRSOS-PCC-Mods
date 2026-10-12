@@ -1,12 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
 
+  <!-- What every mod project shares. A mod's csproj sets AssemblyName, RootNamespace, Description, Version and ModFolder, then imports this. -->
   <PropertyGroup>
-    <!-- The game runs Unity 6 on Mono, so plugins target netstandard2.1 (see docs/game-notes.md). -->
+    <!-- The game runs Unity 6 on Mono, so plugins target netstandard2.1. -->
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyName>RRSOS.PCC.Build</AssemblyName>
-    <RootNamespace>RRSOS.PCC.Build</RootNamespace>
-    <Description>Places the main base in the running game (the live-write side of the RRSOS Planet Crafter companion)</Description>
-    <Version>0.1.0</Version>
     <LangVersion>latest</LangVersion>
     <DebugType>embedded</DebugType>
   </PropertyGroup>
@@ -36,10 +33,15 @@
     </Reference>
   </ItemGroup>
 
-  <!-- After a build, drop the plugin into the game's BepInEx\plugins folder, but only once BepInEx is installed there. -->
+  <!-- Each mod describes itself in a mod.json next to its project; it travels with the DLL. -->
+  <ItemGroup>
+    <None Include="mod.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- After a build, drop the mod into the game's BepInEx\plugins\<ModFolder>, but only once BepInEx is installed there. -->
   <Target Name="DeployToGame" AfterTargets="Build" Condition="Exists('$(PluginsFolder)')">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PluginsFolder)RRSOS-PCC-Build\" />
-    <Message Importance="high" Text="Deployed $(TargetFileName) to $(PluginsFolder)RRSOS-PCC-Build\" />
+    <Copy SourceFiles="$(TargetPath);$(ProjectDir)mod.json" DestinationFolder="$(PluginsFolder)$(ModFolder)\" />
+    <Message Importance="high" Text="Deployed $(TargetFileName) to $(PluginsFolder)$(ModFolder)\" />
   </Target>
 
 </Project>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>RRSOS.PCC.Base</AssemblyName>
+    <RootNamespace>RRSOS.PCC.Base</RootNamespace>
+    <Description>Places the main base in the running game (the first stage so far), with /build and /undo</Description>
+    <Version>0.1.0</Version>
+    <ModFolder>RRSOS-PCC-Base</ModFolder>
+  </PropertyGroup>
+
+  <Import Project="..\Mod.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
+    <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
+    <Compile Include="..\Shared\Placement.cs" Link="Shared\Placement.cs" />
+    <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
+  </ItemGroup>
+
+</Project>
