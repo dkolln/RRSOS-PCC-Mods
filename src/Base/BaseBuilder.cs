@@ -341,7 +341,7 @@ namespace RRSOS.PCC.Base
         }
 
         /// <summary>Puts into each new piece what the template says it holds (the seeds of a vegetube), through the game's own add-to-inventory call.</summary>
-        private IEnumerator FillContents(List<KeyValuePair<WorldObject, TemplatePiece>> created)
+        internal static IEnumerator FillContents(List<KeyValuePair<WorldObject, TemplatePiece>> created)
         {
             var filled = 0;
             foreach (var made in created.Where(c => !string.IsNullOrEmpty(c.Value.fill)))

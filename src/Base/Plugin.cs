@@ -9,16 +9,20 @@ namespace RRSOS.PCC.Base
     /// Commands: /build (place it now) and /undo (take back what it placed in this save).
     /// </summary>
     [BepInPlugin(Guid, Name, Version)]
+    [BepInDependency(TerminalRegistration.TerminalGuid, BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "com.rrsos.pcc.base";
         public const string Name = "RRSOS PCC Base";
-        public const string Version = "0.2.0";
+        public const string Version = "0.4.0";
 
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<bool> UndoLastBuild;
         internal static ConfigEntry<bool> AutoUpgrade;
         internal static ConfigEntry<string> UpgradeScope;
+        internal static ConfigEntry<string> LockerGroups;
+        internal static ConfigEntry<bool> PowerButtons;
+        internal static ConfigEntry<float> PowerButtonsX, PowerButtonsY;
 
         private void Awake()
         {
@@ -29,9 +33,16 @@ namespace RRSOS.PCC.Base
             AutoUpgrade = Config.Bind("General", "AutoUpgrade", true, "While playing, swap buildings for the better one as it is unlocked, by the chains in upgrades.txt (in this mod's data folder), for example Wind Turbine to Solar Panel to T2 Solar Panel.");
             UpgradeScope = Config.Bind("General", "UpgradeScope", "World", new ConfigDescription("Which buildings are swapped: World = every building of that kind on the planet, Base = only the pieces this mod placed.", new AcceptableValueList<string>("World", "Base")));
 
+            LockerGroups = Config.Bind("Trash", "LockerGroups", "Container1,Container2,Container3", "The storage containers that /trash empty looks at (only one labelled Trash is ever emptied).");
+
+            PowerButtons = Config.Bind("Power", "Buttons", true, "Show [ ON ] and [ OFF ] buttons on the game's Energy window: they switch the base's energy output on or off. This is the only way to do it; nothing is reported in the chat or on the terminal.");
+            PowerButtonsX = Config.Bind("Power", "ButtonsX", 0f, "Sideways offset of the buttons on the Energy window (UI units from the bottom centre).");
+            PowerButtonsY = Config.Bind("Power", "ButtonsY", 40f, "Height of the buttons above the bottom edge of the Energy window (UI units).");
+
             ChatHook.Enabled = () => Enabled.Value;
             ChatHook.Add("/build", BaseBuilder.OnBuildCommand, "place the base now");
             ChatHook.Add("/undo", BaseBuilder.OnUndoCommand, "take back what the base mod placed in this save");
+            ChatHook.Add("/trash", args => BaseTrash.OnCommand(args, ChatHook.Say), "delete everything in every container labelled Trash: /trash empty");
 
             if (Enabled.Value)
             {
@@ -42,6 +53,9 @@ namespace RRSOS.PCC.Base
 
             gameObject.AddComponent<BaseBuilder>();
             gameObject.AddComponent<BaseUpgrades>();
+            gameObject.AddComponent<BasePower>();
+            gameObject.AddComponent<BaseTrash>();
+            gameObject.AddComponent<PowerButtons>();
             gameObject.AddComponent<ChatHook>();
             ModLog.Note($"{Name} {Version} loaded. Enabled: {Enabled.Value}. It writes into the running game only when Enabled is true. Log: {ModLog.LogFile}");
         }

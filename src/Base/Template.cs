@@ -22,6 +22,7 @@ namespace RRSOS.PCC.Base
         public string fill;     // what the piece holds when it is made (the seeds of a vegetube): group ids separated by commas
         public string from;     // growth: the panels the piece must still have for the change to be made
         public string needs;    // growth: the group that must be unlocked first
+        public string op;       // growth: "add" (make the piece), "remove" (take the piece away), empty = change a pod's panels
     }
 
     [Serializable]
@@ -87,6 +88,7 @@ namespace RRSOS.PCC.Base
                             case "fill": piece.fill = text; break;
                             case "from": piece.from = text; break;
                             case "needs": piece.needs = text; break;
+                            case "op": piece.op = text; break;
                             case "x": piece.x = float.Parse(value, CultureInfo.InvariantCulture); break;
                             case "y": piece.y = float.Parse(value, CultureInfo.InvariantCulture); break;
                             case "z": piece.z = float.Parse(value, CultureInfo.InvariantCulture); break;
@@ -129,7 +131,7 @@ namespace RRSOS.PCC.Base
         }
     }
 
-    /// <summary>What was added to the base after T0 (tools/capture-growth.py): entries that are made when the group they need is unlocked. May be empty.</summary>
+    /// <summary>What was added to the base after T0 (tools/capture-growth.ps1): entries that are made when the group they need is unlocked. May be empty.</summary>
     internal static class Growth
     {
         private static Template _template;

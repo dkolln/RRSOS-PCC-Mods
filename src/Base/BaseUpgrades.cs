@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using RRSOS.PCC.Shared;
@@ -102,6 +103,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                 {
                     yield return Run(key, planetHash);
                     yield return RunGrowth(key, planetHash);
+                    yield return RunStages(key, planetHash);
                 }
                 finally
                 {
@@ -355,7 +357,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             if (growth == null || growth.pieces == null || growth.pieces.Length == 0)
                 yield break;
 
-            var due = growth.pieces.Where(p => !string.IsNullOrEmpty(p.needs) && Unlocked(p.needs)).ToList();
+            var due = growth.pieces.Where(p => string.IsNullOrEmpty(p.op) && !string.IsNullOrEmpty(p.needs) && Unlocked(p.needs)).ToList();
             if (due.Count == 0)
                 yield break;
 
@@ -401,6 +403,132 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
 
             foreach (var entry in done)
                 Tell(Readable.GetGroupName(GroupsHandler.GetGroupViaId(entry.Key)) + " unlocked: " + entry.Value + " pieces of the base updated.");
+        }
+
+        // ---- stages: pieces added to or taken from the base when a group is unlocked ---------------------------------------------
+
+        private static string StagesFile => ModLog.FileIn("stages.txt");
+
+        private static string EntryId(TemplatePiece p) =>
+            p.needs + "|" + p.op + "|" + p.g + "|" + p.x.ToString("F1", CultureInfo.InvariantCulture) + "," + p.y.ToString("F1", CultureInfo.InvariantCulture) + "," + p.z.ToString("F1", CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// The "add" and "remove" entries of Growth.json whose group is unlocked, once per save each (stages.txt remembers them, so a piece the player later deletes does not come
+        /// back). Only on Prime and only where the base's anchor foundation stands. An add is skipped when a piece of that kind is already on the spot; a remove only takes a piece
+        /// of that kind that is on the spot. Added pieces are put on the undo list, and what they hold (the seeds of a food grower) is filled in as at planetfall.
+        /// </summary>
+        private IEnumerator RunStages(string key, int planetHash)
+        {
+            Template growth = null;
+            try
+            {
+                growth = Growth.Get();
+            }
+            catch (Exception e)
+            {
+                ModLog.LogOnce("growth-read", "Could not read the growth template: " + e.Message);
+            }
+
+            if (growth == null || growth.pieces == null)
+                yield break;
+
+            var recorded = new HashSet<string>(ModLog.ReadLines(StagesFile).Where(l => l.StartsWith(key + "|")).Select(l => l.Substring(key.Length + 1)));
+            var due = growth.pieces.Where(p => (p.op == "add" || p.op == "remove") && !string.IsNullOrEmpty(p.needs) && !recorded.Contains(EntryId(p)) && Unlocked(p.needs)).ToList();
+            if (due.Count == 0 || !WorldState.OnPlanet("Prime"))
+                yield break;
+
+            var handler = WorldObjectsHandler.Instance;
+            var existing = handler.GetAllWorldObjects().Values.Where(w => w != null && w.GetGroup() != null && w.GetPlanetHash() == planetHash && w.GetPosition().sqrMagnitude > 0f).ToList();
+            if (!existing.Any(w => w.GetGroup().GetId() == "Foundation" && (w.GetPosition() - BaseBuilder.Anchor).sqrMagnitude < SameSpot * SameSpot))
+                yield break; // no base here to grow
+
+            var added = new Dictionary<string, int>();     // needed group -> pieces made
+            var removed = new Dictionary<string, int>();
+            var created = new List<KeyValuePair<WorldObject, TemplatePiece>>();
+            var finished = new List<string>();
+            var sinceFrame = 0;
+
+            // takes first, so a moved piece is gone from its old spot before it is made at the new one
+            foreach (var entry in due.OrderBy(p => p.op == "remove" ? 0 : 1))
+            {
+                var at = BaseBuilder.Anchor + new Vector3(entry.x, entry.y, entry.z);
+                var there = existing.FirstOrDefault(w => w.GetGroup().GetId() == entry.g && (w.GetPosition() - at).sqrMagnitude < SameSpot * SameSpot);
+
+                if (entry.op == "remove")
+                {
+                    if (there != null)
+                    {
+                        try
+                        {
+                            handler.DestroyWorldObject(there, true);
+                            existing.Remove(there);
+                            removed[entry.needs] = (removed.TryGetValue(entry.needs, out var r) ? r : 0) + 1;
+                        }
+                        catch (Exception e)
+                        {
+                            ModLog.Note("Stages: could not remove " + entry.g + " #" + there.GetId() + ": " + e.GetType().Name + ": " + e.Message);
+                            continue;
+                        }
+                    }
+
+                    finished.Add(EntryId(entry));
+                    continue;
+                }
+
+                if (there != null || GroupsHandler.GetGroupViaId(entry.g) == null)
+                {
+                    finished.Add(EntryId(entry)); // already there, or a piece of a mod that is not installed
+                    continue;
+                }
+
+                try
+                {
+                    var wo = Placement.PlaceAt(entry.g, at, DataTreatments.StringToQuaternion(entry.rot), planetHash,
+                        string.IsNullOrEmpty(entry.panels) ? null : DataTreatments.StringToIntList(entry.panels).ToArray(),
+                        string.IsNullOrEmpty(entry.color) ? null : entry.color, entry.text, entry.groups);
+                    created.Add(new KeyValuePair<WorldObject, TemplatePiece>(wo, entry));
+                    existing.Add(wo);
+                    finished.Add(EntryId(entry));
+                    added[entry.needs] = (added.TryGetValue(entry.needs, out var n) ? n : 0) + 1;
+                }
+                catch (Exception e)
+                {
+                    ModLog.LogOnce("stage-" + EntryId(entry), "Stages: could not place " + entry.g + " at " + entry.x + "," + entry.z + ": " + e.GetType().Name + ": " + e.Message + " (tried again later).");
+                }
+
+                if (++sinceFrame >= PiecesPerFrame)
+                {
+                    sinceFrame = 0;
+                    yield return null;
+                }
+            }
+
+            foreach (var made in created)
+                ModLog.Append(BaseBuilder.UndoFile, key + "|" + made.Key.GetId() + "|" + made.Value.g);
+            foreach (var id in finished)
+                ModLog.Append(StagesFile, key + "|" + id);
+
+            yield return BaseBuilder.FillContents(created);
+
+            try
+            {
+                var energy = Managers.GetManager<RequireEnergyHandler>();
+                if (energy != null)
+                    energy.UpdateAllEnergyRequester();
+            }
+            catch (Exception e)
+            {
+                ModLog.Note("Stages: could not refresh the energy network (harmless): " + e.Message);
+            }
+
+            foreach (var needs in added.Keys.Union(removed.Keys))
+            {
+                added.TryGetValue(needs, out var a);
+                removed.TryGetValue(needs, out var r);
+                var name = Readable.GetGroupName(GroupsHandler.GetGroupViaId(needs));
+                ModLog.Note("Stages: " + needs + ": " + a + " pieces added, " + r + " taken away.");
+                Tell(name + " unlocked: the base grew (" + a + " added" + (r > 0 ? ", " + r + " taken away" : "") + ").");
+            }
         }
 
         private sealed class SwapResult
