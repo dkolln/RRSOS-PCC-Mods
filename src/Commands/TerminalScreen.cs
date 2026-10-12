@@ -56,7 +56,7 @@ namespace RRSOS.PCC.Commands
             // The sign's panel is about 2.75 times wider than tall, and its one line of text covers a quarter of it. Measured in the prefab: the face is 200 x 75 text units
             // (the sign's own text box is 200 x 50), which fits nine lines at this size.
             _display.rectTransform.sizeDelta = new Vector2(200f, 75f);
-            _display.margin = new Vector4(4f, 2f, 4f, 2f);
+            _display.margin = new Vector4(Plugin.LeftMargin.Value, Plugin.TopMargin.Value, 6f, 5f);
             _display.enableAutoSizing = false;
             _display.fontSize = 7f;
             _display.textWrappingMode = TextWrappingModes.Normal;
