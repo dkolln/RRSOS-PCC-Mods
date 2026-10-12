@@ -17,6 +17,7 @@ namespace RRSOS.PCC.Commands
 
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<float> Scale;
+        internal static ConfigEntry<int> InputLimit;
         internal static ConfigEntry<float> TopMargin;
         internal static ConfigEntry<float> LeftMargin;
 
@@ -25,6 +26,7 @@ namespace RRSOS.PCC.Commands
             ModLog.Init("Commands", Logger);
             Enabled = Config.Bind("General", "Enabled", false, "Add the Terminal to the build menu (1 Iron, 1 Silicon, 1 Titanium, 1 Cobalt). Writes into the running game.");
             Scale = Config.Bind("General", "Scale", 2.5f, "How much larger than a sign the terminal's screen is (width and height; it stays as thin as a sign). Takes effect when the game starts.");
+            InputLimit = Config.Bind("Screen", "InputLimit", 100, new ConfigDescription("How many characters can be typed at the terminal (the game's text window allows far fewer by default; the most a terminal can hold is about 120).", new AcceptableValueRange<int>(10, 120)));
             TopMargin = Config.Bind("Screen", "TopMargin", 8f, "Space above the first line of text, in text units (the whole text area is 75 high). Raise it to push the text down. Takes effect when the game starts.");
             LeftMargin = Config.Bind("Screen", "LeftMargin", 7f, "Space left of the text, in text units (the text area is 200 wide). Takes effect when the game starts.");
             gameObject.AddComponent<TerminalMod>();

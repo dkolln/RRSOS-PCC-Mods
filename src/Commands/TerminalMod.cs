@@ -21,6 +21,10 @@ namespace RRSOS.PCC.Commands
         private static readonly string[] Ingredients = { "Iron", "Silicon", "Titanium", "Cobalt" };
 
         private Group _group;
+        private UiWindowTextInput _textWindow;
+        private int _normalLimit = -1;
+        private float _nextWindowSearch;
+        private static readonly System.Reflection.FieldInfo TextWindowTarget = typeof(UiWindowTextInput).GetField("worldObjectText", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
         private readonly System.Collections.Generic.HashSet<int> _enlargedGhosts = new System.Collections.Generic.HashSet<int>();
         private static readonly System.Reflection.FieldInfo GhostGroup = typeof(ConstructibleGhost).GetField("_groupConstructible", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 
@@ -34,6 +38,42 @@ namespace RRSOS.PCC.Commands
 
             // A sign's panel faces along its own x axis: x is the depth, y the height, z the width.
             terminal.localScale = new Vector3(1f, scale, scale);
+        }
+
+        // The game's naming window (the one that opens for signs, crate labels and the terminal) limits how much can be typed, and sets that limit in its prefab. While it is
+        // open for a terminal the limit is raised; for anything else it is put back as the game has it.
+        private void Update()
+        {
+            if (!Plugin.Enabled.Value)
+                return;
+
+            if (_textWindow == null)
+            {
+                // looking for it is a search of the whole scene, so only twice a second until it is found
+                if (Time.realtimeSinceStartup < _nextWindowSearch)
+                    return;
+
+                _nextWindowSearch = Time.realtimeSinceStartup + 0.5f;
+                _textWindow = UnityEngine.Object.FindFirstObjectByType<UiWindowTextInput>(FindObjectsInactive.Include);
+            }
+
+            if (_textWindow == null || _textWindow.inputField == null)
+                return;
+
+            var field = _textWindow.inputField;
+            if (_normalLimit < 0)
+            {
+                _normalLimit = field.characterLimit;
+                ModLog.Note("The game's text window allows " + (_normalLimit == 0 ? "any number of" : _normalLimit.ToString()) + " characters; a terminal gets " + Plugin.InputLimit.Value + ".");
+            }
+
+            if (!_textWindow.gameObject.activeInHierarchy)
+                return;
+
+            var target = TextWindowTarget == null ? null : TextWindowTarget.GetValue(_textWindow) as WorldObjectText;
+            var wanted = target != null && target.GetComponentInParent<TerminalScreen>() != null ? Plugin.InputLimit.Value : _normalLimit;
+            if (field.characterLimit != wanted)
+                field.characterLimit = wanted;
         }
 
         private IEnumerator Start()
