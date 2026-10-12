@@ -11,7 +11,7 @@ namespace RRSOS.PCC.AutoFill
     /// <summary>
     /// When a crate is given a label, looks the label up: if it names an item (its group id, its display name, or an extra name) the crate's EMPTY slots are filled with that
     /// item. Only at a rename; what is already in the crate stays; a crate that already had its label when the world loaded is never touched.
-    /// The same lookup and fill also serve /resupply, which this mod puts on the terminal when one is installed (it tops up every labelled crate).
+    /// The same lookup and fill also serve /resupply (tops up every labelled crate), and /addname works there too; this mod puts both on the terminal when one is installed.
     /// </summary>
     internal sealed class AutoFiller : MonoBehaviour
     {
@@ -174,18 +174,21 @@ namespace RRSOS.PCC.AutoFill
         // ---- /addname ---------------------------------------------------------------------------------------------------------
 
         /// <summary>/addname &lt;item id&gt; &lt;name&gt;: gives an item one more name, saved in aliases.txt and used straight away.</summary>
-        internal void OnAddName(string args)
+        internal void OnAddName(string args) => AddName(args, ChatHook.Say);
+
+        /// <summary>The same, answering through the given function: the chat's reply, or a line on a terminal's screen.</summary>
+        private void AddName(string args, Action<string> say)
         {
             if (GroupsHandler.GetAllGroups() == null)
             {
-                ChatHook.Say("The game is not ready yet.");
+                say("The game is not ready yet.");
                 return;
             }
 
             var parts = (args ?? "").Trim().Split(new[] { ' ', '\t' }, 2, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 2)
             {
-                ChatHook.Say("Usage: /addname <item id> <name>, for example /addname waterbottle1 water");
+                say("Usage: /addname <item id> <name>, for example /addname waterbottle1 water");
                 return;
             }
 
@@ -193,26 +196,26 @@ namespace RRSOS.PCC.AutoFill
             var item = _lookup.ById(parts[0]);
             if (item == null)
             {
-                ChatHook.Say("No item has the id \"" + parts[0] + "\".");
+                say("No item has the id \"" + parts[0] + "\".");
                 return;
             }
 
             if (ItemLookup.Plain(name).Length == 0)
             {
-                ChatHook.Say("The name needs at least one letter or digit.");
+                say("The name needs at least one letter or digit.");
                 return;
             }
 
             var existing = _lookup.Existing(name);
             if (existing != null)
             {
-                ChatHook.Say("Name: " + name + " already exists" + (existing == item ? "." : " (it names " + Readable.GetGroupName(existing) + ")."));
+                say("Name: " + name + " already exists" + (existing == item ? "." : " (it names " + Readable.GetGroupName(existing) + ")."));
                 return;
             }
 
             _lookup.AddExplicit(name, item);
             ModLog.Append(ItemLookup.AliasFile, item.GetId() + " = " + name);
-            ChatHook.Say("Name: " + name + " added.");
+            say("Name: " + name + " added.");
         }
 
         // ---- /resupply (on the terminal) ----------------------------------------------------------------------------------------
@@ -224,8 +227,9 @@ namespace RRSOS.PCC.AutoFill
             {
                 if (TerminalRegistration.TryRegister("/resupply", "/resupply", "top up every labelled crate", OnResupply))
                 {
+                    TerminalRegistration.TryRegister("/addname", "/addname <item id> <name>", "give an item another name", (args, print) => AddName(args, print));
                     _terminalChecked = true;
-                    ModLog.Note("The terminal is installed: /resupply is on it.");
+                    ModLog.Note("The terminal is installed: /resupply and /addname are on it.");
                 }
             }
             catch (Exception e)
