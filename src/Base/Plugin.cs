@@ -28,6 +28,13 @@ namespace RRSOS.PCC.Base
             ChatHook.Add("/build", BaseBuilder.OnBuildCommand, "place the base now");
             ChatHook.Add("/undo", BaseBuilder.OnUndoCommand, "take back what the base mod placed in this save");
 
+            if (Enabled.Value)
+            {
+                Boot.Announce(Boot.Base);
+                var at = BaseBuilder.Anchor;
+                Welcome.Add(2, "A base has been setup at location: [" + at.x + ":" + at.y + ":" + at.z + "] and stocked with most of the items you need to get started.");
+            }
+
             gameObject.AddComponent<BaseBuilder>();
             gameObject.AddComponent<ChatHook>();
             ModLog.Note($"{Name} {Version} loaded. Enabled: {Enabled.Value}. It writes into the running game only when Enabled is true. Log: {ModLog.LogFile}");

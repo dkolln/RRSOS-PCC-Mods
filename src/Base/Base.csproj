@@ -15,6 +15,8 @@
     <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
     <Compile Include="..\Shared\Placement.cs" Link="Shared\Placement.cs" />
     <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
+    <Compile Include="..\Shared\Boot.cs" Link="Shared\Boot.cs" />
+    <Compile Include="..\Shared\Welcome.cs" Link="Shared\Welcome.cs" />
     <!-- Crates are stocked from their labels, as Auto Fill does. -->
     <Compile Include="..\Shared\ItemLookup.cs" Link="Shared\ItemLookup.cs" />
     <Compile Include="..\Shared\CrateFill.cs" Link="Shared\CrateFill.cs" />

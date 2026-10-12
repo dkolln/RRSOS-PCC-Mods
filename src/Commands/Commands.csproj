@@ -13,6 +13,8 @@
   <ItemGroup>
     <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
     <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
+    <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
+    <Compile Include="..\Shared\Boot.cs" Link="Shared\Boot.cs" />
     <Compile Include="..\Shared\GroupCloner.cs" Link="Shared\GroupCloner.cs" />
     <Compile Include="..\Shared\CustomIcons.cs" Link="Shared\CustomIcons.cs" />
     <Compile Include="..\Shared\IconTools.cs" Link="Shared\IconTools.cs" />

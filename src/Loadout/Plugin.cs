@@ -26,6 +26,11 @@ namespace RRSOS.PCC.Loadout
 
             var command = gameObject.AddComponent<LoadoutCommand>();
             gameObject.AddComponent<PlanetfallLoadout>().Init(command);
+            if (Enabled.Value && AutoAtPlanetfall.Value)
+            {
+                Boot.Announce(Boot.Loadout);
+                Welcome.Add(1, "You have been auto-equipped with the latest in personnel space gear.");
+            }
             ChatHook.Enabled = () => Enabled.Value;
             ChatHook.Add("/loadout", command.OnCommand, "fit the top tier of every piece of gear");
             gameObject.AddComponent<ChatHook>();

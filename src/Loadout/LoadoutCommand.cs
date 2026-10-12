@@ -17,8 +17,32 @@ namespace RRSOS.PCC.Loadout
     {
         private static bool _running;
 
+        private bool _quiet;
+
+        /// <summary>True when some piece of the top-tier gear is not worn yet.</summary>
+        internal bool HasWork()
+        {
+            var player = Managers.GetManager<PlayersManager>().GetActivePlayerController();
+            var worn = player.GetPlayerEquipment().GetInventory().GetInsideWorldObjects();
+            return LoadoutItems().Any(i => !worn.Any(w => w.GetGroup().GetId() == i.GetId()));
+        }
+
+        private void Tell(string message)
+        {
+            if (!_quiet)
+                ChatHook.Say(message);
+        }
+
+        /// <summary>The same as /loadout, without the chat lines (the start-up sequence tells its own).</summary>
+        internal IEnumerator RunQuietly()
+        {
+            _quiet = true;
+            return Routine();
+        }
+
         internal void OnCommand(string args)
         {
+            _quiet = false;
             if (_running)
             {
                 ChatHook.Say("The loadout is still being fitted.");
@@ -89,12 +113,12 @@ namespace RRSOS.PCC.Loadout
                 already.AddRange(items.Where(i => !todo.Contains(i)).Select(i => i.GetId()));
                 if (todo.Count == 0)
                 {
-                    ChatHook.Say("Your loadout is already complete (" + already.Count + " pieces at the top tier).");
+                    Tell("Your loadout is already complete (" + already.Count + " pieces at the top tier).");
                     completed = true;
                     yield break;
                 }
 
-                ChatHook.Say("Fitting " + todo.Count + " pieces of gear...");
+                Tell("Fitting " + todo.Count + " pieces of gear...");
                 foreach (var item in todo)
                 {
                     var id = item.GetId();
@@ -172,10 +196,10 @@ namespace RRSOS.PCC.Loadout
             {
                 _running = false;
                 if (!completed)
-                    ChatHook.Say("The loadout stopped early (" + (fitted.Count + replaced.Count) + " done so far); see the mod's log.");
+                    Tell("The loadout stopped early (" + (fitted.Count + replaced.Count) + " done so far); see the mod's log.");
             }
 
-            ChatHook.Say("Loadout: " + fitted.Count + " added, " + replaced.Count + " upgraded" + (replaced.Count == 0 ? "" : " (" + string.Join(", ", replaced.ToArray()) + ")")
+            Tell("Loadout: " + fitted.Count + " added, " + replaced.Count + " upgraded" + (replaced.Count == 0 ? "" : " (" + string.Join(", ", replaced.ToArray()) + ")")
                 + ", " + already.Count + " already at the top tier" + (failed.Count == 0 ? "." : ", " + failed.Count + " failed: " + string.Join("; ", failed.ToArray())));
         }
     }

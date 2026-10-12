@@ -26,7 +26,7 @@ namespace RRSOS.PCC.Base
         private const string StartPlanet = "Prime";
 
         /// <summary>Prime's template location: the foundation under the anchor outdoor lamp (the lamp points north). The terrain of Prime never changes.</summary>
-        private static readonly Vector3 Anchor = new Vector3(766f, 29f, 601f);
+        internal static readonly Vector3 Anchor = new Vector3(766f, 29f, 601f);
 
         private const float Margin = 6f;        // nothing of the player's own may stand within this of the base's footprint (metres, along the ground)
         private const float SameSpot = 0.5f;    // a piece this close to a template piece, of the same kind, counts as already there
@@ -36,6 +36,7 @@ namespace RRSOS.PCC.Base
         private static volatile bool _buildRequested;
 
         private bool _autoHandled;
+        private string _autoKey;
         private bool _busy;
 
         // ---- chat commands ---------------------------------------------------------------------------------------------------
@@ -81,6 +82,10 @@ namespace RRSOS.PCC.Base
                 if (_busy || !Plugin.Enabled.Value)
                     continue;
 
+                // a different world loaded in the same session is handled afresh
+                if (_autoHandled && Ready() && WorldState.Ready(out _, out var current) && current != _autoKey)
+                    _autoHandled = false;
+
                 var wantBuild = File.Exists(BuildNowFile) || _buildRequested;
                 var wantUndo = File.Exists(UndoNowFile);
                 if (!wantBuild && !wantUndo && _autoHandled)
@@ -99,9 +104,21 @@ namespace RRSOS.PCC.Base
                 }
 
                 if (!go)
+                {
+                    // a new game on a planet with no template: the other start-up steps need not wait for this one
+                    if (!_autoHandled && !wantBuild && !wantUndo && Ready() && !WorldState.OnPlanet(StartPlanet))
+                    {
+                        _autoHandled = true;
+                        WorldState.Ready(out _, out _autoKey);
+                        Boot.NewWorld(_autoKey);
+                        Boot.Skip(Boot.Base);
+                    }
+
                     continue; // the request files wait until a world is ready
+                }
 
                 _busy = true;
+                Boot.NewWorld(key);
                 if (wantUndo)
                 {
                     ModLog.Consume(UndoNowFile);
@@ -124,8 +141,10 @@ namespace RRSOS.PCC.Base
                 }
                 else
                 {
-                    _autoHandled = true; // once per game session; a request can still ask again
+                    _autoHandled = true; // once per world; a request can still ask again
+                    _autoKey = key;
                     yield return Decide(key, planetHash);
+                    Boot.Skip(Boot.Base); // no-op when the base was built (that finished the step)
                 }
 
                 _busy = false;
@@ -149,13 +168,29 @@ namespace RRSOS.PCC.Base
                 yield break;
             }
 
-            if (ModLog.ReadLines(DoneFile).Contains(key))
+            // A new game is one where the player has crafted nothing yet. What is saved is judged from the world itself (a game left without saving starts over,
+            // so a mark kept in a file would be wrong), and the site check below keeps a base that is already there from being built twice.
+            var player = Managers.GetManager<PlayersManager>().GetActivePlayerController();
+            var crafted = WorldObjectsHandler.Instance.GetTotalCraftedObjects(player.OwnerClientId);
+            if (crafted != 0)
             {
-                ModLog.Note("Save " + key + ": the base was already handled once; nothing to do (a build request would place it again).");
+                ModLog.Note("Save " + key + ": not a new game (" + crafted + " objects crafted); nothing to do (/build places it on request).");
                 yield break;
             }
 
             yield return PlaceIfEmpty(key, planetHash, true);
+        }
+
+        private static bool Ready()
+        {
+            try
+            {
+                return WorldState.Ready(out _, out _);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         private static Vector3 WorldPosition(TemplatePiece piece) => Anchor + new Vector3(piece.x, piece.y, piece.z);
@@ -217,6 +252,9 @@ namespace RRSOS.PCC.Base
             }
 
             ModLog.Note("Save " + key + ": " + (automatic ? "planetfall with an empty site" : "an empty site") + ". Placing " + template.name + " (" + pieces.Length + " pieces).");
+            if (automatic)
+                yield return Boot.Begin(Boot.Base, "Preparing main base....");
+
             var created = new List<KeyValuePair<WorldObject, TemplatePiece>>();
             var skipped = new List<string>();
             var failed = false;
@@ -295,7 +333,9 @@ namespace RRSOS.PCC.Base
             // The crates keep their labels; every crate whose label names an item is stocked, as the rename and /resupply do.
             yield return Stock(created.Where(c => c.Value.g.StartsWith("Container") && !string.IsNullOrEmpty(c.Value.text)).Select(c => c.Key).ToList(), automatic);
 
-            if (!automatic)
+            if (automatic)
+                yield return Boot.End(Boot.Base);
+            else
                 ChatHook.Say("Base placed (" + created.Count + " pieces). /undo takes it back.");
         }
 
