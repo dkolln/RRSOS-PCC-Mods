@@ -4,7 +4,7 @@
     <AssemblyName>RRSOS.PCC.Base</AssemblyName>
     <RootNamespace>RRSOS.PCC.Base</RootNamespace>
     <Description>Builds the T0 base in the running game, with /build and /undo</Description>
-    <Version>0.2.0</Version>
+    <Version>0.4.0</Version>
     <ModFolder>RRSOS-PCC-Base</ModFolder>
   </PropertyGroup>
 
@@ -28,6 +28,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The Energy window's buttons are Unity UI objects with TextMeshPro text. -->
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GameManaged)Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameManaged)UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GameManaged)UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="UnityEngine.JSONSerializeModule">
       <HintPath>$(GameManaged)UnityEngine.JSONSerializeModule.dll</HintPath>
       <Private>false</Private>

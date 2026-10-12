@@ -1,31 +1,552 @@
 {
- "name": "Growth",
- "capturedFrom": "Custom-1.json",
- "anchor": [
-  766.0,
-  29.0,
-  601.0
- ],
- "pieces": [
-  {
-   "g": "pod",
-   "x": 28.0,
-   "y": 2.5,
-   "z": -0.1,
-   "rot": "0,0,0,1",
-   "from": "2,2,2,2,5,7",
-   "panels": "3,3,2,2,5,7",
-   "needs": "window"
-  },
-  {
-   "g": "pod",
-   "x": 36.0,
-   "y": 2.5,
-   "z": -0.1,
-   "rot": "0,0,0,1",
-   "from": "2,2,1,2,5,7",
-   "panels": "3,3,1,2,5,7",
-   "needs": "window"
-  }
- ]
+    "name":  "Growth",
+    "capturedFrom":  "Stage-Locker.json",
+    "anchor":  [
+                   766,
+                   29,
+                   601
+               ],
+    "pieces":  [
+                   {
+                       "g":  "pod",
+                       "x":  28.0,
+                       "y":  2.5,
+                       "z":  -0.1,
+                       "rot":  "0,0,0,1",
+                       "from":  "2,2,2,2,5,7",
+                       "panels":  "3,3,2,2,5,7",
+                       "needs":  "window"
+                   },
+                   {
+                       "g":  "pod",
+                       "x":  36.0,
+                       "y":  2.5,
+                       "z":  -0.1,
+                       "rot":  "0,0,0,1",
+                       "from":  "2,2,1,2,5,7",
+                       "panels":  "3,3,1,2,5,7",
+                       "needs":  "window"
+                   },
+                   {
+                       "g":  "pod",
+                       "x":  36,
+                       "y":  2.5,
+                       "z":  -8.094,
+                       "rot":  "0,0,0,1",
+                       "from":  "2,1,1,2,5,7",
+                       "panels":  "2,1,2,2,5,7",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "pod",
+                       "x":  36,
+                       "y":  2.5,
+                       "z":  7.894,
+                       "rot":  "0,0,0,1",
+                       "from":  "1,2,1,2,5,7",
+                       "panels":  "1,2,2,2,5,7",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Chair1",
+                       "x":  36.655,
+                       "y":  3.53583,
+                       "z":  6.7963,
+                       "rot":  "0,-1,0,0",
+                       "op":  "remove",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "BedSimple",
+                       "x":  37,
+                       "y":  3.53583,
+                       "z":  10.75,
+                       "rot":  "0,-0.7071068,0,-0.7071068",
+                       "op":  "remove",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "ScreenUnlockables",
+                       "x":  38.0875,
+                       "y":  4.5136,
+                       "z":  7.6622,
+                       "rot":  "0,0.7071068,0,0.7071068",
+                       "op":  "remove",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "ScreenEnergy",
+                       "x":  38.2039,
+                       "y":  4.5136,
+                       "z":  6.0552,
+                       "rot":  "0,0.7071068,0,0.7071068",
+                       "op":  "remove",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Desktop1",
+                       "x":  38.9,
+                       "y":  3.53583,
+                       "z":  6.9,
+                       "rot":  "0,1,0,-4.371139E-08",
+                       "op":  "remove",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  48,
+                       "y":  0,
+                       "z":  -12,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  48,
+                       "y":  0,
+                       "z":  -6,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  48,
+                       "y":  0,
+                       "z":  0,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  48,
+                       "y":  0,
+                       "z":  6,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  48,
+                       "y":  0,
+                       "z":  12,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  54,
+                       "y":  0,
+                       "z":  -12,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  54,
+                       "y":  0,
+                       "z":  -6,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  54,
+                       "y":  0,
+                       "z":  0,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  54,
+                       "y":  0,
+                       "z":  6,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  54,
+                       "y":  0,
+                       "z":  12,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  60,
+                       "y":  0,
+                       "z":  -12,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  60,
+                       "y":  0,
+                       "z":  -6,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  60,
+                       "y":  0,
+                       "z":  -0.0001,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  60,
+                       "y":  0,
+                       "z":  5.9999,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  60,
+                       "y":  0,
+                       "z":  11.9999,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "pod",
+                       "x":  44,
+                       "y":  2.5,
+                       "z":  -8.094,
+                       "rot":  "0,0,0,1",
+                       "panels":  "1,1,2,2,5,7",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "pod",
+                       "x":  44,
+                       "y":  2.5,
+                       "z":  7.894,
+                       "rot":  "0,0,0,1",
+                       "panels":  "1,1,2,2,5,7",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "pod",
+                       "x":  52,
+                       "y":  2.5,
+                       "z":  -8.094,
+                       "rot":  "0,0,0,1",
+                       "panels":  "4,1,2,2,5,7",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "pod",
+                       "x":  52,
+                       "y":  2.5,
+                       "z":  7.894,
+                       "rot":  "0,0,0,1",
+                       "panels":  "1,4,2,2,5,7",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "pod",
+                       "x":  60,
+                       "y":  2.5,
+                       "z":  -8.0941,
+                       "rot":  "0,0,0,1",
+                       "panels":  "2,1,1,2,5,7",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "pod",
+                       "x":  60,
+                       "y":  2.5,
+                       "z":  -0.1,
+                       "rot":  "0,0,0,1",
+                       "panels":  "2,2,1,1,5,7",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "pod",
+                       "x":  60,
+                       "y":  2.5,
+                       "z":  7.894,
+                       "rot":  "0,0,0,1",
+                       "panels":  "1,2,1,2,5,7",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "VegetableGrower1",
+                       "x":  58,
+                       "y":  3.53583,
+                       "z":  6,
+                       "rot":  "0,0.7071068,0,0.7071068",
+                       "fill":  "Vegetable1Seed",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "VegetableGrower1",
+                       "x":  58,
+                       "y":  3.53583,
+                       "z":  10.25,
+                       "rot":  "0,0.7071068,0,-0.7071068",
+                       "fill":  "Vegetable3Seed",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "ScreenEnergy",
+                       "x":  59.1834,
+                       "y":  4.5136,
+                       "z":  -9.8677,
+                       "rot":  "0,1,0,-4.371139E-08",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Chair1",
+                       "x":  59.9807,
+                       "y":  3.53583,
+                       "z":  -8.76,
+                       "rot":  "0,-0.7071068,0,0.7071068",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "Desktop1",
+                       "x":  60,
+                       "y":  3.53583,
+                       "z":  -10.6,
+                       "rot":  "0,0.7071068,0,-0.7071068",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "ScreenUnlockables",
+                       "x":  60.7756,
+                       "y":  4.5136,
+                       "z":  -9.8254,
+                       "rot":  "0,1,0,-4.371139E-08",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "VegetableGrower1",
+                       "x":  62,
+                       "y":  3.53583,
+                       "z":  6,
+                       "rot":  "0,0,0,1",
+                       "fill":  "Vegetable2Seed",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "VegetableGrower1",
+                       "x":  62,
+                       "y":  3.53583,
+                       "z":  8,
+                       "rot":  "0,-8.742278E-08,0,-1",
+                       "fill":  "Vegetable2Seed",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "VegetableGrower1",
+                       "x":  62,
+                       "y":  3.53583,
+                       "z":  10,
+                       "rot":  "0,-8.742278E-08,0,-1",
+                       "fill":  "Vegetable0Seed",
+                       "op":  "add",
+                       "needs":  "VegetableGrower1"
+                   },
+                   {
+                       "g":  "ScreenTerraStage",
+                       "x":  16.3984,
+                       "y":  5.16501,
+                       "z":  8.5368,
+                       "rot":  "0,0.7071068,0,-0.7071068",
+                       "op":  "add",
+                       "needs":  "ScreenTerraStage"
+                   },
+                   {
+                       "g":  "pod",
+                       "x":  60,
+                       "y":  2.5,
+                       "z":  -0.1,
+                       "rot":  "0,0,0,1",
+                       "from":  "2,2,1,1,5,7",
+                       "panels":  "2,2,4,1,5,7",
+                       "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  66,
+                       "y":  0,
+                       "z":  -12,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  66,
+                       "y":  0,
+                       "z":  -6,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  66,
+                       "y":  0,
+                       "z":  0.04,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  66,
+                       "y":  0,
+                       "z":  6.04,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "Foundation",
+                       "x":  66,
+                       "y":  0,
+                       "z":  12.04,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "pod",
+                       "x":  68,
+                       "y":  2.5,
+                       "z":  -0.1,
+                       "rot":  "0,0,0,1",
+                       "panels":  "3,3,3,2,5,7",
+                       "op":  "add",
+                       "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "ScreenUnlockables",
+                       "x":  28.7871,
+                       "y":  4.5136,
+                       "z":  10.1145,
+                       "rot":  "0,-8.742278E-08,0,-1",
+                       "op":  "add",
+                       "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "BedDouble",
+                       "x":  66.5,
+                       "y":  3.53583,
+                       "z":  0.75,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "Sofa",
+                       "x":  69.5,
+                       "y":  3.5,
+                       "z":  1.5,
+                       "rot":  "0,0.7071068,0,0.7071068",
+                       "op":  "add",
+                       "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "Desktop1",
+                       "x":  28,
+                       "y":  3.53583,
+                       "z":  10.9,
+                       "rot":  "0,0.7071068,0,0.7071068",
+                       "op":  "remove",
+                       "needs":  "ScreenMessage"
+                   },
+                   {
+                       "g":  "ScreenUnlockables",
+                       "x":  28.7871,
+                       "y":  4.5136,
+                       "z":  10.1145,
+                       "rot":  "0,-8.742278E-08,0,-1",
+                       "op":  "remove",
+                       "needs":  "ScreenMessage"
+                   },
+                   {
+                       "g":  "ComAntenna",
+                       "x":  11.9809,
+                       "y":  8.62565,
+                       "z":  0.0554,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "ScreenMessage"
+                   },
+                   {
+                       "g":  "ScreenMessage",
+                       "x":  35.2272,
+                       "y":  4.5136,
+                       "z":  9.8643,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "ScreenMessage"
+                   },
+                   {
+                       "g":  "Desktop1",
+                       "x":  36,
+                       "y":  3.53583,
+                       "z":  10.7,
+                       "rot":  "0,0.7071068,0,0.7071068",
+                       "op":  "add",
+                       "needs":  "ScreenMessage"
+                   },
+                   {
+                       "g":  "ScreenUnlockables",
+                       "x":  36.733,
+                       "y":  4.5136,
+                       "z":  9.7977,
+                       "rot":  "0,-8.742278E-08,0,-1",
+                       "op":  "add",
+                       "needs":  "ScreenMessage"
+                   },
+                   {
+                       "g":  "Container2",
+                       "x":  15.4,
+                       "y":  2.519,
+                       "z":  8,
+                       "rot":  "0,1,0,-4.371139E-08",
+                       "text":  "Trash",
+                       "op":  "add",
+                       "needs":  "Container2"
+                   }
+               ]
 }
