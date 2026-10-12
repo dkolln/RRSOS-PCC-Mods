@@ -10,6 +10,9 @@
   "commands": [
     { "name": "/addname", "usage": "/addname <item id> <name>", "help": "give an item another name for crate labels" }
   ],
+  "terminalCommands": [
+    { "name": "/resupply", "usage": "/resupply", "help": "top up every labelled crate (needs the Commands mod's terminal)" }
+  ],
   "requestFiles": [],
   "writesToRunningGame": true
 }

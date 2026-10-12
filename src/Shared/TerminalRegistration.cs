@@ -1,0 +1,34 @@
+using System;
+using System.Reflection;
+using BepInEx.Bootstrap;
+
+namespace RRSOS.PCC.Shared
+{
+    /// <summary>
+    /// How a mod puts a command on the terminal (the Commands mod) without depending on it. The terminal knows nothing about other mods; a mod that has terminal commands
+    /// looks the terminal up among the loaded plugins and registers each command by reflection, using only basic types so no assembly is shared. When the terminal is not
+    /// installed nothing happens, and the mod works without it. A mod using this should declare the terminal as a soft dependency so that it loads first.
+    /// </summary>
+    internal static class TerminalRegistration
+    {
+        public const string TerminalGuid = "com.rrsos.pcc.commands";
+
+        /// <summary>
+        /// Registers a terminal command. The handler gets the text typed after the command and a function that prints a line on the terminal's screen (it may be called later,
+        /// for work that takes a while). Returns true once registered, false while the terminal is not loaded (try again later).
+        /// </summary>
+        public static bool TryRegister(string name, string usage, string help, Action<string, Action<string>> handler)
+        {
+            if (!Chainloader.PluginInfos.TryGetValue(TerminalGuid, out var info) || info.Instance == null)
+                return false;
+
+            var api = info.Instance.GetType().Assembly.GetType("RRSOS.PCC.Commands.TerminalApi");
+            var register = api == null ? null : api.GetMethod("Register", BindingFlags.Public | BindingFlags.Static);
+            if (register == null)
+                throw new InvalidOperationException("The terminal mod has no TerminalApi.Register (a different version?).");
+
+            register.Invoke(null, new object[] { name, usage, help, handler });
+            return true;
+        }
+    }
+}

@@ -8,6 +8,7 @@ namespace RRSOS.PCC.AutoFill
     /// Fills a storage crate's empty slots when it is labelled with an item's name. A live-write mod, so it does nothing until <c>Enabled</c> is true in its config file.
     /// </summary>
     [BepInPlugin(Guid, Name, Version)]
+    [BepInDependency(TerminalRegistration.TerminalGuid, BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "com.rrsos.pcc.autofill";

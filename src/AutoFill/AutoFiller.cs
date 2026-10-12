@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using RRSOS.PCC.Shared;
 using SpaceCraft;
@@ -10,13 +9,15 @@ using UnityEngine;
 namespace RRSOS.PCC.AutoFill
 {
     /// <summary>
-    /// When a crate is given a label, looks the label up: if it names an item (its group id, its display name, or an alias from aliases.txt) the crate's EMPTY slots are
-    /// filled with that item. Only at a rename; what is already in the crate stays; a crate that already had its label when the world loaded is never touched.
+    /// When a crate is given a label, looks the label up: if it names an item (its group id, its display name, or an extra name) the crate's EMPTY slots are filled with that
+    /// item. Only at a rename; what is already in the crate stays; a crate that already had its label when the world loaded is never touched.
+    /// The same lookup and fill also serve /resupply, which this mod puts on the terminal when one is installed (it tops up every labelled crate).
     /// </summary>
     internal sealed class AutoFiller : MonoBehaviour
     {
         private const float PollSeconds = 0.5f;
-        private const float WaitForItemSeconds = 3f;
+
+        private readonly ItemLookup _lookup = new ItemLookup();
 
         // crate id -> the label we have already dealt with
         private readonly Dictionary<int, string> _handled = new Dictionary<int, string>();
@@ -27,15 +28,7 @@ namespace RRSOS.PCC.AutoFill
         private string _worldKey;
         private bool _baselineDone;
         private bool _busy;
-
-        // The lookup, built once the game's groups are there: lower-case item id -> item; plain name -> the items that go by it; plain name -> item from the user's file.
-        private Dictionary<string, GroupItem> _byId;
-        private Dictionary<string, HashSet<GroupItem>> _byName;
-        private Dictionary<string, GroupItem> _explicit;
-        private readonly HashSet<string> _toldAmbiguous = new HashSet<string>();
-        private int _lookupBuiltFor;
-
-        private static string AliasFile => ModLog.FileIn("aliases.txt");
+        private bool _terminalChecked;
 
         private IEnumerator Start()
         {
@@ -43,7 +36,13 @@ namespace RRSOS.PCC.AutoFill
             {
                 yield return new WaitForSecondsRealtime(PollSeconds);
 
-                if (_busy || !Plugin.Enabled.Value)
+                if (!Plugin.Enabled.Value)
+                    continue;
+
+                if (!_terminalChecked)
+                    RegisterWithTerminal();
+
+                if (_busy)
                     continue;
 
                 string key;
@@ -87,10 +86,13 @@ namespace RRSOS.PCC.AutoFill
             }
         }
 
+        private HashSet<string> CrateGroupIds() =>
+            new HashSet<string>(Plugin.CrateGroups.Value.Split(',').Select(g => g.Trim()).Where(g => g.Length > 0));
+
         /// <summary>Notes every crate's label. Returns the crates whose label has just been settled on an item name.</summary>
         private List<KeyValuePair<WorldObject, GroupItem>> Scan()
         {
-            var crateGroups = new HashSet<string>(Plugin.CrateGroups.Value.Split(',').Select(g => g.Trim()).Where(g => g.Length > 0));
+            var crateGroups = CrateGroupIds();
             var crates = WorldObjectsHandler.Instance.GetAllWorldObjects().Values
                 .Where(w => w != null && w.GetGroup() != null && crateGroups.Contains(w.GetGroup().GetId()) && w.GetLinkedInventoryId() != 0).ToList();
 
@@ -98,7 +100,7 @@ namespace RRSOS.PCC.AutoFill
             {
                 // The labels that are there when the world loads are not renames.
                 foreach (var crate in crates)
-                    _handled[crate.GetId()] = Label(crate);
+                    _handled[crate.GetId()] = CrateFill.Label(crate);
                 _baselineDone = true;
                 return null;
             }
@@ -109,7 +111,7 @@ namespace RRSOS.PCC.AutoFill
             foreach (var crate in crates)
             {
                 var id = crate.GetId();
-                var label = Label(crate);
+                var label = CrateFill.Label(crate);
                 if (!_handled.TryGetValue(id, out var before))
                 {
                     _handled[id] = label; // a crate placed since the last look: the label it starts with is its baseline
@@ -138,7 +140,7 @@ namespace RRSOS.PCC.AutoFill
                 if (label.Length == 0)
                     continue;
 
-                var item = Resolve(label);
+                var item = _lookup.Resolve(label);
                 if (item == null)
                 {
                     ModLog.Note("Crate #" + id + " labelled \"" + label + "\": not an item name, nothing to fill.");
@@ -151,51 +153,25 @@ namespace RRSOS.PCC.AutoFill
             return jobs;
         }
 
-        private static string Label(WorldObject crate) => (crate.GetText() ?? "").Trim();
+        // ---- the rename fill --------------------------------------------------------------------------------------------------
 
-        // ---- the lookup ------------------------------------------------------------------------------------------------------
-
-        /// <summary>
-        /// Whole-name matches only, never part of a name. A label matches an item when, ignoring case, spaces and punctuation, it equals the item's id, its display name in the
-        /// game, one of its extra names in DefaultNames.txt, or one of the names in the user's aliases.txt (which win). A name that two items go by is not guessed at.
-        /// </summary>
-        private GroupItem Resolve(string label)
+        /// <summary>The fill after a rename, with its answer in the chat.</summary>
+        private IEnumerator Fill(WorldObject crate, GroupItem item)
         {
-            BuildLookup();
-            var plain = Plain(label);
-            if (plain.Length == 0)
-                return null;
+            var result = new CrateFill.Result();
+            yield return CrateFill.Fill(crate, item, result);
 
-            if (_explicit.TryGetValue(plain, out var chosen))
-                return chosen;
+            if (result.Empty < 0)
+                yield break;
 
-            if (_byId.TryGetValue(label.Trim().ToLowerInvariant(), out var viaId))
-                return viaId;
-
-            if (_byName.TryGetValue(plain, out var items))
-            {
-                if (items.Count == 1)
-                    return items.First();
-
-                if (_toldAmbiguous.Add(plain))
-                    ModLog.Note("The label \"" + label + "\" fits several items (" + string.Join(", ", items.Select(i => i.GetId()).OrderBy(i => i).ToArray()) + "); nothing filled. Name one in aliases.txt to pick.");
-            }
-
-            return null;
+            var name = Readable.GetGroupName(item);
+            if (result.Empty == 0)
+                ChatHook.Say("\"" + CrateFill.Label(crate) + "\" is " + name + ", but the crate has no empty slots.");
+            else
+                ChatHook.Say("Filled " + result.Added + " empty slot" + (result.Added == 1 ? "" : "s") + " with " + name + ".");
         }
 
-        /// <summary>The one item a name already goes to, or null when it goes to none or to several.</summary>
-        private GroupItem ExistingItem(string label)
-        {
-            var plain = Plain(label);
-            if (_explicit.TryGetValue(plain, out var chosen))
-                return chosen;
-            if (_byId.TryGetValue(label.Trim().ToLowerInvariant(), out var viaId))
-                return viaId;
-            if (_byName.TryGetValue(plain, out var items) && items.Count == 1)
-                return items.First();
-            return null;
-        }
+        // ---- /addname ---------------------------------------------------------------------------------------------------------
 
         /// <summary>/addname &lt;item id&gt; &lt;name&gt;: gives an item one more name, saved in aliases.txt and used straight away.</summary>
         internal void OnAddName(string args)
@@ -206,7 +182,6 @@ namespace RRSOS.PCC.AutoFill
                 return;
             }
 
-            BuildLookup();
             var parts = (args ?? "").Trim().Split(new[] { ' ', '\t' }, 2, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 2)
             {
@@ -215,215 +190,113 @@ namespace RRSOS.PCC.AutoFill
             }
 
             var name = parts[1].Trim();
-            if (!_byId.TryGetValue(parts[0].ToLowerInvariant(), out var item))
+            var item = _lookup.ById(parts[0]);
+            if (item == null)
             {
                 ChatHook.Say("No item has the id \"" + parts[0] + "\".");
                 return;
             }
 
-            if (Plain(name).Length == 0)
+            if (ItemLookup.Plain(name).Length == 0)
             {
                 ChatHook.Say("The name needs at least one letter or digit.");
                 return;
             }
 
-            var existing = ExistingItem(name);
+            var existing = _lookup.Existing(name);
             if (existing != null)
             {
                 ChatHook.Say("Name: " + name + " already exists" + (existing == item ? "." : " (it names " + Readable.GetGroupName(existing) + ")."));
                 return;
             }
 
-            _explicit[Plain(name)] = item;
-            ModLog.Append(AliasFile, item.GetId() + " = " + name);
+            _lookup.AddExplicit(name, item);
+            ModLog.Append(ItemLookup.AliasFile, item.GetId() + " = " + name);
             ChatHook.Say("Name: " + name + " added.");
         }
 
-        /// <summary>A name with only its letters and digits, lower case, so "Oxygen capsule", "oxygen-capsule" and "OXYGEN CAPSULE" are one name.</summary>
-        private static string Plain(string text) => new string(text.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
+        // ---- /resupply (on the terminal) ----------------------------------------------------------------------------------------
 
-        private void BuildLookup()
-        {
-            var all = GroupsHandler.GetAllGroups();
-            if (_byId != null && _lookupBuiltFor == all.Count)
-                return;
-
-            _byId = new Dictionary<string, GroupItem>();
-            _byName = new Dictionary<string, HashSet<GroupItem>>();
-            _explicit = new Dictionary<string, GroupItem>();
-            _toldAmbiguous.Clear();
-
-            foreach (var group in all)
-            {
-                var item = group as GroupItem;
-                if (item == null)
-                    continue;
-
-                _byId[item.GetId().ToLowerInvariant()] = item;
-                AddName(Plain(item.GetId()), item);
-                try
-                {
-                    AddName(Plain(Readable.GetGroupName(item) ?? ""), item);
-                }
-                catch (Exception)
-                {
-                }
-            }
-
-            var extra = 0;
-            foreach (var pair in ReadNames(ReadDefaultNames()))
-            {
-                if (_byId.TryGetValue(pair.Key.ToLowerInvariant(), out var item))
-                {
-                    foreach (var name in pair.Value)
-                    {
-                        AddName(Plain(name), item);
-                        extra++;
-                    }
-                }
-            }
-
-            var mine = 0;
-            foreach (var pair in ReadNames(ReadUserNames()))
-            {
-                if (_byId.TryGetValue(pair.Key.ToLowerInvariant(), out var item))
-                {
-                    foreach (var name in pair.Value)
-                    {
-                        _explicit[Plain(name)] = item;
-                        mine++;
-                    }
-                }
-                else
-                {
-                    ModLog.Note("aliases.txt: \"" + pair.Key + "\" is not an item id; its names are ignored.");
-                }
-            }
-
-            _lookupBuiltFor = all.Count;
-            ModLog.Note("Item lookup built: " + _byId.Count + " item ids, " + _byName.Count + " names (" + extra + " extra names from the default table), " + mine + " names from aliases.txt.");
-        }
-
-        private void AddName(string plain, GroupItem item)
-        {
-            if (plain.Length == 0)
-                return;
-
-            if (!_byName.TryGetValue(plain, out var set))
-                _byName[plain] = set = new HashSet<GroupItem>();
-            set.Add(item);
-        }
-
-        /// <summary>Lines of "item id = name, name, ..." ("#" starts a comment).</summary>
-        private static Dictionary<string, List<string>> ReadNames(IEnumerable<string> lines)
-        {
-            var result = new Dictionary<string, List<string>>();
-            foreach (var line in lines)
-            {
-                var trimmed = line.Trim();
-                var at = trimmed.IndexOf('=');
-                if (trimmed.StartsWith("#") || at <= 0)
-                    continue;
-
-                var names = trimmed.Substring(at + 1).Split(',').Select(n => n.Trim()).Where(n => n.Length > 0).ToList();
-                var id = trimmed.Substring(0, at).Trim();
-                if (result.TryGetValue(id, out var existing))
-                    existing.AddRange(names);
-                else
-                    result[id] = names;
-            }
-
-            return result;
-        }
-
-        private static IEnumerable<string> ReadDefaultNames()
-        {
-            using (var stream = typeof(AutoFiller).Assembly.GetManifestResourceStream("DefaultNames.txt"))
-            {
-                if (stream == null)
-                    return new string[0];
-
-                using (var reader = new StreamReader(stream))
-                    return reader.ReadToEnd().Split('\n');
-            }
-        }
-
-        /// <summary>aliases.txt in this mod's data folder: "item id = name, name, ...", the same format as the default table. Made with a few comment lines the first time.</summary>
-        private static IEnumerable<string> ReadUserNames()
+        // The terminal is optional. When its mod is loaded this puts /resupply on it; otherwise there is nothing to do and the mod works as before.
+        private void RegisterWithTerminal()
         {
             try
             {
-                if (!File.Exists(AliasFile))
+                if (TerminalRegistration.TryRegister("/resupply", "/resupply", "top up every labelled crate", OnResupply))
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(AliasFile));
-                    File.WriteAllText(AliasFile,
-                        "# Your own names for items: item id = name, name, ...\r\n"
-                        + "# A crate label must equal a whole name (case, spaces and punctuation do not matter). Names here win over the built-in ones.\r\n"
-                        + "# Example (remove the #):\r\n"
-                        + "# OxygenCapsule1 = oxygen capsule, oxygen bottle, oxygen, O2\r\n");
-                    return new string[0];
+                    _terminalChecked = true;
+                    ModLog.Note("The terminal is installed: /resupply is on it.");
                 }
-
-                return File.ReadAllLines(AliasFile);
             }
             catch (Exception e)
             {
-                ModLog.Note("Could not read aliases.txt: " + e.Message);
-                return new string[0];
+                _terminalChecked = true; // do not try again every half second
+                ModLog.Note("Could not register /resupply with the terminal: " + e.Message);
             }
         }
 
-        // ---- the fill --------------------------------------------------------------------------------------------------------
-
-        /// <summary>Adds the item to each empty slot of the crate, one at a time through the game's own add-to-inventory call. What is in the crate already is never touched.</summary>
-        private IEnumerator Fill(WorldObject crate, GroupItem item)
+        private void OnResupply(string args, Action<string> print)
         {
-            var name = Readable.GetGroupName(item);
-            var label = Label(crate);
-            var inventory = InventoriesHandler.Instance.GetInventoryById(crate.GetLinkedInventoryId());
-            if (inventory == null)
+            if (_busy)
             {
-                ModLog.Note("Crate #" + crate.GetId() + ": no inventory found; nothing filled.");
-                yield break;
+                print("Busy filling crates; try again in a moment.");
+                return;
             }
 
-            var empty = inventory.GetSize() - inventory.GetInsideWorldObjects().Count;
-            if (empty <= 0)
-            {
-                ChatHook.Say("\"" + label + "\" is " + name + ", but the crate has no empty slots.");
-                yield break;
-            }
+            StartCoroutine(Resupply(print));
+        }
 
-            var added = 0;
-            for (var i = 0; i < empty; i++)
+        /// <summary>
+        /// Every labelled crate on this planet whose label names an item is topped up, the same way as at a rename. Crates with no label, or a label that is not an item name
+        /// (Seeds, Plants), are left alone, and so is everything already in a crate.
+        /// </summary>
+        private IEnumerator Resupply(Action<string> print)
+        {
+            _busy = true;
+            try
             {
-                var done = false;
-                var ok = false;
-                try
+                if (!WorldState.Ready(out var planetHash, out _))
                 {
-                    InventoriesHandler.Instance.AddItemToInventory(item, inventory, (success, woId) =>
+                    print("The world is not ready yet.");
+                    yield break;
+                }
+
+                var crateGroups = CrateGroupIds();
+                var crates = WorldObjectsHandler.Instance.GetAllWorldObjects().Values
+                    .Where(w => w != null && w.GetGroup() != null && crateGroups.Contains(w.GetGroup().GetId()) && w.GetLinkedInventoryId() != 0 && w.GetPlanetHash() == planetHash).ToList();
+
+                print("Resupplying " + crates.Count + " crates...");
+                int toppedUp = 0, full = 0, noItem = 0, total = 0;
+                foreach (var crate in crates)
+                {
+                    var label = CrateFill.Label(crate);
+                    var item = label.Length == 0 ? null : _lookup.Resolve(label);
+                    if (item == null)
                     {
-                        ok = success;
-                        done = true;
-                    });
-                }
-                catch (Exception e)
-                {
-                    ModLog.Note("Crate #" + crate.GetId() + ": adding failed: " + e.GetType().Name + ": " + e.Message);
-                    break;
+                        noItem++;
+                        continue;
+                    }
+
+                    var result = new CrateFill.Result();
+                    yield return CrateFill.Fill(crate, item, result);
+                    if (result.Added > 0)
+                    {
+                        toppedUp++;
+                        total += result.Added;
+                        print(label + ": +" + result.Added + " " + Readable.GetGroupName(item));
+                    }
+                    else if (result.Empty == 0)
+                    {
+                        full++;
+                    }
                 }
 
-                var until = Time.realtimeSinceStartup + WaitForItemSeconds;
-                while (!done && Time.realtimeSinceStartup < until)
-                    yield return null;
-
-                if (!ok)
-                    break;
-                added++;
+                print("Done: " + toppedUp + " crates topped up (" + total + " items), " + full + " already full, " + noItem + " with no item label.");
             }
-
-            ModLog.Note("Crate #" + crate.GetId() + " labelled \"" + label + "\": added " + added + " x " + item.GetId() + " (" + empty + " empty slots).");
-            ChatHook.Say("Filled " + added + " empty slot" + (added == 1 ? "" : "s") + " with " + name + ".");
+            finally
+            {
+                _busy = false;
+            }
         }
     }
 }
