@@ -15,6 +15,7 @@
     <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
     <Compile Include="..\Shared\GroupCloner.cs" Link="Shared\GroupCloner.cs" />
     <Compile Include="..\Shared\CustomIcons.cs" Link="Shared\CustomIcons.cs" />
+    <Compile Include="..\Shared\IconTools.cs" Link="Shared\IconTools.cs" />
   </ItemGroup>
 
   <!-- The screen is text drawn with TextMeshPro. -->
