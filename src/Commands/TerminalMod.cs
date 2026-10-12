@@ -21,7 +21,6 @@ namespace RRSOS.PCC.Commands
         private static readonly string[] Ingredients = { "Iron", "Silicon", "Titanium", "Cobalt" };
 
         private Group _group;
-        private ChatHandler _listeningTo;
         private readonly System.Collections.Generic.HashSet<int> _enlargedGhosts = new System.Collections.Generic.HashSet<int>();
         private static readonly System.Reflection.FieldInfo GhostGroup = typeof(ConstructibleGhost).GetField("_groupConstructible", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 
@@ -49,7 +48,6 @@ namespace RRSOS.PCC.Commands
                 try
                 {
                     EnsureRegistered();
-                    ListenToChat();
                     GiveScreens();
                     EnlargeGhost();
                 }
@@ -80,19 +78,6 @@ namespace RRSOS.PCC.Commands
                 GroupCloner.AddToGame(_group);
                 ModLog.Note("Terminal: added to the game's group lists.");
             }
-        }
-
-        // Every world has its own ChatHandler; the mods' replies come through its message event.
-        private void ListenToChat()
-        {
-            var chat = ChatHandler.Instance;
-            if (chat == null || chat == _listeningTo)
-                return;
-
-            if (_listeningTo != null)
-                _listeningTo.OnChatMessageReceived -= TerminalShell.OnChatMessage;
-            chat.OnChatMessageReceived += TerminalShell.OnChatMessage;
-            _listeningTo = chat;
         }
 
         // The see-through preview that follows you while you place the terminal is made by the game from the sign's model; make it the same size as the real thing.

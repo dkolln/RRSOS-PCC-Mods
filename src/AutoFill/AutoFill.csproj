@@ -15,8 +15,12 @@
     <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
     <!-- The /addname chat command, and messages in the chat. -->
     <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
+    <Compile Include="..\Shared\ItemLookup.cs" Link="Shared\ItemLookup.cs" />
+    <Compile Include="..\Shared\CrateFill.cs" Link="Shared\CrateFill.cs" />
+    <!-- /resupply goes on the terminal when that mod is installed (it is optional). -->
+    <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
     <!-- The built-in extra names for items, read at start-up. -->
-    <EmbeddedResource Include="DefaultNames.txt" LogicalName="DefaultNames.txt" />
+    <EmbeddedResource Include="..\Shared\DefaultNames.txt" LogicalName="DefaultNames.txt" />
   </ItemGroup>
 
 </Project>

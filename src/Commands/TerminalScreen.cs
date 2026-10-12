@@ -20,10 +20,6 @@ namespace RRSOS.PCC.Commands
         private const float SettleSeconds = 0.8f;
         private const float BlinkSeconds = 0.5f;
 
-        /// <summary>The screen whose command is running now, so replies from the chat can be printed on it.</summary>
-        public static TerminalScreen Active;
-        public static float ActiveUntil;
-
         private readonly List<string> _lines = new List<string>();
         private WorldObject _wo;
         private WorldObjectText _text;

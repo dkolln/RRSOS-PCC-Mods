@@ -8,6 +8,10 @@
   "config": "com.rrsos.pcc.commands.cfg",
   "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Commands",
   "commands": [],
+  "terminalCommands": [
+    { "name": "/help", "usage": "/help", "help": "list the commands mods have added to the terminal" },
+    { "name": "/cls", "usage": "/cls", "help": "clear the screen" }
+  ],
   "requestFiles": [],
   "writesToRunningGame": true
 }
