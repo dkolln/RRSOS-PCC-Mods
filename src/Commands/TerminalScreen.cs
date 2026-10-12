@@ -16,7 +16,7 @@ namespace RRSOS.PCC.Commands
     {
         public const string Prompt = "C:\\>";
 
-        private const int MaxLines = 14;   // an upper bound; how many really fit is measured
+        private const int MaxLines = 40;   // an upper bound; how many really fit is measured
         private const float SettleSeconds = 0.8f;
         private const float BlinkSeconds = 0.5f;
 
@@ -30,6 +30,18 @@ namespace RRSOS.PCC.Commands
         private bool _cursor = true;
         private string _shown;
         private string _renderedTyped;
+
+        private static readonly List<TerminalScreen> Live = new List<TerminalScreen>();
+
+        /// <summary>Prints a line on every terminal that is in the world.</summary>
+        internal static void PrintOnAll(string line)
+        {
+            Live.RemoveAll(s => s == null);
+            foreach (var screen in Live)
+                screen.Print(line);
+        }
+
+        private void OnDestroy() => Live.Remove(this);
 
         public void Init(WorldObject wo)
         {
@@ -54,7 +66,7 @@ namespace RRSOS.PCC.Commands
             _display.rectTransform.sizeDelta = new Vector2(200f, 75f);
             _display.margin = new Vector4(Plugin.LeftMargin.Value, Plugin.TopMargin.Value, 6f, 5f);
             _display.enableAutoSizing = false;
-            _display.fontSize = 7f;
+            _display.fontSize = Plugin.FontSize.Value;
             _display.textWrappingMode = TextWrappingModes.Normal;
             _display.overflowMode = TextOverflowModes.Truncate;
             original.gameObject.SetActive(false);
@@ -63,6 +75,9 @@ namespace RRSOS.PCC.Commands
 
             Print("RRSOS Terminal " + Plugin.Version);
             Print("Type help for the commands.");
+            foreach (var notice in TerminalApi.LatestNotices(5))
+                Print(notice);
+            Live.Add(this);
             ModLog.Note("Terminal #" + wo.GetId() + " ready.");
         }
 

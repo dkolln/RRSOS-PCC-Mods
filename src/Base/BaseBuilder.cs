@@ -19,7 +19,7 @@ namespace RRSOS.PCC.Base
         // This mod's small state files (in %LOCALAPPDATA%\RRSOS-PCC-Mods\Base). Drop build-now.txt or undo-now.txt in while in the world and the mod
         // answers within two seconds (and deletes the file).
         private static string DoneFile => ModLog.FileIn("done.txt");
-        private static string UndoFile => ModLog.FileIn("undo.txt");
+        internal static string UndoFile => ModLog.FileIn("undo.txt");
         private static string BuildNowFile => ModLog.FileIn("build-now.txt");
         private static string UndoNowFile => ModLog.FileIn("undo-now.txt");
 
@@ -37,7 +37,7 @@ namespace RRSOS.PCC.Base
 
         private bool _autoHandled;
         private string _autoKey;
-        private bool _busy;
+        internal static bool Busy;
 
         // ---- chat commands ---------------------------------------------------------------------------------------------------
 
@@ -79,7 +79,7 @@ namespace RRSOS.PCC.Base
             {
                 yield return new WaitForSecondsRealtime(2f);
 
-                if (_busy || !Plugin.Enabled.Value)
+                if (Busy || !Plugin.Enabled.Value)
                     continue;
 
                 // a different world loaded in the same session is handled afresh
@@ -117,7 +117,7 @@ namespace RRSOS.PCC.Base
                     continue; // the request files wait until a world is ready
                 }
 
-                _busy = true;
+                Busy = true;
                 Boot.NewWorld(key);
                 if (wantUndo)
                 {
@@ -147,7 +147,7 @@ namespace RRSOS.PCC.Base
                     Boot.Skip(Boot.Base); // no-op when the base was built (that finished the step)
                 }
 
-                _busy = false;
+                Busy = false;
             }
         }
 
@@ -332,11 +332,68 @@ namespace RRSOS.PCC.Base
 
             // The crates keep their labels; every crate whose label names an item is stocked, as the rename and /resupply do.
             yield return Stock(created.Where(c => c.Value.g.StartsWith("Container") && !string.IsNullOrEmpty(c.Value.text)).Select(c => c.Key).ToList(), automatic);
+            yield return FillContents(created);
 
             if (automatic)
                 yield return Boot.End(Boot.Base);
             else
                 ChatHook.Say("Base placed (" + created.Count + " pieces). /undo takes it back.");
+        }
+
+        /// <summary>Puts into each new piece what the template says it holds (the seeds of a vegetube), through the game's own add-to-inventory call.</summary>
+        private IEnumerator FillContents(List<KeyValuePair<WorldObject, TemplatePiece>> created)
+        {
+            var filled = 0;
+            foreach (var made in created.Where(c => !string.IsNullOrEmpty(c.Value.fill)))
+            {
+                Inventory inventory = null;
+                var until = Time.realtimeSinceStartup + 3f;
+                while (inventory == null && Time.realtimeSinceStartup < until)
+                {
+                    inventory = made.Key.GetLinkedInventoryId() > 0 ? InventoriesHandler.Instance.GetInventoryById(made.Key.GetLinkedInventoryId()) : null;
+                    if (inventory == null)
+                        yield return null;
+                }
+
+                if (inventory == null)
+                {
+                    ModLog.Note("Could not fill " + made.Value.g + " #" + made.Key.GetId() + ": no inventory.");
+                    continue;
+                }
+
+                foreach (var id in made.Value.fill.Split(','))
+                {
+                    var item = GroupsHandler.GetGroupViaId(id.Trim()) as GroupItem;
+                    if (item == null)
+                        continue;
+
+                    var done = false;
+                    var ok = false;
+                    try
+                    {
+                        InventoriesHandler.Instance.AddItemToInventory(item, inventory, (success, woId) =>
+                        {
+                            ok = success;
+                            done = true;
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        ModLog.Note("Could not fill " + made.Value.g + " #" + made.Key.GetId() + ": " + e.GetType().Name + ": " + e.Message);
+                        break;
+                    }
+
+                    until = Time.realtimeSinceStartup + 3f;
+                    while (!done && Time.realtimeSinceStartup < until)
+                        yield return null;
+
+                    if (ok)
+                        filled++;
+                }
+            }
+
+            if (filled > 0)
+                ModLog.Note("Filled " + filled + " items into pieces that hold something (" + string.Join(", ", created.Where(c => !string.IsNullOrEmpty(c.Value.fill)).GroupBy(c => c.Value.g).Select(g => g.Count() + " " + g.Key).ToArray()) + ").");
         }
 
         private IEnumerator Stock(List<WorldObject> crates, bool automatic)

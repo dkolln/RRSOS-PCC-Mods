@@ -16,6 +16,7 @@
     <Compile Include="..\Shared\Placement.cs" Link="Shared\Placement.cs" />
     <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
     <Compile Include="..\Shared\Boot.cs" Link="Shared\Boot.cs" />
+    <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
     <Compile Include="..\Shared\Welcome.cs" Link="Shared\Welcome.cs" />
     <!-- Crates are stocked from their labels, as Auto Fill does. -->
     <Compile Include="..\Shared\ItemLookup.cs" Link="Shared\ItemLookup.cs" />
@@ -23,6 +24,7 @@
     <EmbeddedResource Include="..\Shared\DefaultNames.txt" LogicalName="DefaultNames.txt" />
     <!-- The T0 base, captured from a save by tools\capture-t0.py. -->
     <EmbeddedResource Include="T0.json" LogicalName="T0.json" />
+    <EmbeddedResource Include="Growth.json" LogicalName="Growth.json" />
   </ItemGroup>
 
   <ItemGroup>

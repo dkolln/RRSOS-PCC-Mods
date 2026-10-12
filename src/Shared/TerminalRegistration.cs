@@ -14,6 +14,23 @@ namespace RRSOS.PCC.Shared
         public const string TerminalGuid = "com.rrsos.pcc.commands";
 
         /// <summary>
+        /// Posts a message on the terminal's screens. Returns false when the terminal is not installed (the caller may say it some other way).
+        /// </summary>
+        public static bool TryNotify(string message)
+        {
+            if (!Chainloader.PluginInfos.TryGetValue(TerminalGuid, out var info) || info.Instance == null)
+                return false;
+
+            var api = info.Instance.GetType().Assembly.GetType("RRSOS.PCC.Commands.TerminalApi");
+            var notify = api == null ? null : api.GetMethod("Notify", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null);
+            if (notify == null)
+                return false; // a terminal from before messages
+
+            notify.Invoke(null, new object[] { message });
+            return true;
+        }
+
+        /// <summary>
         /// Registers a terminal command. The handler gets the text typed after the command and a function that prints a line on the terminal's screen (it may be called later,
         /// for work that takes a while). Returns true once registered, false while the terminal is not loaded (try again later).
         /// </summary>

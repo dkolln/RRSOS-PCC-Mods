@@ -20,6 +20,7 @@ namespace RRSOS.PCC.Commands
         internal static ConfigEntry<int> InputLimit;
         internal static ConfigEntry<float> TopMargin;
         internal static ConfigEntry<float> LeftMargin;
+        internal static ConfigEntry<float> FontSize;
 
         private void Awake()
         {
@@ -29,6 +30,7 @@ namespace RRSOS.PCC.Commands
             InputLimit = Config.Bind("Screen", "InputLimit", 100, new ConfigDescription("How many characters can be typed at the terminal (the game's text window allows far fewer by default; the most a terminal can hold is about 120).", new AcceptableValueRange<int>(10, 120)));
             TopMargin = Config.Bind("Screen", "TopMargin", 8f, "Space above the first line of text, in text units (the whole text area is 75 high). Raise it to push the text down. Takes effect when the game starts.");
             LeftMargin = Config.Bind("Screen", "LeftMargin", 7f, "Space left of the text, in text units (the text area is 200 wide). Takes effect when the game starts.");
+            FontSize = Config.Bind("Screen", "FontSize", 3.5f, new ConfigDescription("Size of the text on the screen (the sign's own lettering is 7; smaller fits more lines). Takes effect when the game starts.", new AcceptableValueRange<float>(2f, 12f)));
             gameObject.AddComponent<TerminalMod>();
             gameObject.AddComponent<BootGreeting>();
             if (Enabled.Value)

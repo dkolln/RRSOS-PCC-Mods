@@ -19,6 +19,9 @@ namespace RRSOS.PCC.Base
         public string groups;   // the groups the game linked to the object
         public string panels;   // a pod's panel types
         public string color;    // the game's own colour text
+        public string fill;     // what the piece holds when it is made (the seeds of a vegetube): group ids separated by commas
+        public string from;     // growth: the panels the piece must still have for the change to be made
+        public string needs;    // growth: the group that must be unlocked first
     }
 
     [Serializable]
@@ -59,7 +62,7 @@ namespace RRSOS.PCC.Base
         private static readonly Regex PieceText = new Regex(@"\{[^{}]*\}", RegexOptions.Singleline);
         private static readonly Regex Pair = new Regex(@"""(\w+)""\s*:\s*(""(?:[^""\\]|\\.)*""|-?[0-9.eE+\-]+)");
 
-        private static Template Parse(string json)
+        internal static Template Parse(string json)
         {
             var template = new Template { name = "T0" };
             var start = json.IndexOf("\"pieces\"", StringComparison.Ordinal);
@@ -81,6 +84,9 @@ namespace RRSOS.PCC.Base
                             case "groups": piece.groups = text; break;
                             case "panels": piece.panels = text; break;
                             case "color": piece.color = text; break;
+                            case "fill": piece.fill = text; break;
+                            case "from": piece.from = text; break;
+                            case "needs": piece.needs = text; break;
                             case "x": piece.x = float.Parse(value, CultureInfo.InvariantCulture); break;
                             case "y": piece.y = float.Parse(value, CultureInfo.InvariantCulture); break;
                             case "z": piece.z = float.Parse(value, CultureInfo.InvariantCulture); break;
@@ -120,6 +126,29 @@ namespace RRSOS.PCC.Base
             }
 
             return sb.ToString();
+        }
+    }
+
+    /// <summary>What was added to the base after T0 (tools/capture-growth.py): entries that are made when the group they need is unlocked. May be empty.</summary>
+    internal static class Growth
+    {
+        private static Template _template;
+
+        public static Template Get()
+        {
+            if (_template != null)
+                return _template;
+
+            using (var stream = typeof(Growth).Assembly.GetManifestResourceStream("Growth.json"))
+            {
+                if (stream == null)
+                    throw new InvalidOperationException("Growth.json is not built into this DLL.");
+
+                using (var reader = new StreamReader(stream))
+                    _template = T0.Parse(reader.ReadToEnd());
+            }
+
+            return _template;
         }
     }
 }
