@@ -12,7 +12,7 @@ namespace RRSOS.PCC.Shared
     internal static class GroupCloner
     {
         /// <summary>The copy, or null while the game's groups are not loaded yet (call again later). The copy is unlocked from the start.</summary>
-        public static GroupConstructible Clone(string sourceId, string newId, IList<string> ingredientIds)
+        public static GroupConstructible Clone(string sourceId, string newId, IList<string> ingredientIds, string iconFromId = null)
         {
             var source = GroupsHandler.GetGroupViaId(sourceId) as GroupConstructible;
             if (source == null || !(source.GetGroupData() is GroupDataConstructible sourceData))
@@ -35,6 +35,13 @@ namespace RRSOS.PCC.Shared
             copy.unlockingValue = 0f;
             copy.terraformStageUnlock = null;
             copy.unlockInPlanets = new List<PlanetData>();
+
+            // The icon: a PNG in CustomIcons wins; else another group's icon; else the source's own.
+            var ownIcon = CustomIcons.Load(newId, sourceData.icon != null ? sourceData.icon.pixelsPerUnit : 100f);
+            if (ownIcon != null)
+                copy.icon = ownIcon;
+            else if (iconFromId != null && GroupsHandler.GetGroupViaId(iconFromId) is Group iconGroup && iconGroup.GetImage() != null)
+                copy.icon = iconGroup.GetImage();
 
             var created = new GroupConstructible(copy);
             created.SetRecipe(new Recipe(ingredients));

@@ -15,6 +15,9 @@ namespace RRSOS.PCC.Commands
     {
         private const string NewId = "Terminal";
         private const string SourceId = "Sign";
+
+        // The big screen the terminal should look like: its icon is used now, its model once the structure of both prefabs is known.
+        private const string ScreenId = "ScreenTerraformation";
         private static readonly string[] Ingredients = { "Iron", "Silicon", "Titanium", "Cobalt" };
 
         private Group _group;
@@ -50,10 +53,11 @@ namespace RRSOS.PCC.Commands
 
             if (_group == null)
             {
-                _group = GroupCloner.Clone(SourceId, NewId, Ingredients);
+                _group = GroupCloner.Clone(SourceId, NewId, Ingredients, ScreenId);
                 if (_group == null)
                     return;
                 ModLog.Note("Terminal: created the build item from " + SourceId + " (" + string.Join(", ", Ingredients) + ").");
+                PrefabDump.Write(SourceId, ScreenId);
             }
 
             if (!GroupCloner.IsInGame(_group))
