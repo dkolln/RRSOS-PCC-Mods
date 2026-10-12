@@ -1,0 +1,13 @@
+{
+  "id": "com.rrsos.pcc.stackedcrate",
+  "name": "RRSOS PCC Stacked Crate",
+  "version": "0.1.0",
+  "description": "A Stacked crate in the build menu next to the storage crate: 3 Iron, same placement rules as Container1, and it builds three Container1 on top of each other. A save only ever holds ordinary Container1 pieces.",
+  "plugin": "RRSOS.PCC.StackedCrate.dll",
+  "pluginFolder": "RRSOS-PCC-StackedCrate",
+  "config": "com.rrsos.pcc.stackedcrate.cfg",
+  "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\StackedCrate",
+  "commands": [],
+  "requestFiles": [],
+  "writesToRunningGame": true
+}

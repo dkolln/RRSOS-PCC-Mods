@@ -1,0 +1,13 @@
+{
+  "id": "com.rrsos.pcc.base",
+  "name": "RRSOS PCC Base",
+  "version": "0.1.0",
+  "description": "Places the main base in the running game: at planetfall, or on request. Stage 1 so far (the anchor lamp on its foundation, one more foundation, one pod) at the Prime template location, once per save and only on an empty site.",
+  "plugin": "RRSOS.PCC.Base.dll",
+  "pluginFolder": "RRSOS-PCC-Base",
+  "config": "com.rrsos.pcc.base.cfg",
+  "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Base",
+  "commands": ["/build", "/undo"],
+  "requestFiles": ["build-now.txt", "undo-now.txt"],
+  "writesToRunningGame": true
+}

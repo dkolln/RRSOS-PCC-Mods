@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using RRSOS.PCC.Shared;
 using SpaceCraft;
 using UnityEngine;
 
-namespace RRSOS.PCC.Build
+namespace RRSOS.PCC.StackedCrate
 {
     /// <summary>
     /// A "stacked crate" in the build menu: Container1's data copied under a new id (same ghost, same placement rules), costing 3 Iron, with an icon of three crates.
@@ -30,7 +31,7 @@ namespace RRSOS.PCC.Build
             {
                 yield return new WaitForSecondsRealtime(1f);
 
-                if (!Plugin.Enabled.Value || !Plugin.StackedCrateEnabled.Value)
+                if (!Plugin.Enabled.Value)
                     continue;
 
                 try
@@ -39,7 +40,7 @@ namespace RRSOS.PCC.Build
                 }
                 catch (Exception e)
                 {
-                    Plugin.LogOnce("stackedcrate-register", "Could not add the stacked crate to the build menu: " + e.GetType().Name + ": " + e.Message);
+                    ModLog.LogOnce("stackedcrate-register", "Could not add the stacked crate to the build menu: " + e.GetType().Name + ": " + e.Message);
                 }
 
                 if (_group == null || _busy)
@@ -52,7 +53,7 @@ namespace RRSOS.PCC.Build
                 }
                 catch (Exception e)
                 {
-                    BaseBuilder.Note("Stacked crate: " + e.GetType().Name + ": " + e.Message);
+                    ModLog.Note("Stacked crate: " + e.GetType().Name + ": " + e.Message);
                 }
 
                 _busy = false;
@@ -82,7 +83,7 @@ namespace RRSOS.PCC.Build
                 var group = new GroupConstructible(data);
                 group.SetRecipe(new Recipe(data.recipeIngredients));
                 _group = group;
-                BaseBuilder.Note("Stacked crate: created the group (" + Levels + " x " + IronId + ", icon of " + Levels + " crates: " + (data.icon != sourceData.icon) + ").");
+                ModLog.Note("Stacked crate: created the group (" + Levels + " x " + IronId + ", icon of " + Levels + " crates: " + (data.icon != sourceData.icon) + ").");
             }
 
             if (!all.Contains(_group))
@@ -97,12 +98,12 @@ namespace RRSOS.PCC.Build
             ((List<GroupConstructible>)type.GetField("_groupsConstructible", flags).GetValue(null)).Add((GroupConstructible)group);
             ((Dictionary<int, Group>)type.GetField("_allGroupsByHash", flags).GetValue(null))[group.stableHashCode] = group;
             ((Dictionary<string, Group>)type.GetField("_allGroupsById", flags).GetValue(null))[group.id] = group;
-            BaseBuilder.Note("Stacked crate: added to the game's group lists (" + group.id + ").");
+            ModLog.Note("Stacked crate: added to the game's group lists (" + group.id + ").");
         }
 
         private void ReplacePlaceholders()
         {
-            if (!BaseBuilder.WorldReady(out var planetHash, out _))
+            if (!WorldState.Ready(out var planetHash, out _))
                 return;
 
             var handler = WorldObjectsHandler.Instance;
@@ -117,31 +118,30 @@ namespace RRSOS.PCC.Build
                 try
                 {
                     for (var level = 0; level < Levels; level++)
-                        created.Add(BaseBuilder.PlaceAt(SourceId, pos + new Vector3(0f, level * LevelHeight, 0f), rot, hash));
+                        created.Add(Placement.PlaceAt(SourceId, pos + new Vector3(0f, level * LevelHeight, 0f), rot, hash));
                 }
                 catch (Exception e)
                 {
                     foreach (var wo in created)
                         handler.DestroyWorldObject(wo, true);
                     created.Clear();
-                    BaseBuilder.Note("Stacked crate: could not place the stack (" + e.Message + "); placing one crate instead.");
+                    ModLog.Note("Stacked crate: could not place the stack (" + e.Message + "); placing one crate instead.");
                     try
                     {
-                        created.Add(BaseBuilder.PlaceAt(SourceId, pos, rot, hash));
+                        created.Add(Placement.PlaceAt(SourceId, pos, rot, hash));
                     }
                     catch (Exception e2)
                     {
-                        BaseBuilder.Note("Stacked crate: could not place even one crate: " + e2.Message);
+                        ModLog.Note("Stacked crate: could not place even one crate: " + e2.Message);
                     }
 
-                    ChatCommands.Say("The stacked crate could not be built, so I put a single crate where it was.");
+                    ChatHook.Say("The stacked crate could not be built, so I put a single crate where it was.");
                 }
 
                 handler.DestroyWorldObject(placeholder, true);
                 if (created.Count > 0)
                 {
-                    ChatCommands.Remember("a stacked crate (" + created.Count + " crates)", created);
-                    BaseBuilder.Note("Stacked crate: " + created.Count + " Container1 at " + pos.x.ToString("0.###") + ", " + pos.y.ToString("0.###") + ", " + pos.z.ToString("0.###") + ".");
+                    ModLog.Note("Stacked crate: " + created.Count + " Container1 at " + pos.x.ToString("0.###") + ", " + pos.y.ToString("0.###") + ", " + pos.z.ToString("0.###") + ".");
                 }
             }
         }
@@ -197,7 +197,7 @@ namespace RRSOS.PCC.Build
             }
             catch (Exception e)
             {
-                Plugin.LogOnce("stackedcrate-icon", "Could not compose the three-crate icon; using the plain crate icon: " + e.GetType().Name + ": " + e.Message);
+                ModLog.LogOnce("stackedcrate-icon", "Could not compose the three-crate icon; using the plain crate icon: " + e.GetType().Name + ": " + e.Message);
                 return null;
             }
         }

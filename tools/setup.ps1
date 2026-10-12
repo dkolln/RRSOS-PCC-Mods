@@ -53,12 +53,15 @@ if ($GameDir) {
 
 $GameDir = (Resolve-Path $GameDir).Path.TrimEnd('\') + '\'
 $bepinex = Test-Path (Join-Path $GameDir 'BepInEx\core\BepInEx.dll')
-$plugin = Join-Path $GameDir 'BepInEx\plugins\RRSOS-PCC-Build\RRSOS.PCC.Build.dll'
+$mods = @('RRSOS-PCC-Base', 'RRSOS-PCC-Loadout', 'RRSOS-PCC-StackedCrate')
 
 Write-Host ""
 Write-Host "Game folder      $GameDir"
 Write-Host ("BepInEx          " + $(if ($bepinex) { 'installed' } else { 'NOT installed: install BepInEx 5 (win x64) into the game folder and run the game once' }))
-Write-Host ("Plugin           " + $(if (Test-Path $plugin) { "installed ($plugin)" } else { 'not installed yet: build src\Build with the game closed' }))
+foreach ($mod in $mods) {
+  $dll = Join-Path $GameDir "BepInEx\plugins\$mod\$($mod -replace '-', '.').dll"
+  Write-Host ("{0,-24} {1}" -f $mod, $(if (Test-Path $dll) { 'installed' } else { 'not installed yet: build with the game closed' }))
+}
 Write-Host ""
 
 $targets = Join-Path $Root 'solution_private.targets'
