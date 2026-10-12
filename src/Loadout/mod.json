@@ -7,7 +7,9 @@
   "pluginFolder": "RRSOS-PCC-Loadout",
   "config": "com.rrsos.pcc.loadout.cfg",
   "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Loadout",
-  "commands": ["/loadout"],
+  "commands": [
+    { "name": "/loadout", "usage": "/loadout", "help": "fit the top tier of every piece of gear" }
+  ],
   "requestFiles": [],
   "writesToRunningGame": true
 }

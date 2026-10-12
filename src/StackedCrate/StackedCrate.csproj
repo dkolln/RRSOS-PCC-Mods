@@ -14,6 +14,7 @@
     <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
     <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
     <Compile Include="..\Shared\Placement.cs" Link="Shared\Placement.cs" />
+    <Compile Include="..\Shared\CustomIcons.cs" Link="Shared\CustomIcons.cs" />
     <!-- Only for ChatHook.Say (a message in the chat); this mod adds no chat commands. -->
     <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
   </ItemGroup>

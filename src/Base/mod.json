@@ -7,7 +7,10 @@
   "pluginFolder": "RRSOS-PCC-Base",
   "config": "com.rrsos.pcc.base.cfg",
   "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Base",
-  "commands": ["/build", "/undo"],
+  "commands": [
+    { "name": "/build", "usage": "/build", "help": "place the base now" },
+    { "name": "/undo", "usage": "/undo", "help": "take back what the base mod placed in this save" }
+  ],
   "requestFiles": ["build-now.txt", "undo-now.txt"],
   "writesToRunningGame": true
 }

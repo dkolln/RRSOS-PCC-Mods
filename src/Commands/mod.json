@@ -1,0 +1,13 @@
+{
+  "id": "com.rrsos.pcc.commands",
+  "name": "RRSOS PCC Commands",
+  "version": "0.1.0",
+  "description": "A Terminal in the build menu (1 Iron, 1 Silicon, 1 Titanium, 1 Cobalt). Interact with it, type a command at the C:\\> prompt, and the other RRSOS mods' commands run and answer on the screen. Its /help lists only the commands of the mods that are installed and active.",
+  "plugin": "RRSOS.PCC.Commands.dll",
+  "pluginFolder": "RRSOS-PCC-Commands",
+  "config": "com.rrsos.pcc.commands.cfg",
+  "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Commands",
+  "commands": [],
+  "requestFiles": [],
+  "writesToRunningGame": true
+}

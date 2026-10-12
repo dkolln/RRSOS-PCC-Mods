@@ -26,6 +26,11 @@
       <HintPath>$(GameManaged)UnityEngine.CoreModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <!-- Reads and writes the PNG files in CustomIcons. -->
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(GameManaged)UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <!-- The player and manager classes derive from the game's networking types. -->
     <Reference Include="Unity.Netcode.Runtime">
       <HintPath>$(GameManaged)Unity.Netcode.Runtime.dll</HintPath>

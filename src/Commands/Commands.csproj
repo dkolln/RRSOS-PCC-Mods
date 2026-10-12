@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>RRSOS.PCC.Commands</AssemblyName>
+    <RootNamespace>RRSOS.PCC.Commands</RootNamespace>
+    <Description>A Terminal you can build in the game: type the RRSOS mods' commands on a screen with a prompt</Description>
+    <Version>0.1.0</Version>
+    <ModFolder>RRSOS-PCC-Commands</ModFolder>
+  </PropertyGroup>
+
+  <Import Project="..\Mod.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
+    <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
+    <Compile Include="..\Shared\GroupCloner.cs" Link="Shared\GroupCloner.cs" />
+    <Compile Include="..\Shared\CustomIcons.cs" Link="Shared\CustomIcons.cs" />
+  </ItemGroup>
+
+  <!-- The screen is text drawn with TextMeshPro; the other RRSOS mods are described in JSON. -->
+  <ItemGroup>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GameManaged)Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameManaged)UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- Colliders, read for the prefab structure dump. -->
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(GameManaged)UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>$(GameManaged)UnityEngine.JSONSerializeModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
