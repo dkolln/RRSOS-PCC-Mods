@@ -1,0 +1,16 @@
+{
+  "id": "com.rrsos.pcc.giveitem",
+  "name": "RRSOS PCC Give Item",
+  "version": "0.1.0",
+  "description": "Terminal command /giveitem <item> [quantity]: puts the item into the player's backpack. If the backpack has less room than asked for it takes what fits. Terminal only (needs the Commands mod's terminal).",
+  "plugin": "RRSOS.PCC.GiveItem.dll",
+  "pluginFolder": "RRSOS-PCC-GiveItem",
+  "config": "com.rrsos.pcc.giveitem.cfg",
+  "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\GiveItem",
+  "commands": [],
+  "terminalCommands": [
+    { "name": "/giveitem", "usage": "/giveitem <item id> [quantity]", "help": "put an item into your backpack" }
+  ],
+  "requestFiles": [],
+  "writesToRunningGame": true
+}
