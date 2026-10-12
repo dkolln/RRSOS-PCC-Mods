@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>RRSOS.PCC.Unlocks</AssemblyName>
+    <RootNamespace>RRSOS.PCC.Unlocks</RootNamespace>
+    <Description>Says in the chat what has just been unlocked, in a free-build game (where the game's own popups are off)</Description>
+    <Version>0.1.0</Version>
+    <ModFolder>RRSOS-PCC-Unlocks</ModFolder>
+  </PropertyGroup>
+
+  <Import Project="..\Mod.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
+    <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
+    <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
+    <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
+  </ItemGroup>
+
+</Project>

@@ -17,12 +17,17 @@ namespace RRSOS.PCC.Base
 
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<bool> UndoLastBuild;
+        internal static ConfigEntry<bool> AutoUpgrade;
+        internal static ConfigEntry<string> UpgradeScope;
 
         private void Awake()
         {
             ModLog.Init("Base", Logger);
             Enabled = Config.Bind("General", "Enabled", false, "Build the T0 base when a new world has none of it. Writes into the running game.");
             UndoLastBuild = Config.Bind("General", "UndoLastBuild", false, "Set to true and load the world: removes what this mod placed in that world, then sets itself back to false.");
+
+            AutoUpgrade = Config.Bind("General", "AutoUpgrade", true, "While playing, swap buildings for the better one as it is unlocked, by the chains in upgrades.txt (in this mod's data folder), for example Wind Turbine to Solar Panel to T2 Solar Panel.");
+            UpgradeScope = Config.Bind("General", "UpgradeScope", "World", new ConfigDescription("Which buildings are swapped: World = every building of that kind on the planet, Base = only the pieces this mod placed.", new AcceptableValueList<string>("World", "Base")));
 
             ChatHook.Enabled = () => Enabled.Value;
             ChatHook.Add("/build", BaseBuilder.OnBuildCommand, "place the base now");
@@ -36,6 +41,7 @@ namespace RRSOS.PCC.Base
             }
 
             gameObject.AddComponent<BaseBuilder>();
+            gameObject.AddComponent<BaseUpgrades>();
             gameObject.AddComponent<ChatHook>();
             ModLog.Note($"{Name} {Version} loaded. Enabled: {Enabled.Value}. It writes into the running game only when Enabled is true. Log: {ModLog.LogFile}");
         }

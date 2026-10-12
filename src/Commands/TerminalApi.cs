@@ -38,6 +38,28 @@ namespace RRSOS.PCC.Commands
             ModLog.Note("Terminal command registered: " + key);
         }
 
+        private const int RecentKept = 20;
+        private static readonly List<string> Recent = new List<string>();
+
+        /// <summary>
+        /// Posts a message on every terminal screen ("* message"), for example "Unlocked: T2 Backpack". A terminal built or loaded later shows the latest few as well.
+        /// Like Register it is meant to be called by reflection with a plain string, so a mod needs no reference to this one.
+        /// </summary>
+        public static void Notify(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+                return;
+
+            var line = "* " + message.Trim();
+            Recent.Add(line);
+            if (Recent.Count > RecentKept)
+                Recent.RemoveAt(0);
+
+            TerminalScreen.PrintOnAll(line);
+        }
+
+        internal static List<string> LatestNotices(int count) => Recent.Skip(System.Math.Max(0, Recent.Count - count)).ToList();
+
         internal static Entry Find(string key) => Commands.TryGetValue(key, out var entry) ? entry : null;
 
         internal static List<Entry> All() => Commands.Values.OrderBy(e => e.Name).ToList();

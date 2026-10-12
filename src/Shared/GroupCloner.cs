@@ -71,8 +71,43 @@ namespace RRSOS.PCC.Shared
             return all != null && all.Contains(group);
         }
 
+        // Groups kept in the game: the game rebuilds its group lists whenever it loads its static data (for example when a world loads), and a saved building whose group is
+        // missing at that moment is dropped from the world. So the lists are patched to put these groups back the instant the game has rebuilt them, before the world's objects
+        // are made, instead of waiting for a check a moment later.
+        private static readonly List<Group> Kept = new List<Group>();
+        private static bool _patched;
+
+        private static void Keep(Group group)
+        {
+            if (!Kept.Contains(group))
+                Kept.Add(group);
+
+            if (_patched)
+                return;
+
+            _patched = true;
+            try
+            {
+                var harmony = new HarmonyLib.Harmony("com.rrsos.pcc.keepgroups." + typeof(GroupCloner).Assembly.GetName().Name);
+                harmony.Patch(HarmonyLib.AccessTools.Method(typeof(GroupsHandler), "SetAllGroups"), postfix: new HarmonyLib.HarmonyMethod(typeof(GroupCloner), nameof(AfterGroupsRebuilt)));
+            }
+            catch (Exception e)
+            {
+                ModLog.Note("Could not keep the added groups in the game's lists: " + e.GetType().Name + ": " + e.Message);
+            }
+        }
+
+        private static void AfterGroupsRebuilt()
+        {
+            foreach (var group in Kept)
+                if (!IsInGame(group))
+                    AddToGame(group);
+        }
+
         public static void AddToGame(Group group)
         {
+            Keep(group);
+
             var flags = BindingFlags.Static | BindingFlags.NonPublic;
             var type = typeof(GroupsHandler);
             ((List<Group>)type.GetField("_allGroups", flags).GetValue(null)).Add(group);

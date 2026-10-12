@@ -38,9 +38,18 @@ def vec(s):
     return [Decimal(v) for v in s.split(',')]
 
 
+# What the buildings hold (the seeds in a vegetube). Crates are not stored: the Base mod stocks a crate from its label.
+object_group = {r['id']: r['gId'] for r in records}
+inventories = {}
+for m in re.finditer(r'\{"id":(\d+),"woIds":"([^"]*)","size":\d+\}', text):
+    inventories[int(m.group(1))] = [int(i) for i in m.group(2).split(',') if i]
+
 lamps = [r for r in placed if r['gId'] == 'OutsideLamp1']
+if not lamps:
+    # the Base mod's upgrade rules swap the one outdoor lamp for a beacon labelled Base
+    lamps = [r for r in placed if r['gId'] == 'Beacon' and r.get('text', '').strip().lower() == 'base']
 if len(lamps) != 1:
-    sys.exit('expected exactly one outdoor lamp, found %d' % len(lamps))
+    sys.exit('expected exactly one outdoor lamp (or one beacon labelled Base), found %d' % len(lamps))
 lamp = vec(lamps[0]['pos'])
 foundations = [r for r in placed if r['gId'] == 'Foundation']
 anchor_rec = min(foundations, key=lambda r: sum((a - b) ** 2 for a, b in zip(vec(r['pos']), lamp)))
@@ -66,6 +75,10 @@ for r in placed:
         piece['panels'] = r['pnls']
     if r.get('color'):
         piece['color'] = r['color']
+    held = [object_group.get(i) for i in inventories.get(r.get('liId'), [])] if r.get('liId') and not r['gId'].startswith('Container') else []
+    held = [g for g in held if g]
+    if held:
+        piece['fill'] = ','.join(held)
     pieces.append(piece)
 pieces.sort(key=lambda p: (order.get(p['g'], 2), p['x'], p['z'], p['y']))
 
