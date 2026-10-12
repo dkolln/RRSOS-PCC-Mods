@@ -1,0 +1,13 @@
+{
+  "id": "com.rrsos.pcc.autofill",
+  "name": "RRSOS PCC Auto Fill",
+  "version": "0.1.0",
+  "description": "Label a storage crate (Container1, 2 or 3) with an item's name - its id, its name in the game, or one of its extra names such as O2 - and the crate's empty slots are filled with that item. Only at a rename, whole-name matches only, and what is in the crate already stays.",
+  "plugin": "RRSOS.PCC.AutoFill.dll",
+  "pluginFolder": "RRSOS-PCC-AutoFill",
+  "config": "com.rrsos.pcc.autofill.cfg",
+  "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\AutoFill",
+  "commands": ["/addname"],
+  "requestFiles": [],
+  "writesToRunningGame": true
+}
