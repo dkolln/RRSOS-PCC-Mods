@@ -1,7 +1,7 @@
 {
   "id": "com.rrsos.pcc.base",
   "name": "RRSOS PCC Base",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Builds the T0 base in the running game at the Prime template location: at planetfall, or on request. T0 is as much of the base as can be built before the first drill, heater or vegetube, using only what is unlocked at the very start (foundations, pods, wind turbines, crates with their labels, furniture, screens, the anchor lamp, and the Terminal when its mod is installed). Crates are stocked from their labels. Once per save and only on an empty site.",
   "plugin": "RRSOS.PCC.Base.dll",
   "pluginFolder": "RRSOS-PCC-Base",
@@ -9,7 +9,8 @@
   "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Base",
   "commands": [
     { "name": "/build", "usage": "/build", "help": "place the base now" },
-    { "name": "/undo", "usage": "/undo", "help": "take back what the base mod placed in this save" }
+    { "name": "/undo", "usage": "/undo", "help": "take back what the base mod placed in this save" },
+    { "name": "/trash", "usage": "/trash empty", "help": "delete everything in every container labelled Trash (terminal and chat)" }
   ],
   "requestFiles": ["build-now.txt", "undo-now.txt"],
   "writesToRunningGame": true
