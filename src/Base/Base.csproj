@@ -3,8 +3,8 @@
   <PropertyGroup>
     <AssemblyName>RRSOS.PCC.Base</AssemblyName>
     <RootNamespace>RRSOS.PCC.Base</RootNamespace>
-    <Description>Places the main base in the running game (the first stage so far), with /build and /undo</Description>
-    <Version>0.1.0</Version>
+    <Description>Builds the T0 base in the running game, with /build and /undo</Description>
+    <Version>0.2.0</Version>
     <ModFolder>RRSOS-PCC-Base</ModFolder>
   </PropertyGroup>
 
@@ -15,6 +15,19 @@
     <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
     <Compile Include="..\Shared\Placement.cs" Link="Shared\Placement.cs" />
     <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
+    <!-- Crates are stocked from their labels, as Auto Fill does. -->
+    <Compile Include="..\Shared\ItemLookup.cs" Link="Shared\ItemLookup.cs" />
+    <Compile Include="..\Shared\CrateFill.cs" Link="Shared\CrateFill.cs" />
+    <EmbeddedResource Include="..\Shared\DefaultNames.txt" LogicalName="DefaultNames.txt" />
+    <!-- The T0 base, captured from a save by tools\capture-t0.py. -->
+    <EmbeddedResource Include="T0.json" LogicalName="T0.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>$(GameManaged)UnityEngine.JSONSerializeModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
 </Project>

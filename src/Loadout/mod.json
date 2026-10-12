@@ -1,7 +1,7 @@
 {
   "id": "com.rrsos.pcc.loadout",
   "name": "RRSOS PCC Loadout",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The /loadout chat command: fits the top tier of every piece of personal gear through the game's own equip steps. A second call only adds what is missing and swaps a lower tier for its top tier.",
   "plugin": "RRSOS.PCC.Loadout.dll",
   "pluginFolder": "RRSOS-PCC-Loadout",

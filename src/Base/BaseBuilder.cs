@@ -10,8 +10,9 @@ using UnityEngine;
 namespace RRSOS.PCC.Base
 {
     /// <summary>
-    /// Places stage 1 of the main base (the anchor lamp on its foundation, one more foundation, one pod) in a world that has none of it, the way the game itself
-    /// brings a saved piece to life (see Placement). Once per save, never over anything else.
+    /// Builds the T0 base (as much of the base as can be built before the first drill, heater or vegetube, with only what is unlocked at the very start) in a world that has none
+    /// of it, the way the game itself brings a saved piece to life (see Placement). Every piece comes from the template (T0.json) as an offset from Prime's anchor foundation.
+    /// Crates keep their labels and are stocked from them. Once per save, never over anything else.
     /// </summary>
     internal sealed class BaseBuilder : MonoBehaviour
     {
@@ -23,26 +24,13 @@ namespace RRSOS.PCC.Base
         private static string UndoNowFile => ModLog.FileIn("undo-now.txt");
 
         private const string StartPlanet = "Prime";
-        private const float Reach = 15f;        // nothing of the player's own may stand this close (metres, along the ground) to the anchor
-        private const float SameSpot = 0.5f;    // a piece this close to a stage 1 piece, of the same kind, counts as already there
 
-        private sealed class Piece
-        {
-            public string Group;
-            public Vector3 Pos;
-            public Quaternion Rot;
-            public int[] Panels;
-            public string Color;
-        }
+        /// <summary>Prime's template location: the foundation under the anchor outdoor lamp (the lamp points north). The terrain of Prime never changes.</summary>
+        private static readonly Vector3 Anchor = new Vector3(766f, 29f, 601f);
 
-        // Stage 1, as captured from Standard-2 on 2026-10-12 (the anchor foundation is at 772, 29, 601; the lamp points north). The terrain of Prime never changes.
-        private static readonly Piece[] Stage1 =
-        {
-            new Piece { Group = "Foundation", Pos = new Vector3(772f, 29f, 601f), Rot = new Quaternion(0f, 0f, 0f, 1f) },
-            new Piece { Group = "Foundation", Pos = new Vector3(778f, 29f, 601f), Rot = new Quaternion(0f, 0f, 0f, 1f) },
-            new Piece { Group = "pod", Pos = new Vector3(778f, 31.5f, 600.9f), Rot = new Quaternion(0f, 0f, 0f, 1f), Panels = new[] { 1, 1, 1, 4, 5, 7 } },
-            new Piece { Group = "OutsideLamp1", Pos = new Vector3(771.9205f, 31.519f, 601.0012f), Rot = new Quaternion(0f, -0.7071068f, 0f, 0.7071068f), Color = "1-0.9696766-0.8443396-1" },
-        };
+        private const float Margin = 6f;        // nothing of the player's own may stand within this of the base's footprint (metres, along the ground)
+        private const float SameSpot = 0.5f;    // a piece this close to a template piece, of the same kind, counts as already there
+        private const int PiecesPerFrame = 4;
 
         /// <summary>Set by the /build chat command; answered by the loop below within two seconds.</summary>
         private static volatile bool _buildRequested;
@@ -163,19 +151,42 @@ namespace RRSOS.PCC.Base
 
             if (ModLog.ReadLines(DoneFile).Contains(key))
             {
-                ModLog.Note("Save " + key + ": stage 1 was already handled once; nothing to do (a build request would place it again).");
+                ModLog.Note("Save " + key + ": the base was already handled once; nothing to do (a build request would place it again).");
                 yield break;
             }
 
             yield return PlaceIfEmpty(key, planetHash, true);
         }
 
-        /// <summary>Places stage 1 if the site is empty. The automatic planetfall run marks the save as handled even when it places nothing; a request does not.</summary>
+        private static Vector3 WorldPosition(TemplatePiece piece) => Anchor + new Vector3(piece.x, piece.y, piece.z);
+
+        /// <summary>Builds the base if the site is empty. The automatic planetfall run marks the save as handled even when it places nothing; a request does not.</summary>
         private IEnumerator PlaceIfEmpty(string key, int planetHash, bool automatic)
         {
-            // Only into a world that has none of it, and with nothing of the player's own standing near the anchor.
+            Template template;
+            try
+            {
+                template = T0.Get();
+            }
+            catch (Exception e)
+            {
+                ModLog.Note("Could not read the template: " + e.Message);
+                if (!automatic)
+                    ChatHook.Say("The base template could not be read. See the mod's log.");
+                yield break;
+            }
+
+            // Only into a world that has none of it, and with nothing of the player's own standing on the base's footprint.
             var handler = WorldObjectsHandler.Instance;
-            var anchor = Stage1[0].Pos;
+            var pieces = template.pieces;
+            float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
+            foreach (var p in pieces)
+            {
+                var at = WorldPosition(p);
+                minX = Mathf.Min(minX, at.x); maxX = Mathf.Max(maxX, at.x);
+                minZ = Mathf.Min(minZ, at.z); maxZ = Mathf.Max(maxZ, at.z);
+            }
+
             var present = 0;
             var near = new List<string>();
             foreach (var wo in handler.GetAllWorldObjects().Values.ToList())
@@ -187,17 +198,17 @@ namespace RRSOS.PCC.Base
                 if (pos.sqrMagnitude <= 0f)
                     continue; // an item inside an inventory
 
-                if (Stage1.Any(p => p.Group == wo.GetGroup().GetId() && (pos - p.Pos).sqrMagnitude < SameSpot * SameSpot))
+                var id = wo.GetGroup().GetId();
+                if (pieces.Any(p => p.g == id && (pos - WorldPosition(p)).sqrMagnitude < SameSpot * SameSpot))
                     present++;
 
-                var flat = new Vector2(pos.x - anchor.x, pos.z - anchor.z);
-                if (flat.magnitude < Reach && wo.GetGroup() is GroupConstructible)
-                    near.Add(wo.GetGroup().GetId());
+                if (wo.GetGroup() is GroupConstructible && pos.x > minX - Margin && pos.x < maxX + Margin && pos.z > minZ - Margin && pos.z < maxZ + Margin)
+                    near.Add(id);
             }
 
             if (present > 0 || near.Count > 0)
             {
-                ModLog.Note("Save " + key + ": the site is not empty (" + present + " stage 1 pieces already there; near the anchor: " + (near.Count == 0 ? "nothing" : string.Join(", ", near.Distinct().ToArray())) + "). Nothing placed.");
+                ModLog.Note("Save " + key + ": the site is not empty (" + present + " template pieces already there; on the footprint: " + (near.Count == 0 ? "nothing" : string.Join(", ", near.Distinct().ToArray())) + "). Nothing placed.");
                 if (automatic)
                     ModLog.Append(DoneFile, key);
                 else
@@ -205,40 +216,54 @@ namespace RRSOS.PCC.Base
                 yield break;
             }
 
-            ModLog.Note("Save " + key + ": planetfall with an empty site. Placing stage 1 (" + Stage1.Length + " pieces).");
-            var created = new List<WorldObject>();
+            ModLog.Note("Save " + key + ": " + (automatic ? "planetfall with an empty site" : "an empty site") + ". Placing " + template.name + " (" + pieces.Length + " pieces).");
+            var created = new List<KeyValuePair<WorldObject, TemplatePiece>>();
+            var skipped = new List<string>();
             var failed = false;
-            foreach (var piece in Stage1)
+            var sinceFrame = 0;
+            foreach (var piece in pieces)
             {
+                if (GroupsHandler.GetGroupViaId(piece.g) == null)
+                {
+                    // a piece of a mod that is not installed (the Terminal without the Commands mod)
+                    skipped.Add(piece.g);
+                    continue;
+                }
+
                 try
                 {
-                    var wo = Placement.PlaceAt(piece.Group, piece.Pos, piece.Rot, planetHash, piece.Panels, piece.Color);
-                    created.Add(wo);
-                    ModLog.Note("Placed " + piece.Group + " #" + wo.GetId() + " at " + piece.Pos.x.ToString("0.###") + ", " + piece.Pos.y.ToString("0.###") + ", " + piece.Pos.z.ToString("0.###") + ".");
+                    var wo = Placement.PlaceAt(piece.g, WorldPosition(piece), DataTreatments.StringToQuaternion(piece.rot), planetHash,
+                        string.IsNullOrEmpty(piece.panels) ? null : DataTreatments.StringToIntList(piece.panels).ToArray(),
+                        string.IsNullOrEmpty(piece.color) ? null : piece.color, piece.text, piece.groups);
+                    created.Add(new KeyValuePair<WorldObject, TemplatePiece>(wo, piece));
                 }
                 catch (Exception e)
                 {
-                    ModLog.Note("FAILED placing " + piece.Group + ": " + e.GetType().Name + ": " + e.Message);
+                    ModLog.Note("FAILED placing " + piece.g + ": " + e.GetType().Name + ": " + e.Message);
                     failed = true;
                 }
 
                 if (failed)
                     break;
 
-                yield return null;
+                if (++sinceFrame >= PiecesPerFrame)
+                {
+                    sinceFrame = 0;
+                    yield return null;
+                }
             }
 
             if (failed)
             {
-                foreach (var wo in created)
+                foreach (var made in created)
                 {
                     try
                     {
-                        handler.DestroyWorldObject(wo, true);
+                        handler.DestroyWorldObject(made.Key, true);
                     }
                     catch (Exception e)
                     {
-                        ModLog.Note("Could not roll back object " + wo.GetId() + ": " + e.Message);
+                        ModLog.Note("Could not roll back object " + made.Key.GetId() + ": " + e.Message);
                     }
                 }
 
@@ -259,13 +284,46 @@ namespace RRSOS.PCC.Base
                 ModLog.Note("Could not refresh the energy network (harmless): " + e.Message);
             }
 
-            foreach (var wo in created)
-                ModLog.Append(UndoFile, key + "|" + wo.GetId() + "|" + wo.GetGroup().GetId());
+            foreach (var made in created)
+                ModLog.Append(UndoFile, key + "|" + made.Key.GetId() + "|" + made.Value.g);
             if (!ModLog.ReadLines(DoneFile).Contains(key))
                 ModLog.Append(DoneFile, key);
-            ModLog.Note("Stage 1 placed: " + string.Join(", ", created.Select(w => w.GetGroup().GetId() + " #" + w.GetId()).ToArray()) + ".");
+
+            var kinds = string.Join(", ", created.GroupBy(c => c.Value.g).OrderByDescending(g => g.Count()).Select(g => g.Count() + " " + g.Key).ToArray());
+            ModLog.Note("Placed " + created.Count + " pieces: " + kinds + ". Not placed (not installed): " + (skipped.Count == 0 ? "none" : string.Join(", ", skipped.Distinct().ToArray())) + ".");
+
+            // The crates keep their labels; every crate whose label names an item is stocked, as the rename and /resupply do.
+            yield return Stock(created.Where(c => c.Value.g.StartsWith("Container") && !string.IsNullOrEmpty(c.Value.text)).Select(c => c.Key).ToList(), automatic);
+
             if (!automatic)
-                ChatHook.Say("Base stage 1 placed (" + created.Count + " pieces). /undo takes it back.");
+                ChatHook.Say("Base placed (" + created.Count + " pieces). /undo takes it back.");
+        }
+
+        private IEnumerator Stock(List<WorldObject> crates, bool automatic)
+        {
+            var lookup = new ItemLookup();
+            int stocked = 0, items = 0, labelOnly = 0;
+            foreach (var crate in crates)
+            {
+                var item = lookup.Resolve(CrateFill.Label(crate));
+                if (item == null)
+                {
+                    labelOnly++; // a category label (plants, seeds, food): the crate is built empty with its label
+                    continue;
+                }
+
+                var result = new CrateFill.Result();
+                yield return CrateFill.Fill(crate, item, result);
+                if (result.Added > 0)
+                {
+                    stocked++;
+                    items += result.Added;
+                }
+            }
+
+            ModLog.Note("Crates: " + stocked + " stocked from their labels (" + items + " items), " + labelOnly + " kept empty with a category label.");
+            if (!automatic)
+                ChatHook.Say("Stocked " + stocked + " crates from their labels (" + items + " items); " + labelOnly + " kept empty.");
         }
 
         /// <summary>Removes what this mod placed in the save and clears the save's "handled" mark. Returns how many pieces it removed.</summary>
@@ -288,10 +346,10 @@ namespace RRSOS.PCC.Base
                 {
                     handler.DestroyWorldObject(id, true);
                     removed++;
-                    ModLog.Note("Undo: removed " + parts[parts.Length - 1] + " #" + id + ".");
                 }
             }
 
+            ModLog.Note("Undo: removed " + removed + " pieces.");
             File.WriteAllLines(UndoFile, lines.Where(l => !l.StartsWith(key + "|")).ToArray());
             File.WriteAllLines(DoneFile, ModLog.ReadLines(DoneFile).Where(l => l != key).ToArray());
             return removed;
