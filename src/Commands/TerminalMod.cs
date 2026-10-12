@@ -66,7 +66,7 @@ namespace RRSOS.PCC.Commands
 
             if (_group == null)
             {
-                _group = GroupCloner.Clone(SourceId, NewId, Ingredients, ScreenId);
+                _group = GroupCloner.Clone(SourceId, NewId, Ingredients, ScreenId, TerminalIcon.Paint);
                 if (_group == null)
                     return;
                 ModLog.Note("Terminal: created the build item from " + SourceId + " (" + string.Join(", ", Ingredients) + ").");

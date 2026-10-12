@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using SpaceCraft;
+using UnityEngine;
 
 namespace RRSOS.PCC.Shared
 {
@@ -12,7 +14,7 @@ namespace RRSOS.PCC.Shared
     internal static class GroupCloner
     {
         /// <summary>The copy, or null while the game's groups are not loaded yet (call again later). The copy is unlocked from the start.</summary>
-        public static GroupConstructible Clone(string sourceId, string newId, IList<string> ingredientIds, string iconFromId = null)
+        public static GroupConstructible Clone(string sourceId, string newId, IList<string> ingredientIds, string iconFromId = null, Func<Sprite, Sprite> paintIcon = null)
         {
             var source = GroupsHandler.GetGroupViaId(sourceId) as GroupConstructible;
             if (source == null || !(source.GetGroupData() is GroupDataConstructible sourceData))
@@ -41,7 +43,21 @@ namespace RRSOS.PCC.Shared
             if (ownIcon != null)
                 copy.icon = ownIcon;
             else if (iconFromId != null && GroupsHandler.GetGroupViaId(iconFromId) is Group iconGroup && iconGroup.GetImage() != null)
-                copy.icon = iconGroup.GetImage();
+            {
+                // Another group's icon, optionally painted over; a painted icon is saved to CustomIcons so it can be replaced by dropping a PNG in.
+                var icon = iconGroup.GetImage();
+                if (paintIcon != null)
+                {
+                    var painted = paintIcon(icon);
+                    if (painted != null)
+                    {
+                        CustomIcons.Save(newId, painted);
+                        icon = painted;
+                    }
+                }
+
+                copy.icon = icon;
+            }
 
             var created = new GroupConstructible(copy);
             created.SetRecipe(new Recipe(ingredients));
