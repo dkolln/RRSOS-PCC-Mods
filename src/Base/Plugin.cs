@@ -17,8 +17,6 @@ namespace RRSOS.PCC.Base
         public const string Version = "0.4.0";
 
         internal static ConfigEntry<bool> Enabled;
-        internal static ConfigEntry<bool> StageSaves;
-        internal static ConfigEntry<string> StageSaveUnlocks;
         internal static ConfigEntry<bool> UndoLastBuild;
         internal static ConfigEntry<bool> AutoUpgrade;
         internal static ConfigEntry<string> UpgradeScope;
@@ -38,8 +36,6 @@ namespace RRSOS.PCC.Base
             PowerButtonsX = Config.Bind("Power", "ButtonsX", 0f, "Sideways offset of the buttons on the Energy window (UI units from the bottom centre).");
             PowerButtonsY = Config.Bind("Power", "ButtonsY", 40f, "Height of the buttons above the bottom edge of the Energy window (UI units).");
 
-            StageSaves = Config.Bind("Stages", "StageSaves", true, "When an unlock grows the base (a stage), the game saves and the save is copied to stage-saves/<save name>/stage-1.json, stage-2.json, ... in this mod's data folder. The game's own save slot is saved too (as its autosave does).");
-            StageSaveUnlocks = Config.Bind("Stages", "StageSaveUnlocks", "", "Which unlocks make a stage save, as group ids separated by commas (window, VegetableGrower1, ScreenMessage, ScreenTerraStage, BedDouble, CraftStation2, VegetubeOutside1, EnergyGenerator4). Empty means every one of them. Each unlock makes one save, the first time it grows the base in a save.");
 
             ChatHook.Enabled = () => Enabled.Value;
             ChatHook.Add("/build", BaseBuilder.OnBuildCommand, "place the base now");
