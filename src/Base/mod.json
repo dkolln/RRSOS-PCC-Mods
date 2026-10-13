@@ -9,8 +9,7 @@
   "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Base",
   "commands": [
     { "name": "/build", "usage": "/build", "help": "place the base now" },
-    { "name": "/undo", "usage": "/undo", "help": "take back what the base mod placed in this save" },
-    { "name": "/trash", "usage": "/trash empty", "help": "delete everything in every container labelled Trash (terminal and chat)" }
+    { "name": "/undo", "usage": "/undo", "help": "take back what the base mod placed in this save" }
   ],
   "requestFiles": ["build-now.txt", "undo-now.txt"],
   "writesToRunningGame": true

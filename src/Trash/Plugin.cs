@@ -16,15 +16,15 @@ namespace RRSOS.PCC.Trash
 
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<string> Groups;
-        internal static ConfigEntry<float> ButtonX, ButtonY;
+        internal static ConfigEntry<float> NudgeX, NudgeY;
 
         private void Awake()
         {
             ModLog.Init("Trash", Logger);
             Enabled = Config.Bind("General", "Enabled", false, "Show the trash can on container windows. One click deletes everything in that container, for good, with no question asked.");
             Groups = Config.Bind("General", "Groups", "Container1,Container2,Container3,Fridge1,Vault1,Locker1", "The containers that get the trash can.");
-            ButtonX = Config.Bind("Placement", "ButtonX", 8f, "Gap between the container's grid and the trash can (UI units, to the right).");
-            ButtonY = Config.Bind("Placement", "ButtonY", 0f, "How far the trash can hangs below the top of the grid (UI units).");
+            NudgeX = Config.Bind("Placement", "NudgeX", 0f, "Fine adjustment of the trash can, sideways from its default spot above the sort icon (UI units, positive is right).");
+            NudgeY = Config.Bind("Placement", "NudgeY", 0f, "Fine adjustment of the trash can, up from its default spot above the sort icon (UI units, positive is up).");
 
             gameObject.AddComponent<TrashButton>();
             ModLog.Note($"{Name} {Version} loaded. Enabled: {Enabled.Value}. It writes into the running game only when Enabled is true. Log: {ModLog.LogFile}");
