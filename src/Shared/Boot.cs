@@ -11,7 +11,7 @@ namespace RRSOS.PCC.Shared
     /// </summary>
     internal static class Boot
     {
-        public const int Base = 1, Loadout = 2, Commands = 3;
+        public const int Base = 1, Loadout = 2, Commands = 3, Blueprints = 4;
 
         private const string TableKey = "RRSOS.PCC.Boot";
         private const float Pause = 0.9f;       // seconds between two lines

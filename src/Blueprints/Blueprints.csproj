@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>RRSOS.PCC.Blueprints</AssemblyName>
+    <RootNamespace>RRSOS.PCC.Blueprints</RootNamespace>
+    <Description>Unlocks the blueprints that would otherwise need a blueprint chip, at the start of a new game</Description>
+    <Version>0.1.0</Version>
+    <ModFolder>RRSOS-PCC-Blueprints</ModFolder>
+  </PropertyGroup>
+
+  <Import Project="..\Mod.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
+    <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
+    <Compile Include="..\Shared\Boot.cs" Link="Shared\Boot.cs" />
+    <Compile Include="..\Shared\Welcome.cs" Link="Shared\Welcome.cs" />
+    <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
+  </ItemGroup>
+
+</Project>
