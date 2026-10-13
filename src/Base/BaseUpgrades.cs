@@ -24,10 +24,11 @@ namespace RRSOS.PCC.Base
 # Anything inside the old building (seeds in a vegetube) is moved to the new one. Lines starting with # are notes.
 # After the steps a line may add ; label=Text ; color=green ; only=1 : the last step is then made with that label and colour,
 # and only=N means only when exactly N buildings of the swapped kind stand in the world (the swap itself happens either way).
+# ; turn=90 turns every building made as the last step 90 degrees to the right (clockwise from above; negative turns left).
 # Colours: green red blue yellow orange purple cyan white.
 
-# Wind Turbine > T1 Solar Panel > T2 Solar Panel
-EnergyGenerator1 > EnergyGenerator2 > EnergyGenerator3
+# Wind Turbine > T1 Solar Panel > T2 Solar Panel (the T2 panel is turned 90 degrees to the right)
+EnergyGenerator1 > EnergyGenerator2 > EnergyGenerator3 ; turn=90
 
 # Heater T1 > T2 > T3
 Heater1 > Heater2 > Heater3
@@ -57,6 +58,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             public string Label;
             public string Color;     // the game's own colour text
             public int OnlyIf;       // 0 = always; N = only when exactly N buildings of the swapped kind stand in the world
+            public float Turn;       // degrees to the right (clockwise seen from above) that the last step is turned when it is made
         }
 
         // colour names that can be written in upgrades.txt
@@ -152,6 +154,8 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                         chain.Color = DataTreatments.ColorToString(colour);
                     else if (name == "only" && int.TryParse(value, out var only))
                         chain.OnlyIf = only;
+                    else if (name == "turn" && float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var turn))
+                        chain.Turn = turn;
                     else
                         ModLog.Note("upgrades.txt: did not understand \"" + option.Trim() + "\" in \"" + line + "\".");
                 }
@@ -265,15 +269,20 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
 
                 // The label and colour of a chain go to its last step, and only when the chain says so (for example only when there is just one such building).
                 string label = null, color = null;
+                var turn = 0f;
                 var chain = _chainOf[from];
-                if (to == chain.Steps[chain.Steps.Length - 1] && (chain.OnlyIf == 0 || todo.Count(w => w.GetGroup().GetId() == from) == chain.OnlyIf))
+                if (to == chain.Steps[chain.Steps.Length - 1])
                 {
-                    label = chain.Label;
-                    color = chain.Color;
+                    turn = chain.Turn; // the turn applies to every swap into the last step, not only when "only" matches
+                    if (chain.OnlyIf == 0 || todo.Count(w => w.GetGroup().GetId() == from) == chain.OnlyIf)
+                    {
+                        label = chain.Label;
+                        color = chain.Color;
+                    }
                 }
 
                 var result = new SwapResult();
-                yield return Swap(old, to, planetHash, result, null, color, label);
+                yield return Swap(old, to, planetHash, result, null, color, label, turn);
                 if (result.Made != null)
                 {
                     swapped[pair] = (swapped.TryGetValue(pair, out var n) ? n : 0) + 1;
@@ -538,7 +547,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
         }
 
         /// <summary>Swaps one building: place the new one, move what is inside, and only then remove the old one. On any problem the old one stays.</summary>
-        private static IEnumerator Swap(WorldObject old, string to, int planetHash, SwapResult result, int[] panels = null, string color = null, string text = null)
+        private static IEnumerator Swap(WorldObject old, string to, int planetHash, SwapResult result, int[] panels = null, string color = null, string text = null, float turn = 0f)
         {
             var handler = WorldObjectsHandler.Instance;
             var from = old.GetGroup().GetId();
@@ -547,7 +556,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             WorldObject made = null;
             try
             {
-                made = Placement.PlaceAt(to, old.GetPosition(), old.GetRotation(), planetHash, panels, color, text);
+                made = Placement.PlaceAt(to, old.GetPosition(), Quaternion.Euler(0f, turn, 0f) * old.GetRotation(), planetHash, panels, color, text);
             }
             catch (Exception e)
             {
