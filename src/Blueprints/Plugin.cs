@@ -12,20 +12,23 @@ namespace RRSOS.PCC.Blueprints
     {
         public const string Guid = "com.rrsos.pcc.blueprints";
         public const string Name = "RRSOS PCC Blueprints";
-        public const string Version = "0.1.0";
+        public const string Version = "0.2.0";
 
         internal static ConfigEntry<bool> Enabled;
+        internal static ConfigEntry<bool> UnlockStoryBlueprints;
 
         private void Awake()
         {
             ModLog.Init("Blueprints", Logger);
             Enabled = Config.Bind("General", "Enabled", false, "Unlock the blueprints listed in blueprints.txt at the start of a new game (once per save, and only when nothing has been crafted yet). Writes into the running game.");
 
+            UnlockStoryBlueprints = Config.Bind("General", "UnlockStoryBlueprints", false, "Also unlock the blueprints the game hides in the story and the wrecks (treadmill, fridge, indoor bike, shower, lockers, vault, shelves, ...): the list is story-blueprints.txt in the data folder. Same rules as the chip blueprints: at the start of a new game only.");
+
             gameObject.AddComponent<PlanetfallBlueprints>();
             if (Enabled.Value)
             {
                 Boot.Announce(Boot.Blueprints);
-                Welcome.Add(3, "Every blueprint chip has been decoded for you, so those blueprints are already unlocked.");
+                Welcome.Add(3, "Every blueprint chip has been decoded for you, so those blueprints are already unlocked." + (UnlockStoryBlueprints.Value ? " So are the ones hidden in the wrecks and the story: the treadmill, the fridge and the rest." : ""));
             }
 
             ModLog.Note($"{Name} {Version} loaded. Enabled: {Enabled.Value}. It writes into the running game only when Enabled is true. Log: {ModLog.LogFile}");

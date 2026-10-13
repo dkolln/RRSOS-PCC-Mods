@@ -66,6 +66,42 @@ VehicleLights2
 ";
 
         private static string ListFile => ModLog.FileIn("blueprints.txt");
+        private static string StoryFile => ModLog.FileIn("story-blueprints.txt");
+
+        private const string DefaultStoryList = @"# Blueprints the game hides in the story and the wrecks (treadmill, fridge, ...). Unlocked at the start of a new game when UnlockStoryBlueprints is true in the config.
+# One group id per line; # starts a note. Delete a line to leave that blueprint locked; an id the game does not know is skipped.
+SofaAngleColored
+Fireplace
+Chair2
+Counter1
+Counter2
+Desktop2
+ExerciseBike1
+FlowerPot2
+FlowerPot3
+TreePlanter2
+Ivy1
+Fridge1
+Library1
+PlanetViewer1
+Pooltable1
+Shelves1
+TableSmall2
+TableSmall3
+Trashcan1
+Treadmill1
+Vault1
+Server1
+Table1
+Faucet1
+Shower1
+Locker1
+Toilet1
+ArcadeMachine1
+AquariumTube1
+LavaLamp1
+VendingMachine1
+";
 
         private string _handled;
 
@@ -109,12 +145,21 @@ VehicleLights2
 
         private static List<Group> Pending()
         {
-            if (!File.Exists(ListFile))
-                File.WriteAllText(ListFile, DefaultList.Replace("\r\n", "\n").Replace("\n", Environment.NewLine));
+            var result = new List<Group>();
+            Collect(ListFile, DefaultList, result);
+            if (Plugin.UnlockStoryBlueprints.Value)
+                Collect(StoryFile, DefaultStoryList, result);
+            return result;
+        }
+
+        // The groups a list file names that are not unlocked yet, added to the result. The file is written with its default the first time.
+        private static void Collect(string file, string defaultList, List<Group> result)
+        {
+            if (!File.Exists(file))
+                File.WriteAllText(file, defaultList.Replace("\r\n", "\n").Replace("\n", Environment.NewLine));
 
             var handler = UnlockedGroupsHandler.Instance;
-            var result = new List<Group>();
-            foreach (var raw in File.ReadAllLines(ListFile))
+            foreach (var raw in File.ReadAllLines(file))
             {
                 var id = raw.Trim();
                 if (id.Length == 0 || id.StartsWith("#"))
@@ -123,15 +168,13 @@ VehicleLights2
                 var group = GroupsHandler.GetGroupViaId(id);
                 if (group == null)
                 {
-                    ModLog.Note("blueprints.txt: the game has no group " + id + "; skipped.");
+                    ModLog.Note(Path.GetFileName(file) + ": the game has no group " + id + "; skipped.");
                     continue;
                 }
 
                 if (!handler.IsGloballyUnlocked(group) && !result.Contains(group))
                     result.Add(group);
             }
-
-            return result;
         }
 
         private static IEnumerator Unlock(List<Group> groups)
