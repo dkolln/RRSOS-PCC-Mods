@@ -13,7 +13,25 @@
   <ItemGroup>
     <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
     <Compile Include="..\Shared\Placement.cs" Link="Shared\Placement.cs" />
+    <Compile Include="..\Shared\GroupCloner.cs" Link="Shared\GroupCloner.cs" />
+    <Compile Include="..\Shared\CustomIcons.cs" Link="Shared\CustomIcons.cs" />
     <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The screen is Unity UI with TextMeshPro text. -->
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GameManaged)Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameManaged)UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GameManaged)UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
 </Project>

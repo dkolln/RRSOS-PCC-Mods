@@ -2,7 +2,7 @@
   "id": "com.rrsos.pcc.boosters",
   "name": "RRSOS PCC Boosters",
   "version": "0.0.1",
-  "description": "A Boosters screen to place in the world: pick a beacon, a booster kind, its machine tier, optimizers and fuses, and it builds the booster there. Work in progress: for now it only writes a discovery report (boosters-spike.txt).",
+  "description": "A Boosters screen in the build menu (1 Iron, 1 Aluminium, 1 Alloy). Using it opens a window where you pick a named beacon, a booster (heat, pressure, butterflies, bees, ecosystem, frogs, trees, grass, flowers), the machine tier, an optimizer and its fuses, and what to fill the machines with; Build places eight machines and the optimizers at the beacon for free and takes the beacon away.",
   "plugin": "RRSOS.PCC.Boosters.dll",
   "pluginFolder": "RRSOS-PCC-Boosters",
   "config": "com.rrsos.pcc.boosters.cfg",
