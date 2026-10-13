@@ -572,6 +572,69 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                 ModLog.Note("Stages: " + needs + ": " + a + " pieces added, " + r + " taken away.");
                 Tell(name + " unlocked: the base grew (" + a + " added" + (r > 0 ? ", " + r + " taken away" : "") + ").");
             }
+
+            if (Plugin.StageSaves.Value && (added.Count > 0 || removed.Count > 0))
+                yield return StageSave(key, added.Keys.Union(removed.Keys).ToList());
+        }
+
+        /// <summary>
+        /// A save of the world as it stands after a stage: the game saves its own slot (as its autosave does) and that file is copied to stage-saves\&lt;save name&gt;\stage-N.json in this
+        /// mod's data folder, N counting the stages this save has had (the unlocks that grew the base). stage-saves.txt there says which unlock each file is.
+        /// </summary>
+        private static IEnumerator StageSave(string key, List<string> unlocked)
+        {
+            var saver = Managers.GetManager<SavedDataHandler>();
+            if (saver == null)
+                yield break;
+
+            var slot = saver.GetCurrentSaveFileName();
+            var until = Time.realtimeSinceStartup + 30f;
+            while (!saver.IsSavePossible() && Time.realtimeSinceStartup < until)
+                yield return new WaitForSecondsRealtime(1f);
+
+            var started = DateTime.UtcNow;
+            var saved = false;
+            Action onSaved = () => saved = true;
+            saver.OnSaved += onSaved;
+            try
+            {
+                saver.SaveWorldData(slot);
+            }
+            catch (Exception e)
+            {
+                saver.OnSaved -= onSaved;
+                ModLog.Note("Stage save: the game could not save: " + e.GetType().Name + ": " + e.Message);
+                yield break;
+            }
+
+            until = Time.realtimeSinceStartup + 30f;
+            while (!saved && Time.realtimeSinceStartup < until)
+                yield return null;
+            saver.OnSaved -= onSaved;
+            yield return new WaitForSecondsRealtime(0.5f);
+
+            try
+            {
+                var source = Path.Combine(Application.persistentDataPath, slot + ".json");
+                if (!File.Exists(source) || File.GetLastWriteTimeUtc(source) < started.AddSeconds(-2))
+                {
+                    ModLog.Note("Stage save: the save file " + source + " was not written; no stage copy made.");
+                    yield break;
+                }
+
+                // N: how many different unlocks have grown the base in this save (stages.txt keeps one line per entry, "key|needs|op|group|spot")
+                var stages = ModLog.ReadLines(StagesFile).Where(l => l.StartsWith(key + "|")).Select(l => l.Substring(key.Length + 1).Split('|')[0]).Distinct().Count();
+                var folder = Path.Combine(ModLog.FileIn("stage-saves"), string.Concat(slot.Where(c => Array.IndexOf(Path.GetInvalidFileNameChars(), c) < 0)));
+                Directory.CreateDirectory(folder);
+                var target = Path.Combine(folder, "stage-" + stages + ".json");
+                File.Copy(source, target, true);
+                File.AppendAllText(Path.Combine(Path.GetDirectoryName(folder), "stage-saves.txt"), DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  " + slot + "/stage-" + stages + ".json  " + string.Join(", ", unlocked.ToArray()) + Environment.NewLine);
+                ModLog.Note("Stage save: " + target);
+            }
+            catch (Exception e)
+            {
+                ModLog.Note("Stage save: could not copy the save: " + e.GetType().Name + ": " + e.Message);
+            }
         }
 
         private sealed class SwapResult
