@@ -55,7 +55,21 @@ namespace RRSOS.PCC.ModManager
             if (existing != null)
                 Destroy(existing.gameObject);
 
-            _root = _ui.Panel(canvas, RootName, new Color(0.01f, 0.02f, 0.035f, 0.97f));
+            // the menu's other pieces that sit on their own canvases (the social corner, the DLC adverts) would show through
+            foreach (var other in new[] { intro.socialCorner, intro.DLCCanvas })
+            {
+                if (other != null && other.activeSelf)
+                {
+                    _hidden.Add(other);
+                    other.SetActive(false);
+                }
+            }
+
+            _root = _ui.Panel(canvas, RootName, new Color(0f, 0f, 0f, 1f));
+            var rootCanvas = _root.gameObject.AddComponent<Canvas>();
+            rootCanvas.overrideSorting = true;
+            rootCanvas.sortingOrder = 5000;
+            _root.gameObject.AddComponent<GraphicRaycaster>();
             _root.anchorMin = Vector2.zero;
             _root.anchorMax = Vector2.one;
             _root.offsetMin = _root.offsetMax = Vector2.zero;
@@ -148,6 +162,9 @@ namespace RRSOS.PCC.ModManager
                 _configContent.anchoredPosition = new Vector2(0f, _configScroll);
         }
 
+        // "RRSOS PCC Base" is shown as "Base": every mod of the set carries the prefix, so it only takes room
+        private static string Plain(string name) => name.StartsWith("RRSOS PCC ", StringComparison.Ordinal) ? name.Substring("RRSOS PCC ".Length) : name;
+
         private void AddModRow(ModInfo mod)
         {
             var row = UiKit.Row(_listContent, 60f);
@@ -155,7 +172,7 @@ namespace RRSOS.PCC.ModManager
             var colour = mod.OffAtNextStart ? UiKit.Warn : on ? UiKit.Lit : UiKit.Dim;
             var state = mod.OffAtNextStart ? "off at next start" : !mod.Loaded ? "not loaded" : on ? "on" : "off";
             var face = mod == _selected ? UiKit.FaceSelected : UiKit.Face;
-            var name = mod.Name + (mod.Version.Length > 0 ? "  " + mod.Version : "");
+            var name = Plain(mod.Name) + (mod.Version.Length > 0 ? "  " + mod.Version : "");
             var button = _ui.Button(row, "", 0f, 0f, 520f, 60f, 22f, colour, true, () =>
             {
                 _selected = mod;
@@ -170,14 +187,14 @@ namespace RRSOS.PCC.ModManager
         private void DrawDetails(float x, float w, float height)
         {
             var mod = _selected;
-            _ui.Label(_root, mod.Name + (mod.Version.Length > 0 ? "   " + mod.Version : ""), x, 146f, w, 52f, 38f, UiKit.Lit);
+            _ui.Label(_root, Plain(mod.Name) + (mod.Version.Length > 0 ? "   " + mod.Version : ""), x, 146f, w, 56f, 38f, UiKit.Lit);
             _ui.Label(_root, (mod.Guid.Length > 0 ? mod.Guid + "   " : "") + ModList.FolderText(mod), x, 200f, w, 28f, 17f, UiKit.Dim);
 
             var text = mod.OffAtNextStart ? "At the next start: OFF  (click to switch it on)" : "At the next start: ON  (click to switch it off)";
             var can = !mod.IsSelf && mod.Top != null;
             _ui.Button(_root, text, x, 236f, 640f, 48f, 22f, mod.OffAtNextStart ? UiKit.Warn : UiKit.Lit, can, () =>
             {
-                _message = ModList.Toggle(mod) ?? (mod.OffAtNextStart ? mod.Name + " will not load at the next start." : mod.Name + " will load at the next start.");
+                _message = ModList.Toggle(mod) ?? (mod.OffAtNextStart ? Plain(mod.Name) + " will not load at the next start." : Plain(mod.Name) + " will load at the next start.");
                 Redraw();
             });
             if (mod.IsSelf)
@@ -215,17 +232,17 @@ namespace RRSOS.PCC.ModManager
 
         private void AddSetting(ConfigEntryBase entry, float width)
         {
-            var row = UiKit.Row(_configContent, 100f);
+            var row = UiKit.Row(_configContent, 112f);
             var widgetX = width - 440f;
-            _ui.Label(row, entry.Definition.Key, 8f, 4f, widgetX - 24f, 34f, 26f, UiKit.Lit);
-            _ui.Label(row, Describe(entry), 8f, 40f, widgetX - 24f, 58f, 17f, UiKit.Dim, TextAlignmentOptions.TopLeft, true);
+            _ui.Label(row, entry.Definition.Key, 8f, 2f, widgetX - 24f, 42f, 26f, UiKit.Lit);
+            _ui.Label(row, Describe(entry), 8f, 46f, widgetX - 24f, 62f, 17f, UiKit.Dim, TextAlignmentOptions.TopLeft, true);
 
             var type = entry.SettingType;
             var choices = Choices(entry);
             if (type == typeof(bool))
             {
                 var on = (bool)entry.BoxedValue;
-                _ui.Button(row, on ? "ON" : "OFF", widgetX, 22f, 320f, 50f, 26f, on ? UiKit.Lit : UiKit.Dim, true, () =>
+                _ui.Button(row, on ? "ON" : "OFF", widgetX, 28f, 250f, 50f, 26f, on ? UiKit.Lit : UiKit.Dim, true, () =>
                 {
                     entry.BoxedValue = !on;
                     Redraw();
@@ -234,7 +251,7 @@ namespace RRSOS.PCC.ModManager
             else if (choices != null && choices.Length > 1)
             {
                 var current = entry.GetSerializedValue();
-                _ui.Button(row, current, widgetX, 22f, 320f, 50f, 24f, UiKit.Lit, true, () =>
+                _ui.Button(row, current, widgetX, 28f, 250f, 50f, 24f, UiKit.Lit, true, () =>
                 {
                     var index = Array.FindIndex(choices, c => string.Equals(Serialize(entry, c), current, StringComparison.OrdinalIgnoreCase));
                     entry.BoxedValue = choices[(index + 1) % choices.Length];
@@ -243,7 +260,7 @@ namespace RRSOS.PCC.ModManager
             }
             else
             {
-                _ui.Input(row, entry.GetSerializedValue(), widgetX, 22f, 320f, 50f, 24f, text =>
+                _ui.Input(row, entry.GetSerializedValue(), widgetX, 28f, 250f, 50f, 24f, text =>
                 {
                     try
                     {
@@ -260,7 +277,7 @@ namespace RRSOS.PCC.ModManager
             }
 
             var isDefault = entry.GetSerializedValue() == Serialize(entry, entry.DefaultValue);
-            _ui.Button(row, "Reset", widgetX + 330f, 22f, 100f, 50f, 20f, isDefault ? UiKit.Off : UiKit.Dim, !isDefault, () =>
+            _ui.Button(row, "Reset", widgetX + 262f, 28f, 150f, 50f, 22f, isDefault ? UiKit.Off : UiKit.Dim, !isDefault, () =>
             {
                 entry.BoxedValue = entry.DefaultValue;
                 Redraw();

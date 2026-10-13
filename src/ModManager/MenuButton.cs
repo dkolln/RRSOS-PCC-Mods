@@ -17,14 +17,28 @@ namespace RRSOS.PCC.ModManager
     {
         private const string ButtonName = "RRSOS_ManageMods";
         private ManagerScreen _screen;
+        private TMP_Text _label;
 
         private IEnumerator Start()
         {
             _screen = gameObject.AddComponent<ManagerScreen>();
 
+            var nextSearch = 0f;
             while (true)
             {
-                yield return new WaitForSecondsRealtime(1f);
+                yield return new WaitForSecondsRealtime(0.25f);
+
+                if (_label != null && _label.text != "Manage Mods")
+                {
+                    var localized = _label.GetComponent("LocalizedText") as Behaviour;
+                    if (localized != null)
+                        localized.enabled = false;
+                    _label.text = "Manage Mods";
+                }
+
+                if (Time.realtimeSinceStartup < nextSearch)
+                    continue;
+                nextSearch = Time.realtimeSinceStartup + 1f;
 
                 if (!Plugin.Enabled.Value)
                     continue;
@@ -78,6 +92,8 @@ namespace RRSOS.PCC.ModManager
                     localized.enabled = false;
                 label.text = "Manage Mods";
             }
+
+            _label = label;
 
             // the menu stacks its buttons itself: put the copy where Quit is and Quit moves down
             copy.transform.SetSiblingIndex(quit.transform.GetSiblingIndex());

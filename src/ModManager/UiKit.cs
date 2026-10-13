@@ -48,6 +48,9 @@ namespace RRSOS.PCC.ModManager
             Place(rect, x, y, w, h);
             var label = go.GetComponent<TextMeshProUGUI>();
             Style(label, text, size, colour, align, wrap);
+            // the game's font needs about one and a half times its size in height for a line; with less, the ellipsis hides the whole text
+            if (rect.sizeDelta.y < size * 1.5f)
+                rect.sizeDelta = new Vector2(rect.sizeDelta.x, size * 1.5f);
             return label;
         }
 
