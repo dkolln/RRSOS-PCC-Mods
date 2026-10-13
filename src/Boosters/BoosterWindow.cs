@@ -152,13 +152,16 @@ namespace RRSOS.PCC.Boosters
             if (WorldState.Ready(out var planetHash, out _))
             {
                 _beacons = WorldObjectsHandler.Instance.GetAllWorldObjects().Values
-                    .Where(w => w != null && w.GetGroup() != null && w.GetGroup().GetId() == "Beacon" && w.GetPlanetHash() == planetHash)
+                    .Where(w => w != null && w.GetGroup() != null && w.GetGroup().GetId() == "Beacon" && w.GetPlanetHash() == planetHash && !IsBase(w))
                     .OrderBy(w => w.GetText() ?? "", StringComparer.OrdinalIgnoreCase).ToList();
             }
 
             if (_beacon != null && !_beacons.Contains(_beacon))
                 _beacon = null;
         }
+
+        // The beacon named Base marks the base itself (the T0 base's lamp becomes it), never a booster.
+        private static bool IsBase(WorldObject beacon) => string.Equals((beacon.GetText() ?? "").Trim(), "Base", StringComparison.OrdinalIgnoreCase);
 
         private static bool Unlocked(string groupId)
         {
