@@ -110,7 +110,6 @@ namespace RRSOS.PCC.Commands
                 if (_group == null)
                     return;
                 ModLog.Note("Terminal: created the build item from " + SourceId + " (" + string.Join(", ", Ingredients) + ").");
-                PrefabDump.Write(SourceId, ScreenId);
             }
 
             if (!GroupCloner.IsInGame(_group))

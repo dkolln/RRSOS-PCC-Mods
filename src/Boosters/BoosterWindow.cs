@@ -421,7 +421,7 @@ namespace RRSOS.PCC.Boosters
             label.fontSize = size;
             label.color = colour;
             label.alignment = align;
-            label.enableWordWrapping = false;
+            label.textWrappingMode = TextWrappingModes.NoWrap;
             label.overflowMode = TextOverflowModes.Ellipsis;
             label.raycastTarget = false;
         }

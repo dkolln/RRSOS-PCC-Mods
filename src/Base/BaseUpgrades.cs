@@ -15,7 +15,7 @@ namespace RRSOS.PCC.Base
     /// "EnergyGenerator1 > EnergyGenerator2 > EnergyGenerator3"). As soon as a later step of a chain is unlocked, every building of an earlier step is swapped, in the same spot,
     /// for the highest step that is unlocked. Anything stored inside the old building (the seeds in a vegetube) is moved into the new one. The new building is placed before the
     /// old one is removed, and the old one is kept if the new one cannot be placed or its contents cannot be moved, so nothing is lost.
-    /// With the scope setting on World this applies to every such building on the planet; on Base only to the pieces this mod placed.
+    /// It applies to every such building on the planet, whether or not the base mod placed it.
     /// </summary>
     internal sealed class BaseUpgrades : MonoBehaviour
     {
@@ -249,9 +249,6 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                 yield break;
 
             var handler = WorldObjectsHandler.Instance;
-            var recorded = ModLog.ReadLines(BaseBuilder.UndoFile).Where(l => l.StartsWith(key + "|")).ToList();
-            var recordedIds = new HashSet<int>(recorded.Select(l => l.Split('|')).Where(p => p.Length >= 3 && int.TryParse(p[p.Length - 2], out _)).Select(p => int.Parse(p[p.Length - 2])));
-            var baseOnly = Plugin.UpgradeScope.Value.Trim().Equals("Base", StringComparison.OrdinalIgnoreCase);
 
             var todo = new List<WorldObject>();
             foreach (var wo in handler.GetAllWorldObjects().Values.ToList())
@@ -260,8 +257,6 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                     continue;
                 if (wo.GetPosition().sqrMagnitude <= 0f || wo.GetPlanetHash() != planetHash)
                     continue; // inside an inventory, or on another planet
-                if (baseOnly && !recordedIds.Contains(wo.GetId()))
-                    continue;
                 todo.Add(wo);
             }
 
