@@ -292,7 +292,7 @@ namespace RRSOS.PCC.Boosters
             yLeft = Section("Booster Type", left, yLeft, colW, 3, BoosterKinds.All.Select(k => new Option { Key = k.Key, Label = k.Name, Selected = k == _kind }).ToList(), key => PickKind(BoosterKinds.ByKey(key)));
 
             if (_kind != null && _kind.Machines.Length > 1)
-                yLeft = Section("Machine Tier", left, yLeft, colW, 3, _kind.Machines.Select((c, i) => new Option { Key = c.GId, Label = "T" + (i + 1), Enabled = Allowed(c.GId), Selected = c.GId == _machine }).ToList(), key => _machine = key);
+                yLeft = Section("Machine Tier", left, yLeft, colW, 5, _kind.Machines.Select((c, i) => new Option { Key = c.GId, Label = "T" + (i + 1), Enabled = Allowed(c.GId), Selected = c.GId == _machine }).ToList(), key => _machine = key);
 
             // right: the optimizer, its fuses, what fills the machines
             var optimizers = new List<Option> { new Option { Key = "", Label = "None", Selected = _optimizer == null } };
