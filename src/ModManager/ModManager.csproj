@@ -4,7 +4,7 @@
     <AssemblyName>RRSOS.PCC.ModManager</AssemblyName>
     <RootNamespace>RRSOS.PCC.ModManager</RootNamespace>
     <Description>A Manage Mods screen on the main menu: every loaded mod and its config options</Description>
-    <Version>0.0.1</Version>
+    <Version>0.1.0</Version>
     <ModFolder>RRSOS-PCC-ModManager</ModFolder>
   </PropertyGroup>
 
@@ -22,6 +22,10 @@
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>$(GameManaged)UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(GameManaged)Unity.InputSystem.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
