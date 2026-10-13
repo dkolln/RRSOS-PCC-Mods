@@ -521,16 +521,6 @@
                        "needs":  "ScreenMessage"
                    },
                    {
-                       "g":  "Container2",
-                       "x":  15.4,
-                       "y":  2.519,
-                       "z":  8,
-                       "rot":  "0,1,0,-4.371139E-08",
-                       "text":  "Trash",
-                       "op":  "add",
-                       "needs":  "Container2"
-                   },
-                   {
                        "g":  "VegetubeOutside1",
                        "x":  41.8,
                        "y":  2.52,
