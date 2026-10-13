@@ -12,7 +12,7 @@ using UnityEngine.UI;
 namespace RRSOS.PCC.Trash
 {
     /// <summary>
-    /// A small trash can on a container's window, to the right of its grid (the left side belongs to the game's own icons: sort, move all and the drone supply icon). One click deletes
+    /// A small trash can on a container's window, one slot above the sort icon, on the left of its grid (the game's own icons there are sort, move all and the drone supply icon). One click deletes
     /// everything in that container for good. It is shown only for the groups in the Groups setting and only for the container side of the window, never the backpack. The window's
     /// structure is written to container-window.txt (once per start) so the placement can be checked from facts.
     /// </summary>
@@ -83,11 +83,30 @@ namespace RRSOS.PCC.Trash
             target.Inventory = inventory;
             target.Name = owner.GetGroup().GetId() + " #" + owner.GetId();
 
-            // Top right corner of the grid, then a little to the right and down. The corners are in world space, so the UI's scale is allowed for.
-            var corners = new Vector3[4];
-            ((RectTransform)grid.transform).GetWorldCorners(corners);
+            // One icon slot above the game's sort icon: the sort icon's centre plus the step from "MoveAll" up to "Order". Centres are in world space, so the UI's scale is allowed for.
             var scale = root.lossyScale.x;
-            root.position = corners[2] + new Vector3(Plugin.ButtonX.Value * scale, -Plugin.ButtonY.Value * scale, 0f);
+            var order = Find(window.containerInventoryContainer.transform, "Order");
+            var moveAll = Find(window.containerInventoryContainer.transform, "MoveAll");
+            Vector3 centre;
+            if (order != null && moveAll != null)
+            {
+                var o = order.TransformPoint(order.rect.center);
+                centre = o + (o - moveAll.TransformPoint(moveAll.rect.center));
+            }
+            else
+            {
+                // No sort icon found: top left corner of the grid, a little to the left and up.
+                var corners = new Vector3[4];
+                ((RectTransform)grid.transform).GetWorldCorners(corners);
+                centre = corners[1] + new Vector3(-40f * scale, 40f * scale, 0f);
+            }
+
+            root.position = centre + new Vector3(Plugin.NudgeX.Value * scale, Plugin.NudgeY.Value * scale, 0f);
+        }
+
+        private static RectTransform Find(Transform parent, string name)
+        {
+            return parent.GetComponentsInChildren<RectTransform>(false).FirstOrDefault(r => r.name == name);
         }
 
         private static WorldObject OwnerOf(Inventory inventory)
@@ -102,7 +121,7 @@ namespace RRSOS.PCC.Trash
             var rect = (RectTransform)go.transform;
             rect.SetParent(window.transform, false);
             rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = new Vector2(52f, 52f);
             go.GetComponent<LayoutElement>().ignoreLayout = true; // in case the window lays its children out itself
 
