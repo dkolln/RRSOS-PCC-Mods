@@ -2,7 +2,7 @@
   "id": "com.rrsos.pcc.modmanager",
   "name": "RRSOS PCC Mod Manager",
   "version": "0.1.0",
-  "description": "A Manage Mods button on the main menu, above Quit. It opens a screen with every loaded mod on the left and its settings on the right: switches, choices and text boxes change the setting through BepInEx (applied at once and saved to the mod's .cfg), with a Reset for each. A mod can also be switched off or on for the next start, which moves its folder out of or back into BepInEx\plugins (to plugins-disabled).",
+  "description": "A Manage Mods button on the main menu, above Quit. It opens a screen with every loaded mod on the left and its settings on the right: switches, choices and text boxes change the setting through BepInEx (applied at once and saved to the mod's .cfg), with a Reset for each. A mod can also be switched off or on for the next start, which moves its folder out of or back into the BepInEx plugins folder (to plugins-disabled).",
   "plugin": "RRSOS.PCC.ModManager.dll",
   "pluginFolder": "RRSOS-PCC-ModManager",
   "config": "com.rrsos.pcc.modmanager.cfg",
