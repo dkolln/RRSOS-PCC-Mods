@@ -476,55 +476,74 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             foreach (var entry in due.OrderBy(p => p.op == "remove" ? 0 : 1))
             {
                 var at = BaseBuilder.Anchor + new Vector3(entry.x, entry.y, entry.z);
-                var there = existing.FirstOrDefault(w => w.GetGroup().GetId() == entry.g && (w.GetPosition() - at).sqrMagnitude < SameSpot * SameSpot);
+                var ids = entry.g.Split(',').Select(i => i.Trim()).ToArray();   // a remove may name several groups ("EnergyGenerator1,EnergyGenerator2")
+                var here = existing.Where(w => ids.Contains(w.GetGroup().GetId()) && (w.GetPosition() - at).sqrMagnitude < SameSpot * SameSpot).ToList();
 
                 if (entry.op == "remove")
                 {
-                    if (there != null)
+                    var failedRemove = false;
+                    foreach (var piece in entry.all ? here : here.Take(1).ToList())
                     {
                         try
                         {
-                            handler.DestroyWorldObject(there, true);
-                            existing.Remove(there);
+                            handler.DestroyWorldObject(piece, true);
+                            existing.Remove(piece);
                             removed[entry.needs] = (removed.TryGetValue(entry.needs, out var r) ? r : 0) + 1;
                         }
                         catch (Exception e)
                         {
-                            ModLog.Note("Stages: could not remove " + entry.g + " #" + there.GetId() + ": " + e.GetType().Name + ": " + e.Message);
-                            continue;
+                            ModLog.Note("Stages: could not remove " + piece.GetGroup().GetId() + " #" + piece.GetId() + ": " + e.GetType().Name + ": " + e.Message);
+                            failedRemove = true;
+                        }
+
+                        if (++sinceFrame >= PiecesPerFrame)
+                        {
+                            sinceFrame = 0;
+                            yield return null;
                         }
                     }
 
-                    finished.Add(EntryId(entry));
+                    if (!failedRemove)
+                        finished.Add(EntryId(entry));
                     continue;
                 }
 
-                if (there != null || GroupsHandler.GetGroupViaId(entry.g) == null)
+                // an add: one piece, or "count" of them standing on the spot (a stack); what is already there counts
+                var wanted = Math.Max(1, entry.count);
+                if (here.Count >= wanted || GroupsHandler.GetGroupViaId(entry.g) == null)
                 {
                     finished.Add(EntryId(entry)); // already there, or a piece of a mod that is not installed
                     continue;
                 }
 
-                try
+                var placed = 0;
+                for (var i = here.Count; i < wanted; i++)
                 {
-                    var wo = Placement.PlaceAt(entry.g, at, DataTreatments.StringToQuaternion(entry.rot), planetHash,
-                        string.IsNullOrEmpty(entry.panels) ? null : DataTreatments.StringToIntList(entry.panels).ToArray(),
-                        string.IsNullOrEmpty(entry.color) ? null : entry.color, entry.text, entry.groups);
-                    created.Add(new KeyValuePair<WorldObject, TemplatePiece>(wo, entry));
-                    existing.Add(wo);
-                    finished.Add(EntryId(entry));
-                    added[entry.needs] = (added.TryGetValue(entry.needs, out var n) ? n : 0) + 1;
-                }
-                catch (Exception e)
-                {
-                    ModLog.LogOnce("stage-" + EntryId(entry), "Stages: could not place " + entry.g + " at " + entry.x + "," + entry.z + ": " + e.GetType().Name + ": " + e.Message + " (tried again later).");
+                    try
+                    {
+                        var wo = Placement.PlaceAt(entry.g, at, DataTreatments.StringToQuaternion(entry.rot), planetHash,
+                            string.IsNullOrEmpty(entry.panels) ? null : DataTreatments.StringToIntList(entry.panels).ToArray(),
+                            string.IsNullOrEmpty(entry.color) ? null : entry.color, entry.text, entry.groups);
+                        created.Add(new KeyValuePair<WorldObject, TemplatePiece>(wo, entry));
+                        existing.Add(wo);
+                        placed++;
+                        added[entry.needs] = (added.TryGetValue(entry.needs, out var n) ? n : 0) + 1;
+                    }
+                    catch (Exception e)
+                    {
+                        ModLog.LogOnce("stage-" + EntryId(entry), "Stages: could not place " + entry.g + " at " + entry.x + "," + entry.z + ": " + e.GetType().Name + ": " + e.Message + " (tried again later).");
+                        break;
+                    }
+
+                    if (++sinceFrame >= PiecesPerFrame)
+                    {
+                        sinceFrame = 0;
+                        yield return null;
+                    }
                 }
 
-                if (++sinceFrame >= PiecesPerFrame)
-                {
-                    sinceFrame = 0;
-                    yield return null;
-                }
+                if (here.Count + placed >= wanted)
+                    finished.Add(EntryId(entry));
             }
 
             foreach (var made in created)

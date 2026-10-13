@@ -23,6 +23,8 @@ namespace RRSOS.PCC.Base
         public string from;     // growth: the panels the piece must still have for the change to be made
         public string needs;    // growth: the group that must be unlocked first
         public string op;       // growth: "add" (make the piece), "remove" (take the piece away), empty = change a pod's panels
+        public int count;       // growth, add: how many of the piece stand on the spot when done (a stack); 0 or 1 = one
+        public bool all;        // growth, remove: take every piece of the group(s) on the spot, not just one (a stack)
     }
 
     [Serializable]
