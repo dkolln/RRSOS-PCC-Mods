@@ -381,7 +381,10 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             if (growth == null || growth.pieces == null || growth.pieces.Length == 0)
                 yield break;
 
-            var due = growth.pieces.Where(p => string.IsNullOrEmpty(p.op) && !string.IsNullOrEmpty(p.needs) && Unlocked(p.needs)).ToList();
+            // Each pod change is made once per save (stages.txt keeps it), so a door the player takes away does not come back: removing it puts the pod's panels back to exactly what
+            // the change started from, which would look like a pod still waiting for it.
+            var recorded = new HashSet<string>(ModLog.ReadLines(StagesFile).Where(l => l.StartsWith(key + "|")).Select(l => l.Substring(key.Length + 1)));
+            var due = growth.pieces.Where(p => string.IsNullOrEmpty(p.op) && !string.IsNullOrEmpty(p.needs) && !recorded.Contains(EntryId(p)) && Unlocked(p.needs)).ToList();
             if (due.Count == 0)
                 yield break;
 
@@ -389,6 +392,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             var existing = handler.GetAllWorldObjects().Values.Where(w => w != null && w.GetGroup() != null && w.GetPlanetHash() == planetHash && w.GetPosition().sqrMagnitude > 0f).ToList();
             var newIds = new Dictionary<int, KeyValuePair<int, string>>();
             var done = new Dictionary<string, int>(); // needed group -> pieces updated
+            var finished = new List<string>();
             foreach (var entry in due)
             {
                 var at = BaseBuilder.Anchor + new Vector3(entry.x, entry.y, entry.z);
@@ -398,7 +402,10 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
 
                 var current = string.Join(",", old.GetPanelsId().Select(i => i.ToString()).ToArray());
                 if (current == entry.panels || current != entry.from)
-                    continue; // already done, or the player has changed this one themselves
+                {
+                    finished.Add(EntryId(entry)); // already done, or the player has changed this one themselves: never touch it again
+                    continue;
+                }
 
                 var result = new SwapResult();
                 yield return Swap(old, entry.g, planetHash, result, DataTreatments.StringToIntList(entry.panels).ToArray());
@@ -407,8 +414,12 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
 
                 newIds[result.OldId] = new KeyValuePair<int, string>(result.Made.GetId(), entry.g);
                 done[entry.needs] = (done.TryGetValue(entry.needs, out var n) ? n : 0) + 1;
+                finished.Add(EntryId(entry));
                 yield return null;
             }
+
+            foreach (var id in finished)
+                ModLog.Append(StagesFile, key + "|" + id);
 
             if (newIds.Count == 0)
                 yield break;
