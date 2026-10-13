@@ -13,15 +13,13 @@ namespace RRSOS.PCC.Trash
 {
     /// <summary>
     /// A small trash can on a container's window, one slot above the sort icon, on the left of its grid (the game's own icons there are sort, move all and the drone supply icon). One click deletes
-    /// everything in that container for good. It is shown only for the groups in the Groups setting and only for the container side of the window, never the backpack. The window's
-    /// structure is written to container-window.txt (once per start) so the placement can be checked from facts.
+    /// everything in that container for good. It is shown only for the groups in the Groups setting and only for the container side of the window, never the backpack.
     /// </summary>
     internal sealed class TrashButton : MonoBehaviour
     {
         private const string RootName = "RRSOS_TrashButton";
         private static readonly FieldInfo RightInventory = typeof(UiWindowContainer).GetField("_inventoryRight", BindingFlags.Instance | BindingFlags.NonPublic);
         private static Sprite _sprite;
-        private bool _dumped;
 
         /// <summary>What the button deletes: the container's inventory and what to call it in the log.</summary>
         private sealed class Target : MonoBehaviour
@@ -45,12 +43,6 @@ namespace RRSOS.PCC.Trash
                     {
                         if (window == null || !window.gameObject.scene.IsValid() || !window.IsOpen)
                             continue;
-
-                        if (!_dumped)
-                        {
-                            _dumped = true;
-                            Dump(window);
-                        }
 
                         Refresh(window);
                     }
@@ -206,35 +198,6 @@ namespace RRSOS.PCC.Trash
             texture.Apply();
             _sprite = Sprite.Create(texture, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f);
             return _sprite;
-        }
-
-        // ---- the window's structure -------------------------------------------------------------------------------------------
-
-        private static void Dump(UiWindowContainer window)
-        {
-            try
-            {
-                var text = new StringBuilder();
-                text.AppendLine("Container window structure, written " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " by " + Plugin.Name + " " + Plugin.Version);
-                Walk(window.transform, 0, text);
-                File.WriteAllText(ModLog.FileIn("container-window.txt"), text.ToString());
-            }
-            catch (Exception e)
-            {
-                ModLog.Note("Could not write the container window's structure: " + e.GetType().Name + ": " + e.Message);
-            }
-        }
-
-        private static void Walk(Transform t, int depth, StringBuilder text)
-        {
-            var pad = new string(' ', depth * 2);
-            text.Append(pad).Append(t.name).Append(t.gameObject.activeSelf ? "" : " [inactive]");
-            if (t is RectTransform r)
-                text.Append("  anchors ").Append(r.anchorMin).Append("-").Append(r.anchorMax).Append("  pos ").Append(r.anchoredPosition).Append("  size ").Append(r.rect.size);
-            text.AppendLine();
-
-            for (var i = 0; i < t.childCount; i++)
-                Walk(t.GetChild(i), depth + 1, text);
         }
     }
 }

@@ -14,12 +14,11 @@ namespace RRSOS.PCC.Base
     {
         public const string Guid = "com.rrsos.pcc.base";
         public const string Name = "RRSOS PCC Base";
-        public const string Version = "0.4.0";
+        public const string Version = "0.5.0";
 
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<bool> UndoLastBuild;
         internal static ConfigEntry<bool> AutoUpgrade;
-        internal static ConfigEntry<string> UpgradeScope;
         internal static ConfigEntry<bool> PowerButtons;
         internal static ConfigEntry<float> PowerButtonsX, PowerButtonsY;
 
@@ -30,7 +29,6 @@ namespace RRSOS.PCC.Base
             UndoLastBuild = Config.Bind("General", "UndoLastBuild", false, "Set to true and load the world: removes what this mod placed in that world, then sets itself back to false.");
 
             AutoUpgrade = Config.Bind("General", "AutoUpgrade", true, "While playing, swap buildings for the better one as it is unlocked, by the chains in upgrades.txt (in this mod's data folder), for example Wind Turbine to Solar Panel to T2 Solar Panel.");
-            UpgradeScope = Config.Bind("General", "UpgradeScope", "World", new ConfigDescription("Which buildings are swapped: World = every building of that kind on the planet, Base = only the pieces this mod placed.", new AcceptableValueList<string>("World", "Base")));
 
             PowerButtons = Config.Bind("Power", "Buttons", true, "Show [ ON ] and [ OFF ] buttons on the game's Energy window: they switch the base's energy output on or off. This is the only way to do it; nothing is reported in the chat or on the terminal.");
             PowerButtonsX = Config.Bind("Power", "ButtonsX", 0f, "Sideways offset of the buttons on the Energy window (UI units from the bottom centre).");

@@ -4,7 +4,7 @@
     <AssemblyName>RRSOS.PCC.Boosters</AssemblyName>
     <RootNamespace>RRSOS.PCC.Boosters</RootNamespace>
     <Description>Boosters: a Boosters screen that builds machines with their optimizers at a beacon</Description>
-    <Version>0.0.1</Version>
+    <Version>0.1.0</Version>
     <ModFolder>RRSOS-PCC-Boosters</ModFolder>
   </PropertyGroup>
 

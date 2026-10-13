@@ -4,7 +4,7 @@
     <AssemblyName>RRSOS.PCC.Base</AssemblyName>
     <RootNamespace>RRSOS.PCC.Base</RootNamespace>
     <Description>Builds the T0 base in the running game, with /build and /undo</Description>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
     <ModFolder>RRSOS-PCC-Base</ModFolder>
   </PropertyGroup>
 

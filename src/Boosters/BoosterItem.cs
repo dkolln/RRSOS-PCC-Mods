@@ -88,38 +88,13 @@ namespace RRSOS.PCC.Boosters
         }
 
         // The placed screen shows the Energy screen's picture on its face; this puts the gear there instead (BoosterGear.png in CustomIcons: white on transparent, so the black of the
-        // screen shows). The screen's parts are written to boosters-screen.txt, once, so that the right picture can be found from facts.
-        private bool _dumped;
+        // screen shows).
         private Sprite _gear;
 
         private void Face(GameObject go)
         {
             try
             {
-                if (!_dumped)
-                {
-                    _dumped = true;
-                    var text = new System.Text.StringBuilder("A placed Boosters screen, " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + Environment.NewLine);
-                    foreach (var t in go.GetComponentsInChildren<Transform>(true))
-                    {
-                        text.Append(new string(' ', Depth(t, go.transform) * 2)).Append(t.name).Append(t.gameObject.activeSelf ? "" : " [inactive]");
-                        foreach (var c in t.GetComponents<Component>().Where(c => c != null && !(c is Transform)))
-                        {
-                            text.Append(" | ").Append(c.GetType().Name);
-                            if (c is UnityEngine.UI.Image image)
-                                text.Append("(sprite ").Append(image.sprite == null ? "none" : image.sprite.name + " " + image.sprite.rect.size).Append(")");
-                            else if (c is SpriteRenderer sr)
-                                text.Append("(sprite ").Append(sr.sprite == null ? "none" : sr.sprite.name + " " + sr.sprite.rect.size).Append(")");
-                            else if (c is Renderer r && r.sharedMaterial != null)
-                                text.Append("(material ").Append(r.sharedMaterial.name).Append(r.sharedMaterial.mainTexture != null ? ", texture " + r.sharedMaterial.mainTexture.name : "").Append(")");
-                        }
-
-                        text.AppendLine();
-                    }
-
-                    System.IO.File.WriteAllText(ModLog.FileIn("boosters-screen.txt"), text.ToString());
-                }
-
                 if (_gear == null)
                     _gear = CustomIcons.Load("BoosterGear", 100f);
                 if (_gear == null)
@@ -149,14 +124,6 @@ namespace RRSOS.PCC.Boosters
             {
                 ModLog.LogOnce("boosters-face", "Boosters screen face: " + e.GetType().Name + ": " + e.Message);
             }
-        }
-
-        private static int Depth(Transform t, Transform root)
-        {
-            var depth = 0;
-            for (; t != null && t != root; t = t.parent)
-                depth++;
-            return depth;
         }
 
         private void MarkScreens()

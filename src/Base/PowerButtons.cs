@@ -14,7 +14,7 @@ namespace RRSOS.PCC.Base
     /// <summary>
     /// Two buttons, [ ON ] and [ OFF ], on the game's Energy window (the one that lists consumption and production, opened from the Energy screen). They switch the base's energy output on and
     /// off; the one that matches the current state is lit. The window is a Unity UI window of the game's own, so the buttons are ordinary UI objects added to it, with
-    /// the window's own font. The window's structure is written to energy-window.txt in this mod's data folder (once per start) so the placement can be adjusted from facts.
+    /// the window's own font.
     /// </summary>
     internal sealed class PowerButtons : MonoBehaviour
     {
@@ -25,7 +25,6 @@ namespace RRSOS.PCC.Base
         private static readonly Color Face = new Color(0.04f, 0.06f, 0.08f, 0.72f);
 
         private TextMeshProUGUI _on, _off;
-        private bool _dumped;
 
         private IEnumerator Start()
         {
@@ -41,12 +40,6 @@ namespace RRSOS.PCC.Base
                     var window = Resources.FindObjectsOfTypeAll<UiWindowEnergy>().FirstOrDefault(w => w != null && w.gameObject.scene.IsValid());
                     if (window == null)
                         continue;
-
-                    if (!_dumped)
-                    {
-                        _dumped = true;
-                        Dump(window);
-                    }
 
                     if (window.transform.Find(RootName) == null)
                         Build(window);
@@ -145,39 +138,6 @@ namespace RRSOS.PCC.Base
         // A click is not reported anywhere (not on the terminal, not in the chat); the lights on the screen and the Base log are the answer.
         private static void Quiet(string message)
         {
-        }
-
-        // ---- the window's structure -------------------------------------------------------------------------------------------
-
-        private static void Dump(UiWindowEnergy window)
-        {
-            try
-            {
-                var text = new StringBuilder();
-                text.AppendLine("Energy window structure, written " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " by RRSOS PCC Base " + Plugin.Version);
-                Walk(window.transform, 0, text);
-                File.WriteAllText(ModLog.FileIn("energy-window.txt"), text.ToString());
-            }
-            catch (Exception e)
-            {
-                ModLog.Note("Could not write the Energy window's structure: " + e.GetType().Name + ": " + e.Message);
-            }
-        }
-
-        private static void Walk(Transform t, int depth, StringBuilder text)
-        {
-            var pad = new string(' ', depth * 2);
-            text.Append(pad).Append(t.name).Append(t.gameObject.activeSelf ? "" : " [inactive]");
-            if (t is RectTransform r)
-                text.Append("  anchors ").Append(r.anchorMin).Append("-").Append(r.anchorMax).Append("  pos ").Append(r.anchoredPosition).Append("  size ").Append(r.rect.size);
-            text.AppendLine();
-
-            var components = t.GetComponents<Component>().Where(c => c != null && !(c is Transform)).Select(c => c.GetType().Name).ToArray();
-            if (components.Length > 0)
-                text.Append(pad).Append("  components: ").AppendLine(string.Join(", ", components));
-
-            for (var i = 0; i < t.childCount; i++)
-                Walk(t.GetChild(i), depth + 1, text);
         }
     }
 }
