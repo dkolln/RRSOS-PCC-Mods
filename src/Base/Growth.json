@@ -458,15 +458,6 @@
                        "needs":  "BedDouble"
                    },
                    {
-                       "g":  "ScreenUnlockables",
-                       "x":  28.7871,
-                       "y":  4.5136,
-                       "z":  10.1145,
-                       "rot":  "0,-8.742278E-08,0,-1",
-                       "op":  "add",
-                       "needs":  "BedDouble"
-                   },
-                   {
                        "g":  "BedDouble",
                        "x":  66.5,
                        "y":  3.53583,
@@ -490,15 +481,6 @@
                        "y":  3.53583,
                        "z":  10.9,
                        "rot":  "0,0.7071068,0,0.7071068",
-                       "op":  "remove",
-                       "needs":  "ScreenMessage"
-                   },
-                   {
-                       "g":  "ScreenUnlockables",
-                       "x":  28.7871,
-                       "y":  4.5136,
-                       "z":  10.1145,
-                       "rot":  "0,-8.742278E-08,0,-1",
                        "op":  "remove",
                        "needs":  "ScreenMessage"
                    },
