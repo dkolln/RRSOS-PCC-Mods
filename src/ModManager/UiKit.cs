@@ -97,14 +97,20 @@ namespace RRSOS.PCC.ModManager
             return button;
         }
 
-        /// <summary>A text box. <paramref name="onEnd"/> gets the text when the player leaves the box or presses Enter.</summary>
+        /// <summary>A text box. <paramref name="onEnd"/> gets the text when the player leaves the box or presses Enter. The box lights up while it is being edited.</summary>
         public TMP_InputField Input(RectTransform parent, string text, float x, float y, float w, float h, float size, Action<string> onEnd)
         {
-            var go = new GameObject("Input", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(TMP_InputField));
+            var go = new GameObject("Input", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Outline));
+            go.SetActive(false);   // the input field must be given its parts before it wakes up, or it makes no caret
             var rect = (RectTransform)go.transform;
             rect.SetParent(parent, false);
             Place(rect, x, y, w, h);
-            go.GetComponent<Image>().color = new Color(0.02f, 0.03f, 0.04f, 0.95f);
+            var back = go.GetComponent<Image>();
+            back.color = new Color(0.02f, 0.03f, 0.04f, 0.95f);
+            var outline = go.GetComponent<Outline>();
+            outline.effectColor = Lit;
+            outline.effectDistance = new Vector2(2f, -2f);
+            outline.enabled = false;
 
             var viewport = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D));
             var viewportRect = (RectTransform)viewport.transform;
@@ -123,16 +129,24 @@ namespace RRSOS.PCC.ModManager
             var label = textObject.GetComponent<TextMeshProUGUI>();
             Style(label, text, size, Lit, TextAlignmentOptions.Left);
             label.overflowMode = TextOverflowModes.Overflow;
+            label.raycastTarget = true;
 
-            var field = go.GetComponent<TMP_InputField>();
+            var field = go.AddComponent<TMP_InputField>();
             field.textViewport = viewportRect;
             field.textComponent = label;
             field.fontAsset = label.font;
             field.pointSize = size;
             field.text = text;
-            field.caretColor = Lit;
-            field.selectionColor = new Color(0.3f, 0.5f, 0.9f, 0.5f);
+            field.customCaretColor = true;
+            field.caretColor = Color.white;
+            field.caretWidth = 3;
+            field.caretBlinkRate = 0.85f;
+            field.selectionColor = new Color(0.3f, 0.5f, 0.9f, 0.55f);
+            field.targetGraphic = back;
+            field.onSelect.AddListener(new UnityAction<string>(_ => outline.enabled = true));
+            field.onDeselect.AddListener(new UnityAction<string>(_ => outline.enabled = false));
             field.onEndEdit.AddListener(new UnityAction<string>(value => onEnd(value)));
+            go.SetActive(true);
             return field;
         }
 

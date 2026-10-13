@@ -232,13 +232,14 @@ namespace RRSOS.PCC.ModManager
 
         private void AddSetting(ConfigEntryBase entry, float width)
         {
-            var row = UiKit.Row(_configContent, 112f);
-            var widgetX = width - 440f;
-            _ui.Label(row, entry.Definition.Key, 8f, 2f, widgetX - 24f, 42f, 26f, UiKit.Lit);
-            _ui.Label(row, Describe(entry), 8f, 46f, widgetX - 24f, 62f, 17f, UiKit.Dim, TextAlignmentOptions.TopLeft, true);
-
             var type = entry.SettingType;
             var choices = Choices(entry);
+            var wide = type != typeof(bool) && (choices == null || choices.Length <= 1) && (type == typeof(string) || entry.GetSerializedValue().Length > 16);
+            var row = UiKit.Row(_configContent, wide ? 196f : 112f);
+            var widgetX = width - 440f;
+            _ui.Label(row, entry.Definition.Key, 8f, 2f, wide ? width - 16f : widgetX - 24f, 42f, 26f, UiKit.Lit);
+            _ui.Label(row, Describe(entry), 8f, 46f, wide ? width - 16f : widgetX - 24f, 62f, 17f, UiKit.Dim, TextAlignmentOptions.TopLeft, true);
+
             if (type == typeof(bool))
             {
                 var on = (bool)entry.BoxedValue;
@@ -260,7 +261,10 @@ namespace RRSOS.PCC.ModManager
             }
             else
             {
-                _ui.Input(row, entry.GetSerializedValue(), widgetX, 28f, 250f, 50f, 24f, text =>
+                var boxX = wide ? 8f : widgetX;
+                var boxY = wide ? 120f : 28f;
+                var boxW = wide ? width - 200f : 250f;
+                _ui.Input(row, entry.GetSerializedValue(), boxX, boxY, boxW, 50f, 24f, text =>
                 {
                     try
                     {
@@ -277,7 +281,7 @@ namespace RRSOS.PCC.ModManager
             }
 
             var isDefault = entry.GetSerializedValue() == Serialize(entry, entry.DefaultValue);
-            _ui.Button(row, "Reset", widgetX + 262f, 28f, 150f, 50f, 22f, isDefault ? UiKit.Off : UiKit.Dim, !isDefault, () =>
+            _ui.Button(row, "Reset", wide ? width - 170f : widgetX + 262f, wide ? 120f : 28f, 150f, 50f, 22f, isDefault ? UiKit.Off : UiKit.Dim, !isDefault, () =>
             {
                 entry.BoxedValue = entry.DefaultValue;
                 Redraw();
