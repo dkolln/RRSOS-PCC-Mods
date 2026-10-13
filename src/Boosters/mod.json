@@ -1,0 +1,14 @@
+{
+  "id": "com.rrsos.pcc.boosters",
+  "name": "RRSOS PCC Boosters",
+  "version": "0.0.1",
+  "description": "A Boosters screen to place in the world: pick a beacon, a booster kind, its machine tier, optimizers and fuses, and it builds the booster there. Work in progress: for now it only writes a discovery report (boosters-spike.txt).",
+  "plugin": "RRSOS.PCC.Boosters.dll",
+  "pluginFolder": "RRSOS-PCC-Boosters",
+  "config": "com.rrsos.pcc.boosters.cfg",
+  "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Boosters",
+  "commands": [],
+  "terminalCommands": [],
+  "requestFiles": [],
+  "writesToRunningGame": true
+}

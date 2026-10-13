@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>RRSOS.PCC.Boosters</AssemblyName>
+    <RootNamespace>RRSOS.PCC.Boosters</RootNamespace>
+    <Description>Boosters: a Boosters screen that builds machines with their optimizers at a beacon</Description>
+    <Version>0.0.1</Version>
+    <ModFolder>RRSOS-PCC-Boosters</ModFolder>
+  </PropertyGroup>
+
+  <Import Project="..\Mod.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
+    <Compile Include="..\Shared\Placement.cs" Link="Shared\Placement.cs" />
+    <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
+  </ItemGroup>
+
+</Project>
