@@ -1,0 +1,14 @@
+{
+  "id": "com.rrsos.pcc.trash",
+  "name": "RRSOS PCC Trash",
+  "version": "0.1.0",
+  "description": "A small trash can beside the grid of a storage container's window (Container1-3, fridge, vault, locker). One click deletes everything in that container for good. It sits on the right of the grid, away from the game's own icons on the left (sort, move all, drone supply).",
+  "plugin": "RRSOS.PCC.Trash.dll",
+  "pluginFolder": "RRSOS-PCC-Trash",
+  "config": "com.rrsos.pcc.trash.cfg",
+  "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Trash",
+  "commands": [],
+  "terminalCommands": [],
+  "requestFiles": [],
+  "writesToRunningGame": true
+}

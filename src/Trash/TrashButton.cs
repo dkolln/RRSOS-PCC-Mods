@@ -1,0 +1,221 @@
+using System;
+using System.Collections;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using RRSOS.PCC.Shared;
+using SpaceCraft;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace RRSOS.PCC.Trash
+{
+    /// <summary>
+    /// A small trash can on a container's window, to the right of its grid (the left side belongs to the game's own icons: sort, move all and the drone supply icon). One click deletes
+    /// everything in that container for good. It is shown only for the groups in the Groups setting and only for the container side of the window, never the backpack. The window's
+    /// structure is written to container-window.txt (once per start) so the placement can be checked from facts.
+    /// </summary>
+    internal sealed class TrashButton : MonoBehaviour
+    {
+        private const string RootName = "RRSOS_TrashButton";
+        private static readonly FieldInfo RightInventory = typeof(UiWindowContainer).GetField("_inventoryRight", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static Sprite _sprite;
+        private bool _dumped;
+
+        /// <summary>What the button deletes: the container's inventory and what to call it in the log.</summary>
+        private sealed class Target : MonoBehaviour
+        {
+            public Inventory Inventory;
+            public string Name;
+        }
+
+        private IEnumerator Start()
+        {
+            while (true)
+            {
+                yield return new WaitForSecondsRealtime(0.5f);
+
+                if (!Plugin.Enabled.Value)
+                    continue;
+
+                try
+                {
+                    foreach (var window in Resources.FindObjectsOfTypeAll<UiWindowContainer>())
+                    {
+                        if (window == null || !window.gameObject.scene.IsValid() || !window.IsOpen)
+                            continue;
+
+                        if (!_dumped)
+                        {
+                            _dumped = true;
+                            Dump(window);
+                        }
+
+                        Refresh(window);
+                    }
+                }
+                catch (Exception e)
+                {
+                    ModLog.LogOnce("trash-button", "Trash button: " + e.GetType().Name + ": " + e.Message);
+                }
+            }
+        }
+
+        private static void Refresh(UiWindowContainer window)
+        {
+            var existing = window.transform.Find(RootName);
+            var inventory = RightInventory?.GetValue(window) as Inventory;
+            var owner = inventory == null ? null : OwnerOf(inventory);
+            var grid = window.containerInventoryContainer == null ? null : window.containerInventoryContainer.GetComponentInChildren<GridLayoutGroup>();
+
+            if (owner == null || grid == null || !Plugin.Groups.Value.Split(',').Select(g => g.Trim()).Contains(owner.GetGroup().GetId()))
+            {
+                if (existing != null)
+                    existing.gameObject.SetActive(false);
+                return;
+            }
+
+            var root = existing != null ? (RectTransform)existing : Build(window);
+            root.gameObject.SetActive(true);
+
+            var target = root.GetComponent<Target>();
+            target.Inventory = inventory;
+            target.Name = owner.GetGroup().GetId() + " #" + owner.GetId();
+
+            // Top right corner of the grid, then a little to the right and down. The corners are in world space, so the UI's scale is allowed for.
+            var corners = new Vector3[4];
+            ((RectTransform)grid.transform).GetWorldCorners(corners);
+            var scale = root.lossyScale.x;
+            root.position = corners[2] + new Vector3(Plugin.ButtonX.Value * scale, -Plugin.ButtonY.Value * scale, 0f);
+        }
+
+        private static WorldObject OwnerOf(Inventory inventory)
+        {
+            var id = inventory.GetId();
+            return WorldObjectsHandler.Instance.GetAllWorldObjects().Values.FirstOrDefault(w => w != null && w.GetGroup() != null && w.GetLinkedInventoryId() == id);
+        }
+
+        private static RectTransform Build(UiWindowContainer window)
+        {
+            var go = new GameObject(RootName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(Target), typeof(LayoutElement));
+            var rect = (RectTransform)go.transform;
+            rect.SetParent(window.transform, false);
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.sizeDelta = new Vector2(52f, 52f);
+            go.GetComponent<LayoutElement>().ignoreLayout = true; // in case the window lays its children out itself
+
+            var image = go.GetComponent<Image>();
+            image.sprite = DrawSprite();
+            var button = go.GetComponent<Button>();
+            button.targetGraphic = image;
+            button.colors = new ColorBlock
+            {
+                normalColor = new Color(1f, 1f, 1f, 0.9f),
+                highlightedColor = new Color(1f, 0.5f, 0.45f, 1f),
+                pressedColor = new Color(1f, 0.3f, 0.25f, 1f),
+                selectedColor = new Color(1f, 1f, 1f, 0.9f),
+                disabledColor = Color.gray,
+                colorMultiplier = 1f,
+                fadeDuration = 0.08f
+            };
+
+            var target = go.GetComponent<Target>();
+            button.onClick.AddListener(() =>
+            {
+                if (target.Inventory != null)
+                    EmptyNow(target.Inventory, target.Name);
+            });
+
+            ModLog.Note("Trash button added to a container window.");
+            return rect;
+        }
+
+        /// <summary>Deletes everything inside one container, for good; the container itself and its label stay.</summary>
+        private static void EmptyNow(Inventory inventory, string what)
+        {
+            var inventories = InventoriesHandler.Instance;
+            var handler = WorldObjectsHandler.Instance;
+            var deleted = 0;
+            foreach (var item in inventory.GetInsideWorldObjects().ToList())
+            {
+                var id = item.GetId();
+                try
+                {
+                    inventories.RemoveItemFromInventory(item, inventory, true);
+                    if (handler.GetWorldObjectViaId(id) != null)
+                        handler.DestroyWorldObject(id, true);
+                    deleted++;
+                }
+                catch (Exception e)
+                {
+                    ModLog.Note("Could not delete " + item.GetGroup().GetId() + " #" + id + " from " + what + ": " + e.GetType().Name + ": " + e.Message);
+                }
+            }
+
+            ModLog.Note("Trash button: " + deleted + " items deleted from " + what + "; " + inventory.GetInsideWorldObjects().Count + " left.");
+        }
+
+        /// <summary>A white trash can, drawn once, transparent around it.</summary>
+        private static Sprite DrawSprite()
+        {
+            if (_sprite != null)
+                return _sprite;
+
+            const int n = 48;
+            var texture = new Texture2D(n, n, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear };
+            var pixels = Enumerable.Repeat(new Color(0f, 0f, 0f, 0f), n * n).ToArray();
+
+            void Fill(int x0, int y0, int x1, int y1)
+            {
+                for (var y = y0; y <= y1; y++)
+                    for (var x = x0; x <= x1; x++)
+                        pixels[y * n + x] = Color.white;
+            }
+
+            Fill(6, 36, 41, 39);   // lid
+            Fill(18, 40, 29, 43);  // handle
+            Fill(10, 6, 12, 35);   // body, left wall
+            Fill(35, 6, 37, 35);   // body, right wall
+            Fill(10, 6, 37, 8);    // body, floor
+            Fill(18, 13, 19, 30);  // slots
+            Fill(23, 13, 24, 30);
+            Fill(28, 13, 29, 30);
+
+            texture.SetPixels(pixels);
+            texture.Apply();
+            _sprite = Sprite.Create(texture, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f);
+            return _sprite;
+        }
+
+        // ---- the window's structure -------------------------------------------------------------------------------------------
+
+        private static void Dump(UiWindowContainer window)
+        {
+            try
+            {
+                var text = new StringBuilder();
+                text.AppendLine("Container window structure, written " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " by " + Plugin.Name + " " + Plugin.Version);
+                Walk(window.transform, 0, text);
+                File.WriteAllText(ModLog.FileIn("container-window.txt"), text.ToString());
+            }
+            catch (Exception e)
+            {
+                ModLog.Note("Could not write the container window's structure: " + e.GetType().Name + ": " + e.Message);
+            }
+        }
+
+        private static void Walk(Transform t, int depth, StringBuilder text)
+        {
+            var pad = new string(' ', depth * 2);
+            text.Append(pad).Append(t.name).Append(t.gameObject.activeSelf ? "" : " [inactive]");
+            if (t is RectTransform r)
+                text.Append("  anchors ").Append(r.anchorMin).Append("-").Append(r.anchorMax).Append("  pos ").Append(r.anchoredPosition).Append("  size ").Append(r.rect.size);
+            text.AppendLine();
+
+            for (var i = 0; i < t.childCount; i++)
+                Walk(t.GetChild(i), depth + 1, text);
+        }
+    }
+}

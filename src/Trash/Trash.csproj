@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>RRSOS.PCC.Trash</AssemblyName>
+    <RootNamespace>RRSOS.PCC.Trash</RootNamespace>
+    <Description>A trash can button on the window of a storage container: one click deletes what is inside</Description>
+    <Version>0.1.0</Version>
+    <ModFolder>RRSOS-PCC-Trash</ModFolder>
+  </PropertyGroup>
+
+  <Import Project="..\Mod.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The button is a Unity UI object. -->
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameManaged)UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GameManaged)UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
