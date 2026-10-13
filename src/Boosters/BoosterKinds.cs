@@ -100,11 +100,11 @@ namespace RRSOS.PCC.Boosters
         {
             new Kind { Key = "Heat", Name = "Heat", Aliases = new[] { "heat", "heater", "hot", "warm" },
                 Machines = Machines("Heater1", "Heater T1", "Heater2", "Heater T2", "Heater3", "Heater T3", "Heater4", "Heater T4", "Heater5", "Heater T5"),
-                DefaultFuses = new[] { "FuseHeat1" } },
+                DefaultFuses = new[] { "FuseHeat1", "FusePressure1" } },
 
             new Kind { Key = "Pressure", Name = "Pressure", Aliases = new[] { "pressure", "drill" },
                 Machines = Machines("Drill0", "Drill T1", "Drill1", "Drill T2", "Drill2", "Drill T3", "Drill3", "Drill T4", "Drill4", "Drill T5"),
-                DefaultFuses = new[] { "FusePressure1" } },
+                DefaultFuses = new[] { "FuseHeat1", "FusePressure1" } },
 
             new Kind { Key = "Butterflies", Name = "Butterflies", Aliases = new[] { "butterfl", "moth" },
                 Machines = Machines("ButterflyFarm1", "Butterfly Farm T1", "ButterflyFarm2", "Butterfly Farm T2"),
