@@ -1395,7 +1395,7 @@
                        "z":  3,
                        "rot":  "0,0.7071068,0,0.7071068",
                        "op":  "add",
-                       "needs":  "ScreenMessage"
+                       "needs":  "BedDouble"
                    },
                    {
                        "g":  "ScreenMessage",
@@ -1404,7 +1404,7 @@
                        "z":  2.2648,
                        "rot":  "0,-8.742278E-08,0,-1",
                        "op":  "add",
-                       "needs":  "ScreenMessage"
+                       "needs":  "BedDouble"
                    }
                ]
 }
