@@ -1,0 +1,14 @@
+{
+  "id": "com.rrsos.pcc.modmanager",
+  "name": "RRSOS PCC Mod Manager",
+  "version": "0.0.1",
+  "description": "A Manage Mods button on the main menu, above Quit, opening a screen with every loaded mod and its config options. Work in progress: for now it adds the button and writes what it finds (menu-structure.txt, plugins.txt).",
+  "plugin": "RRSOS.PCC.ModManager.dll",
+  "pluginFolder": "RRSOS-PCC-ModManager",
+  "config": "com.rrsos.pcc.modmanager.cfg",
+  "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\ModManager",
+  "commands": [],
+  "terminalCommands": [],
+  "requestFiles": [],
+  "writesToRunningGame": false
+}

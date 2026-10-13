@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>RRSOS.PCC.ModManager</AssemblyName>
+    <RootNamespace>RRSOS.PCC.ModManager</RootNamespace>
+    <Description>A Manage Mods screen on the main menu: every loaded mod and its config options</Description>
+    <Version>0.0.1</Version>
+    <ModFolder>RRSOS-PCC-ModManager</ModFolder>
+  </PropertyGroup>
+
+  <Import Project="..\Mod.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The screen is Unity UI with TextMeshPro text. -->
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GameManaged)Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameManaged)UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GameManaged)UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
