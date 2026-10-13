@@ -60,11 +60,64 @@ namespace RRSOS.PCC.Base
             }
         }
 
+        /// <summary>What the game counts per second for each unit that drives terraformation (heat, oxygen, pressure and the terraformation total). For the log.</summary>
+        private static string UnitsReading()
+        {
+            try
+            {
+                var planet = Managers.GetManager<PlanetLoader>().GetCurrentPlanetData();
+                var units = Managers.GetManager<WorldUnitsHandler>();
+                var parts = new List<string>();
+                foreach (var type in new[] { DataConfig.WorldUnitType.Heat, DataConfig.WorldUnitType.Oxygen, DataConfig.WorldUnitType.Pressure, DataConfig.WorldUnitType.Terraformation })
+                {
+                    var unit = units.GetUnit(type, planet.GetPlanetId());
+                    parts.Add(type + " " + (unit == null ? "?" : unit.GetIncreaseValuePersSec().ToString("0.####", CultureInfo.InvariantCulture)));
+                }
+
+                return string.Join(", ", parts.ToArray());
+            }
+            catch (Exception e)
+            {
+                return "(could not be read: " + e.GetType().Name + ")";
+            }
+        }
+
+        /// <summary>
+        /// The game itself makes every world unit (heat, oxygen, pressure, plants, ...) sum its machines again whenever a machine's energy status changes (RequireEnergy calls
+        /// WorldUnitsHandler.ForceResetAllValues). A switch of the base's power is such a change, but the machines check their energy a moment before the energy unit has its new
+        /// value, so this repeats what the game does a few times as things settle: have the machines check, then reset all units.
+        /// </summary>
+        private static IEnumerator Settle()
+        {
+            ModLog.Note("Terraformation per second before settling: " + UnitsReading() + ".");
+            foreach (var wait in new[] { 1f, 2f, 5f })
+            {
+                yield return new WaitForSecondsRealtime(wait);
+                try
+                {
+                    var energy = Managers.GetManager<RequireEnergyHandler>();
+                    if (energy != null)
+                        energy.UpdateAllEnergyRequester();
+                    Managers.GetManager<WorldUnitsHandler>().ForceResetAllValues();
+                }
+                catch (Exception e)
+                {
+                    ModLog.LogOnce("power-settle", "Could not make the game count terraformation again: " + e.GetType().Name + ": " + e.Message);
+                }
+            }
+
+            yield return new WaitForSecondsRealtime(3f);
+            ModLog.Note("Terraformation per second after settling: " + UnitsReading() + ".");
+        }
+
         /// <summary>A few seconds after a switch, says what the game now counts, next to what it counted before.</summary>
         private static void ReportEnergy(string before, Action<string> say)
         {
-            if (_instance != null)
-                _instance.StartCoroutine(ReportAfter(before, say));
+            if (_instance == null)
+                return;
+
+            _instance.StartCoroutine(ReportAfter(before, say));
+            _instance.StartCoroutine(Settle());
         }
 
         private static IEnumerator ReportAfter(string before, Action<string> say)
