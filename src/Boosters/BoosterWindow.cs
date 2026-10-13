@@ -186,12 +186,12 @@ namespace RRSOS.PCC.Boosters
                 PickKind(guess);
         }
 
-        // A kind's own starting choices: its highest machine tier that may be built, the highest optimizer, its fuses, its fill.
+        // A kind's own starting choices: its highest machine tier that may be built, no optimizer (with the kind's fuses ready for when one is picked), its fill.
         private void PickKind(Kind kind)
         {
             _kind = kind;
             _machine = kind.Machines.Select(m => m.GId).LastOrDefault(Allowed);
-            _optimizer = BoosterKinds.Optimizers.Select(o => o.GId).LastOrDefault(Allowed);
+            _optimizer = null;   // optimizers are built only when one is picked
             _fuses.Clear();
             foreach (var fuse in kind.DefaultFuses)
                 _fuses.Add(fuse);
