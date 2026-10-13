@@ -1405,6 +1405,24 @@
                        "rot":  "0,1,0,-4.371139E-08",
                        "op":  "add",
                        "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "ScreenTerraStage",
+                       "x":  16.3984,
+                       "y":  5.16501,
+                       "z":  8.5368,
+                       "rot":  "0,0.7071068,0,-0.7071068",
+                       "op":  "remove",
+                       "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "ScreenTerraStage",
+                       "x":  67.9891,
+                       "y":  5.3019,
+                       "z":  3.6475,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "BedDouble"
                    }
                ]
 }
