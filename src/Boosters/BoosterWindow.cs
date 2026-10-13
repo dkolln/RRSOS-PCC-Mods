@@ -343,8 +343,8 @@ namespace RRSOS.PCC.Boosters
         // A titled block of buttons in a column, in rows of `cols`; returns the y below it. `empty` is shown when there are no options.
         private float Section(string title, float x, float y, float width, int cols, List<Option> options, Action<string> pick, string empty = null)
         {
-            Label(_body, title, x, y, width, 30f, 24f, Lit, TextAlignmentOptions.Left);
-            y += 32f;
+            Label(_body, title, x, y, width, 40f, 24f, Lit, TextAlignmentOptions.Left);   // tall enough for the font's line, or the ellipsis hides it
+            y += 44f;
 
             if (options.Count == 0)
             {
