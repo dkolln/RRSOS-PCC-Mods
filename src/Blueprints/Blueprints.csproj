@@ -4,7 +4,7 @@
     <AssemblyName>RRSOS.PCC.Blueprints</AssemblyName>
     <RootNamespace>RRSOS.PCC.Blueprints</RootNamespace>
     <Description>Unlocks the blueprints that would otherwise need a blueprint chip, at the start of a new game</Description>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <ModFolder>RRSOS-PCC-Blueprints</ModFolder>
   </PropertyGroup>
 
