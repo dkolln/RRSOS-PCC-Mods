@@ -427,11 +427,15 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
 
             foreach (var entry in done)
                 Tell(Readable.GetGroupName(GroupsHandler.GetGroupViaId(entry.Key)) + " unlocked: " + entry.Value + " pieces of the base updated.");
+
+            if (Plugin.StageSaves.Value)
+                yield return StageSave(key, done.Keys.ToList());
         }
 
         // ---- stages: pieces added to or taken from the base when a group is unlocked ---------------------------------------------
 
         private static string StagesFile => ModLog.FileIn("stages.txt");
+        private static string StageIndexFile => ModLog.FileIn("stage-index.txt");
 
         private static string EntryId(TemplatePiece p) =>
             p.needs + "|" + p.op + "|" + p.g + "|" + p.x.ToString("F1", CultureInfo.InvariantCulture) + "," + p.y.ToString("F1", CultureInfo.InvariantCulture) + "," + p.z.ToString("F1", CultureInfo.InvariantCulture);
@@ -583,6 +587,13 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
         /// </summary>
         private static IEnumerator StageSave(string key, List<string> unlocked)
         {
+            // Only an unlock that has not made a save in this world yet, and only the ones the config names (empty = all).
+            var chosen = Plugin.StageSaveUnlocks.Value.Split(',').Select(n => n.Trim()).Where(n => n.Length > 0).ToList();
+            var known = new HashSet<string>(ModLog.ReadLines(StageIndexFile).Where(l => l.StartsWith(key + "|")).Select(l => l.Substring(key.Length + 1)));
+            var fresh = unlocked.Where(n => !known.Contains(n) && (chosen.Count == 0 || chosen.Contains(n))).ToList();
+            if (fresh.Count == 0)
+                yield break;
+
             var saver = Managers.GetManager<SavedDataHandler>();
             if (saver == null)
                 yield break;
@@ -622,13 +633,15 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                     yield break;
                 }
 
-                // N: how many different unlocks have grown the base in this save (stages.txt keeps one line per entry, "key|needs|op|group|spot")
-                var stages = ModLog.ReadLines(StagesFile).Where(l => l.StartsWith(key + "|")).Select(l => l.Substring(key.Length + 1).Split('|')[0]).Distinct().Count();
+                // N: how many stage saves this world has now (stage-index.txt keeps one line per unlock that made one)
+                foreach (var name in fresh)
+                    ModLog.Append(StageIndexFile, key + "|" + name);
+                var stages = known.Count + fresh.Count;
                 var folder = Path.Combine(ModLog.FileIn("stage-saves"), string.Concat(slot.Where(c => Array.IndexOf(Path.GetInvalidFileNameChars(), c) < 0)));
                 Directory.CreateDirectory(folder);
                 var target = Path.Combine(folder, "stage-" + stages + ".json");
                 File.Copy(source, target, true);
-                File.AppendAllText(Path.Combine(Path.GetDirectoryName(folder), "stage-saves.txt"), DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  " + slot + "/stage-" + stages + ".json  " + string.Join(", ", unlocked.ToArray()) + Environment.NewLine);
+                File.AppendAllText(Path.Combine(Path.GetDirectoryName(folder), "stage-saves.txt"), DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  " + slot + "/stage-" + stages + ".json  " + string.Join(", ", fresh.ToArray()) + Environment.NewLine);
                 ModLog.Note("Stage save: " + target);
             }
             catch (Exception e)
