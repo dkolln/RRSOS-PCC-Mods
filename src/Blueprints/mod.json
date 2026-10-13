@@ -1,0 +1,14 @@
+{
+  "id": "com.rrsos.pcc.blueprints",
+  "name": "RRSOS PCC Blueprints",
+  "version": "0.1.0",
+  "description": "At the start of a new game, unlocks the blueprints that are otherwise unlocked by finding blueprint chips (the list is blueprints.txt in the mod's data folder, made from a save), through the game's own unlock. Nothing that unlocks by terraformation is touched.",
+  "plugin": "RRSOS.PCC.Blueprints.dll",
+  "pluginFolder": "RRSOS-PCC-Blueprints",
+  "config": "com.rrsos.pcc.blueprints.cfg",
+  "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Blueprints",
+  "commands": [],
+  "terminalCommands": [],
+  "requestFiles": [],
+  "writesToRunningGame": true
+}
