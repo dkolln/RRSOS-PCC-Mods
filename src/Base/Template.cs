@@ -63,7 +63,7 @@ namespace RRSOS.PCC.Base
 
         // The file is flat (a list of objects of strings and numbers), so it is read directly: Unity's JsonUtility returned no pieces for it in the game.
         private static readonly Regex PieceText = new Regex(@"\{[^{}]*\}", RegexOptions.Singleline);
-        private static readonly Regex Pair = new Regex(@"""(\w+)""\s*:\s*(""(?:[^""\\]|\\.)*""|-?[0-9.eE+\-]+)");
+        private static readonly Regex Pair = new Regex(@"""(\w+)""\s*:\s*(""(?:[^""\\]|\\.)*""|-?[0-9.eE+\-]+|true|false)");
 
         internal static Template Parse(string json)
         {
@@ -91,6 +91,8 @@ namespace RRSOS.PCC.Base
                             case "from": piece.from = text; break;
                             case "needs": piece.needs = text; break;
                             case "op": piece.op = text; break;
+                            case "count": piece.count = int.Parse(value, CultureInfo.InvariantCulture); break;
+                            case "all": piece.all = value == "true"; break;
                             case "x": piece.x = float.Parse(value, CultureInfo.InvariantCulture); break;
                             case "y": piece.y = float.Parse(value, CultureInfo.InvariantCulture); break;
                             case "z": piece.z = float.Parse(value, CultureInfo.InvariantCulture); break;
