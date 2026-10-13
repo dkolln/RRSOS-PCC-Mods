@@ -54,6 +54,7 @@ namespace RRSOS.PCC.Base
 
             gameObject.AddComponent<BaseBuilder>();
             gameObject.AddComponent<BaseUpgrades>();
+            PanelFix.Apply();
             gameObject.AddComponent<BasePower>();
             gameObject.AddComponent<PowerButtons>();
             gameObject.AddComponent<ChatHook>();
