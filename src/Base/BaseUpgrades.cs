@@ -427,11 +427,15 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
 
             foreach (var entry in done)
                 Tell(Readable.GetGroupName(GroupsHandler.GetGroupViaId(entry.Key)) + " unlocked: " + entry.Value + " pieces of the base updated.");
+
+            if (Plugin.StageSaves.Value)
+                yield return StageSave(key, done.Keys.ToList());
         }
 
         // ---- stages: pieces added to or taken from the base when a group is unlocked ---------------------------------------------
 
         private static string StagesFile => ModLog.FileIn("stages.txt");
+        private static string StageIndexFile => ModLog.FileIn("stage-index.txt");
 
         private static string EntryId(TemplatePiece p) =>
             p.needs + "|" + p.op + "|" + p.g + "|" + p.x.ToString("F1", CultureInfo.InvariantCulture) + "," + p.y.ToString("F1", CultureInfo.InvariantCulture) + "," + p.z.ToString("F1", CultureInfo.InvariantCulture);
@@ -476,55 +480,74 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             foreach (var entry in due.OrderBy(p => p.op == "remove" ? 0 : 1))
             {
                 var at = BaseBuilder.Anchor + new Vector3(entry.x, entry.y, entry.z);
-                var there = existing.FirstOrDefault(w => w.GetGroup().GetId() == entry.g && (w.GetPosition() - at).sqrMagnitude < SameSpot * SameSpot);
+                var ids = entry.g.Split(',').Select(i => i.Trim()).ToArray();   // a remove may name several groups ("EnergyGenerator1,EnergyGenerator2")
+                var here = existing.Where(w => ids.Contains(w.GetGroup().GetId()) && (w.GetPosition() - at).sqrMagnitude < SameSpot * SameSpot).ToList();
 
                 if (entry.op == "remove")
                 {
-                    if (there != null)
+                    var failedRemove = false;
+                    foreach (var piece in entry.all ? here : here.Take(1).ToList())
                     {
                         try
                         {
-                            handler.DestroyWorldObject(there, true);
-                            existing.Remove(there);
+                            handler.DestroyWorldObject(piece, true);
+                            existing.Remove(piece);
                             removed[entry.needs] = (removed.TryGetValue(entry.needs, out var r) ? r : 0) + 1;
                         }
                         catch (Exception e)
                         {
-                            ModLog.Note("Stages: could not remove " + entry.g + " #" + there.GetId() + ": " + e.GetType().Name + ": " + e.Message);
-                            continue;
+                            ModLog.Note("Stages: could not remove " + piece.GetGroup().GetId() + " #" + piece.GetId() + ": " + e.GetType().Name + ": " + e.Message);
+                            failedRemove = true;
+                        }
+
+                        if (++sinceFrame >= PiecesPerFrame)
+                        {
+                            sinceFrame = 0;
+                            yield return null;
                         }
                     }
 
-                    finished.Add(EntryId(entry));
+                    if (!failedRemove)
+                        finished.Add(EntryId(entry));
                     continue;
                 }
 
-                if (there != null || GroupsHandler.GetGroupViaId(entry.g) == null)
+                // an add: one piece, or "count" of them standing on the spot (a stack); what is already there counts
+                var wanted = Math.Max(1, entry.count);
+                if (here.Count >= wanted || GroupsHandler.GetGroupViaId(entry.g) == null)
                 {
                     finished.Add(EntryId(entry)); // already there, or a piece of a mod that is not installed
                     continue;
                 }
 
-                try
+                var placed = 0;
+                for (var i = here.Count; i < wanted; i++)
                 {
-                    var wo = Placement.PlaceAt(entry.g, at, DataTreatments.StringToQuaternion(entry.rot), planetHash,
-                        string.IsNullOrEmpty(entry.panels) ? null : DataTreatments.StringToIntList(entry.panels).ToArray(),
-                        string.IsNullOrEmpty(entry.color) ? null : entry.color, entry.text, entry.groups);
-                    created.Add(new KeyValuePair<WorldObject, TemplatePiece>(wo, entry));
-                    existing.Add(wo);
-                    finished.Add(EntryId(entry));
-                    added[entry.needs] = (added.TryGetValue(entry.needs, out var n) ? n : 0) + 1;
-                }
-                catch (Exception e)
-                {
-                    ModLog.LogOnce("stage-" + EntryId(entry), "Stages: could not place " + entry.g + " at " + entry.x + "," + entry.z + ": " + e.GetType().Name + ": " + e.Message + " (tried again later).");
+                    try
+                    {
+                        var wo = Placement.PlaceAt(entry.g, at, DataTreatments.StringToQuaternion(entry.rot), planetHash,
+                            string.IsNullOrEmpty(entry.panels) ? null : DataTreatments.StringToIntList(entry.panels).ToArray(),
+                            string.IsNullOrEmpty(entry.color) ? null : entry.color, entry.text, entry.groups);
+                        created.Add(new KeyValuePair<WorldObject, TemplatePiece>(wo, entry));
+                        existing.Add(wo);
+                        placed++;
+                        added[entry.needs] = (added.TryGetValue(entry.needs, out var n) ? n : 0) + 1;
+                    }
+                    catch (Exception e)
+                    {
+                        ModLog.LogOnce("stage-" + EntryId(entry), "Stages: could not place " + entry.g + " at " + entry.x + "," + entry.z + ": " + e.GetType().Name + ": " + e.Message + " (tried again later).");
+                        break;
+                    }
+
+                    if (++sinceFrame >= PiecesPerFrame)
+                    {
+                        sinceFrame = 0;
+                        yield return null;
+                    }
                 }
 
-                if (++sinceFrame >= PiecesPerFrame)
-                {
-                    sinceFrame = 0;
-                    yield return null;
-                }
+                if (here.Count + placed >= wanted)
+                    finished.Add(EntryId(entry));
             }
 
             foreach (var made in created)
@@ -552,6 +575,78 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                 var name = Readable.GetGroupName(GroupsHandler.GetGroupViaId(needs));
                 ModLog.Note("Stages: " + needs + ": " + a + " pieces added, " + r + " taken away.");
                 Tell(name + " unlocked: the base grew (" + a + " added" + (r > 0 ? ", " + r + " taken away" : "") + ").");
+            }
+
+            if (Plugin.StageSaves.Value && (added.Count > 0 || removed.Count > 0))
+                yield return StageSave(key, added.Keys.Union(removed.Keys).ToList());
+        }
+
+        /// <summary>
+        /// A save of the world as it stands after a stage: the game saves its own slot (as its autosave does) and that file is copied to stage-saves\&lt;save name&gt;\stage-N.json in this
+        /// mod's data folder, N counting the stages this save has had (the unlocks that grew the base). stage-saves.txt there says which unlock each file is.
+        /// </summary>
+        private static IEnumerator StageSave(string key, List<string> unlocked)
+        {
+            // Only an unlock that has not made a save in this world yet, and only the ones the config names (empty = all).
+            var chosen = Plugin.StageSaveUnlocks.Value.Split(',').Select(n => n.Trim()).Where(n => n.Length > 0).ToList();
+            var known = new HashSet<string>(ModLog.ReadLines(StageIndexFile).Where(l => l.StartsWith(key + "|")).Select(l => l.Substring(key.Length + 1)));
+            var fresh = unlocked.Where(n => !known.Contains(n) && (chosen.Count == 0 || chosen.Contains(n))).ToList();
+            if (fresh.Count == 0)
+                yield break;
+
+            var saver = Managers.GetManager<SavedDataHandler>();
+            if (saver == null)
+                yield break;
+
+            var slot = saver.GetCurrentSaveFileName();
+            var until = Time.realtimeSinceStartup + 30f;
+            while (!saver.IsSavePossible() && Time.realtimeSinceStartup < until)
+                yield return new WaitForSecondsRealtime(1f);
+
+            var started = DateTime.UtcNow;
+            var saved = false;
+            Action onSaved = () => saved = true;
+            saver.OnSaved += onSaved;
+            try
+            {
+                saver.SaveWorldData(slot);
+            }
+            catch (Exception e)
+            {
+                saver.OnSaved -= onSaved;
+                ModLog.Note("Stage save: the game could not save: " + e.GetType().Name + ": " + e.Message);
+                yield break;
+            }
+
+            until = Time.realtimeSinceStartup + 30f;
+            while (!saved && Time.realtimeSinceStartup < until)
+                yield return null;
+            saver.OnSaved -= onSaved;
+            yield return new WaitForSecondsRealtime(0.5f);
+
+            try
+            {
+                var source = Path.Combine(Application.persistentDataPath, slot + ".json");
+                if (!File.Exists(source) || File.GetLastWriteTimeUtc(source) < started.AddSeconds(-2))
+                {
+                    ModLog.Note("Stage save: the save file " + source + " was not written; no stage copy made.");
+                    yield break;
+                }
+
+                // N: how many stage saves this world has now (stage-index.txt keeps one line per unlock that made one)
+                foreach (var name in fresh)
+                    ModLog.Append(StageIndexFile, key + "|" + name);
+                var stages = known.Count + fresh.Count;
+                var folder = Path.Combine(ModLog.FileIn("stage-saves"), string.Concat(slot.Where(c => Array.IndexOf(Path.GetInvalidFileNameChars(), c) < 0)));
+                Directory.CreateDirectory(folder);
+                var target = Path.Combine(folder, "stage-" + stages + ".json");
+                File.Copy(source, target, true);
+                File.AppendAllText(Path.Combine(Path.GetDirectoryName(folder), "stage-saves.txt"), DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  " + slot + "/stage-" + stages + ".json  " + string.Join(", ", fresh.ToArray()) + Environment.NewLine);
+                ModLog.Note("Stage save: " + target);
+            }
+            catch (Exception e)
+            {
+                ModLog.Note("Stage save: could not copy the save: " + e.GetType().Name + ": " + e.Message);
             }
         }
 
