@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using SpaceCraft;
 using UnityEngine;
@@ -61,6 +62,7 @@ namespace RRSOS.PCC.Shared
 
             var created = new GroupConstructible(copy);
             created.SetRecipe(new Recipe(ingredients));
+            Recipes[created] = ingredientIds.ToArray();
             return created;
         }
 
@@ -68,7 +70,47 @@ namespace RRSOS.PCC.Shared
         public static bool IsInGame(Group group)
         {
             var all = GroupsHandler.GetAllGroups();
-            return all != null && all.Contains(group);
+            var inGame = all != null && all.Contains(group);
+            if (inGame)
+                RefreshRecipe(group);
+            return inGame;
+        }
+
+        // The ingredient ids of each clone. A Recipe holds the Group objects its ingredients were when it was made, and the game makes all its groups again when a world loads: the
+        // inventory is then full of the new objects and the old ones in the recipe match nothing, so the ingredients show as missing (free build never checks, which hid it).
+        private static readonly Dictionary<Group, string[]> Recipes = new Dictionary<Group, string[]>();
+
+        /// <summary>Makes the clone's recipe from the game's current ingredient groups, when it holds out-of-date ones.</summary>
+        public static void RefreshRecipe(Group group)
+        {
+            if (!Recipes.TryGetValue(group, out var ids))
+                return;
+
+            try
+            {
+                var current = group.GetRecipe() == null ? null : group.GetRecipe().GetIngredientsGroupInRecipe();
+                var stale = current == null || current.Count != ids.Length;
+                for (var i = 0; !stale && i < ids.Length; i++)
+                    stale = !ReferenceEquals(current[i], GroupsHandler.GetGroupViaId(ids[i]));
+                if (!stale)
+                    return;
+
+                var data = new List<GroupDataItem>();
+                foreach (var id in ids)
+                {
+                    var item = GroupsHandler.GetGroupViaId(id);
+                    if (item == null || !(item.GetGroupData() is GroupDataItem itemData))
+                        return;
+                    data.Add(itemData);
+                }
+
+                ((GroupConstructible)group).SetRecipe(new Recipe(data));
+                ModLog.Note("Recipe of " + group.GetId() + " made again from the game's current ingredients (" + string.Join(", ", ids) + ").");
+            }
+            catch (Exception e)
+            {
+                ModLog.LogOnce("recipe-" + group.GetId(), "Could not refresh the recipe of " + group.GetId() + ": " + e.GetType().Name + ": " + e.Message);
+            }
         }
 
         // Groups kept in the game: the game rebuilds its group lists whenever it loads its static data (for example when a world loads), and a saved building whose group is
@@ -100,8 +142,11 @@ namespace RRSOS.PCC.Shared
         private static void AfterGroupsRebuilt()
         {
             foreach (var group in Kept)
+            {
                 if (!IsInGame(group))
                     AddToGame(group);
+                RefreshRecipe(group);
+            }
         }
 
         public static void AddToGame(Group group)
