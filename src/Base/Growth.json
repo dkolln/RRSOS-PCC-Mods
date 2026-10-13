@@ -618,6 +618,466 @@
                        "rot":  "0,0.7071068,0,-0.7071068",
                        "op":  "add",
                        "needs":  "CraftStation2"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  3.75,
+                       "y":  2.519,
+                       "z":  -14.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  3.75,
+                       "y":  2.519,
+                       "z":  -12.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  3.75,
+                       "y":  2.519,
+                       "z":  -10.75,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  3.75,
+                       "y":  2.519,
+                       "z":  -9.0,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  3.75,
+                       "y":  2.519,
+                       "z":  -7.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  3.75,
+                       "y":  2.519,
+                       "z":  -5.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  5.5,
+                       "y":  2.519,
+                       "z":  -14.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  5.5,
+                       "y":  2.519,
+                       "z":  -12.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  5.5,
+                       "y":  2.519,
+                       "z":  -10.75,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  5.5,
+                       "y":  2.519,
+                       "z":  -9.0,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  5.5,
+                       "y":  2.519,
+                       "z":  -7.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  5.5,
+                       "y":  2.519,
+                       "z":  -5.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  7.25,
+                       "y":  2.519,
+                       "z":  -14.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  7.25,
+                       "y":  2.519,
+                       "z":  -12.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  7.25,
+                       "y":  2.519,
+                       "z":  -10.75,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  7.25,
+                       "y":  2.519,
+                       "z":  -9.0,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  7.25,
+                       "y":  2.519,
+                       "z":  -7.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  7.25,
+                       "y":  2.519,
+                       "z":  -5.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  9.0,
+                       "y":  2.519,
+                       "z":  -14.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  9.0,
+                       "y":  2.519,
+                       "z":  -12.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  9.0,
+                       "y":  2.519,
+                       "z":  -10.75,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  9.0,
+                       "y":  2.519,
+                       "z":  -9.0,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  9.0,
+                       "y":  2.519,
+                       "z":  -7.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  9.0,
+                       "y":  2.519,
+                       "z":  -5.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  10.75,
+                       "y":  2.519,
+                       "z":  -14.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  10.75,
+                       "y":  2.519,
+                       "z":  -12.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  10.75,
+                       "y":  2.519,
+                       "z":  -10.75,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  10.75,
+                       "y":  2.519,
+                       "z":  -9.0,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  10.75,
+                       "y":  2.519,
+                       "z":  -7.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  10.75,
+                       "y":  2.519,
+                       "z":  -5.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  12.5,
+                       "y":  2.519,
+                       "z":  -14.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  12.5,
+                       "y":  2.519,
+                       "z":  -12.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  12.5,
+                       "y":  2.519,
+                       "z":  -10.75,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  12.5,
+                       "y":  2.519,
+                       "z":  -9.0,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  12.5,
+                       "y":  2.519,
+                       "z":  -7.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  12.5,
+                       "y":  2.519,
+                       "z":  -5.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  14.25,
+                       "y":  2.519,
+                       "z":  -14.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  14.25,
+                       "y":  2.519,
+                       "z":  -12.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  14.25,
+                       "y":  2.519,
+                       "z":  -10.75,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  14.25,
+                       "y":  2.519,
+                       "z":  -9.0,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  14.25,
+                       "y":  2.519,
+                       "z":  -7.25,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator1,EnergyGenerator2,EnergyGenerator3",
+                       "x":  14.25,
+                       "y":  2.519,
+                       "z":  -5.5,
+                       "rot":  "0,0,0,1",
+                       "op":  "remove",
+                       "all":  true,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator4",
+                       "x":  6,
+                       "y":  2.519,
+                       "z":  -12,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "count":  8,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator4",
+                       "x":  6,
+                       "y":  2.519,
+                       "z":  -6,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "count":  8,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator4",
+                       "x":  12,
+                       "y":  2.519,
+                       "z":  -12,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "count":  8,
+                       "needs":  "EnergyGenerator4"
+                   },
+                   {
+                       "g":  "EnergyGenerator4",
+                       "x":  12,
+                       "y":  2.519,
+                       "z":  -6,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "count":  8,
+                       "needs":  "EnergyGenerator4"
                    }
                ]
 }
