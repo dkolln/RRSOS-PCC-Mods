@@ -152,7 +152,7 @@ namespace RRSOS.PCC.Boosters
             if (WorldState.Ready(out var planetHash, out _))
             {
                 _beacons = WorldObjectsHandler.Instance.GetAllWorldObjects().Values
-                    .Where(w => w != null && w.GetGroup() != null && w.GetGroup().GetId() == "Beacon" && w.GetPlanetHash() == planetHash && !IsBase(w))
+                    .Where(w => w != null && w.GetGroup() != null && w.GetGroup().GetId() == "Beacon" && w.GetPlanetHash() == planetHash && !IsExcluded(w))
                     .OrderBy(w => w.GetText() ?? "", StringComparer.OrdinalIgnoreCase).ToList();
             }
 
@@ -160,8 +160,12 @@ namespace RRSOS.PCC.Boosters
                 _beacon = null;
         }
 
-        // The beacon named Base marks the base itself (the T0 base's lamp becomes it), never a booster.
-        private static bool IsBase(WorldObject beacon) => string.Equals((beacon.GetText() ?? "").Trim(), "Base", StringComparison.OrdinalIgnoreCase);
+        // Beacons named in ExcludeBeacons ("Base" by default: the T0 base's lamp becomes it) mark something else, never a booster.
+        private static bool IsExcluded(WorldObject beacon)
+        {
+            var name = (beacon.GetText() ?? "").Trim();
+            return Plugin.ExcludeBeacons.Value.Split(',').Select(n => n.Trim()).Any(n => n.Length > 0 && string.Equals(n, name, StringComparison.OrdinalIgnoreCase));
+        }
 
         private static bool Unlocked(string groupId)
         {

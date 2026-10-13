@@ -17,6 +17,7 @@ namespace RRSOS.PCC.Boosters
 
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<bool> AllowLocked;
+        internal static ConfigEntry<string> ExcludeBeacons;
         internal static ConfigEntry<bool> RunPlacementTest;
 
         private void Awake()
@@ -25,6 +26,8 @@ namespace RRSOS.PCC.Boosters
             Enabled = Config.Bind("General", "Enabled", false, "Turn the Boosters mod on: adds the Boosters screen to the build menu. Building a booster writes into the running game.");
 
             AllowLocked = Config.Bind("General", "AllowLocked", false, "Offer machines, optimizers and fuses that are not unlocked yet on the Boosters screen (building is free anyway).");
+
+            ExcludeBeacons = Config.Bind("General", "ExcludeBeacons", "Base", "Beacon names that are never offered on the Boosters screen, separated by commas (capitals and spaces around a name do not matter; the whole name must match).");
 
             RunPlacementTest = Config.Bind("Spike", "RunPlacementTest", false, "Once, when a world loads: place an optimizer, heaters, a spreader, a hive and a farm in front of the player, report what the game made of them (boosters-placement.txt), and remove them again after ten seconds. Set it back to false afterwards.");
 
