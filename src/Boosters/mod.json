@@ -1,0 +1,14 @@
+{
+  "id": "com.rrsos.pcc.boosters",
+  "name": "RRSOS PCC Boosters",
+  "version": "0.0.1",
+  "description": "A Boosters screen in the build menu (1 Iron, 1 Aluminium, 1 Alloy). Using it opens a window where you pick a named beacon, a booster (heat, pressure, butterflies, bees, ecosystem, frogs, trees, grass, flowers), the machine tier, an optimizer and its fuses, and what to fill the machines with; Build places eight machines and the optimizers at the beacon for free and takes the beacon away.",
+  "plugin": "RRSOS.PCC.Boosters.dll",
+  "pluginFolder": "RRSOS-PCC-Boosters",
+  "config": "com.rrsos.pcc.boosters.cfg",
+  "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Boosters",
+  "commands": [],
+  "terminalCommands": [],
+  "requestFiles": [],
+  "writesToRunningGame": true
+}

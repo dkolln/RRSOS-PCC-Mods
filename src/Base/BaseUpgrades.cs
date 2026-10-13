@@ -42,6 +42,21 @@ Vegetube1 > Vegetube2
 # Drill T1 > T2 > T3 > T4 > T5
 Drill0 > Drill1 > Drill2 > Drill3 > Drill4
 
+# Tree Spreader T1 > T2 > T3
+TreeSpreader0 > TreeSpreader1 > TreeSpreader2
+
+# Flower Spreader T1 > T2
+SeedSpreader1 > SeedSpreader2
+
+# Butterfly Farm T1 > T2 > T3
+ButterflyFarm1 > ButterflyFarm2 > ButterflyFarm3
+
+# Beehive T1 > T2
+Beehive1 > Beehive2
+
+# Machine Optimizer T1 > T2 (the fuses go with it)
+Optimizer1 > Optimizer2
+
 # Outdoor lamp > Beacon; when there is only one lamp (the base's) it becomes the beacon ""Base"" in green
 OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
 ";
