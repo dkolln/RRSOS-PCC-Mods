@@ -43,7 +43,7 @@ namespace RRSOS.PCC.Boosters
         private Kind _kind;
         private string _machine;
         private string _optimizer;      // null = none
-        private readonly HashSet<string> _fuses = new HashSet<string>();
+        private bool _prefill = true;  // the optimizers hold their fuses
         private string _fill = "";
         private string _status = "";
         private bool _building;
@@ -186,15 +186,12 @@ namespace RRSOS.PCC.Boosters
                 PickKind(guess);
         }
 
-        // A kind's own starting choices: its highest machine tier that may be built, no optimizer (with the kind's fuses ready for when one is picked), its fill.
+        // A kind's own starting choices: its highest machine tier that may be built, no optimizer, its fill. The fuses and how many optimizers are the kind's own.
         private void PickKind(Kind kind)
         {
             _kind = kind;
             _machine = kind.Machines.Select(m => m.GId).LastOrDefault(Allowed);
             _optimizer = null;   // optimizers are built only when one is picked
-            _fuses.Clear();
-            foreach (var fuse in kind.DefaultFuses)
-                _fuses.Add(fuse);
             _fill = kind.FillDefault ?? "";
         }
 
@@ -203,14 +200,14 @@ namespace RRSOS.PCC.Boosters
             if (_building || _beacon == null || _kind == null || _machine == null)
                 return;
 
-            var fuses = _kind.DefaultFuses.Concat(BoosterKinds.Fuses.Select(f => f.GId)).Distinct().Where(_fuses.Contains).ToList();
             var request = new Request
             {
                 Beacon = _beacon,
                 Kind = _kind,
                 Machine = _machine,
-                Optimizer = _optimizer != null && fuses.Count > 0 ? _optimizer : null,
-                Fuses = fuses,
+                Optimizer = _optimizer,
+                Fuses = _kind.DefaultFuses.ToList(),
+                Prefill = _prefill,
                 Fill = _fill ?? ""
             };
 
@@ -280,34 +277,28 @@ namespace RRSOS.PCC.Boosters
 
             // left: where, and what
             if (_beacons.Count == 0)
-                yLeft = Section("Beacon", left, yLeft, colW, 1, new List<Option>(), null, "No beacon found. Place a beacon, name it, and open this screen again.");
+                yLeft = Section("Beacons", left, yLeft, colW, 1, new List<Option>(), null, "No beacon found. Place a beacon, name it, and open this screen again.");
             else
-                yLeft = Section("Beacon", left, yLeft, colW, 2, _beacons.Select(b => new Option { Key = b.GetId().ToString(), Label = string.IsNullOrWhiteSpace(b.GetText()) ? "(no name)" : b.GetText(), Selected = b == _beacon }).ToList(),
+                yLeft = Section("Beacons", left, yLeft, colW, 2, _beacons.Select(b => new Option { Key = b.GetId().ToString(), Label = string.IsNullOrWhiteSpace(b.GetText()) ? "(no name)" : b.GetText(), Selected = b == _beacon }).ToList(),
                     key => PickBeacon(_beacons.First(b => b.GetId().ToString() == key)));
 
-            yLeft = Section("Booster", left, yLeft, colW, 3, BoosterKinds.All.Select(k => new Option { Key = k.Key, Label = k.Name, Selected = k == _kind }).ToList(), key => PickKind(BoosterKinds.ByKey(key)));
+            yLeft = Section("Booster Type", left, yLeft, colW, 3, BoosterKinds.All.Select(k => new Option { Key = k.Key, Label = k.Name, Selected = k == _kind }).ToList(), key => PickKind(BoosterKinds.ByKey(key)));
 
             if (_kind != null && _kind.Machines.Length > 1)
-                yLeft = Section("Machine", left, yLeft, colW, 3, _kind.Machines.Select(c => new Option { Key = c.GId, Label = c.Label, Enabled = Allowed(c.GId), Selected = c.GId == _machine }).ToList(), key => _machine = key);
+                yLeft = Section("Machine Tier", left, yLeft, colW, 3, _kind.Machines.Select(c => new Option { Key = c.GId, Label = c.Label, Enabled = Allowed(c.GId), Selected = c.GId == _machine }).ToList(), key => _machine = key);
 
             // right: the optimizer, its fuses, what fills the machines
             var optimizers = new List<Option> { new Option { Key = "", Label = "None", Selected = _optimizer == null } };
             optimizers.AddRange(BoosterKinds.Optimizers.Select(c => new Option { Key = c.GId, Label = c.Label, Enabled = Allowed(c.GId), Selected = c.GId == _optimizer }));
-            yRight = Section("Optimizer", right, yRight, colW, 3, optimizers, key => _optimizer = key.Length == 0 ? null : key);
+            yRight = Section("Optimizers", right, yRight, colW, 3, optimizers, key => _optimizer = key.Length == 0 ? null : key);
 
-            yRight = Section("Fuses (one optimizer each)", right, yRight, colW, 4,
-                BoosterKinds.Fuses.Select(c => new Option { Key = c.GId, Label = c.Label, Enabled = _optimizer != null && Allowed(c.GId), Selected = _fuses.Contains(c.GId) }).ToList(),
-                key =>
-                {
-                    if (!_fuses.Remove(key))
-                        _fuses.Add(key);
-                });
+            yRight = CheckBox("Pre-Fill Optimizers", right, yRight, _prefill, _optimizer != null && _kind != null, () => _prefill = !_prefill);
 
             if (_kind != null && _kind.Fill != null)
             {
                 var fill = new List<Option> { new Option { Key = "", Label = "(leave empty)", Selected = string.IsNullOrEmpty(_fill) } };
                 fill.AddRange(_kind.Fill.Select(c => new Option { Key = c.GId, Label = c.Label, Selected = c.GId == _fill }));
-                yRight = Section("Fill the machines with", right, yRight, colW, 4, fill, key => _fill = key);
+                yRight = Section("Machine Fill", right, yRight, colW, 4, fill, key => _fill = key);
             }
 
             // the bottom: what will be built, and the button
@@ -338,9 +329,12 @@ namespace RRSOS.PCC.Boosters
             var where = "at \"" + (_beacon.GetText() ?? "") + "\"";
             var layout = _kind.Ring ? "in a ring of " : "stacked, ";
             var text = BoosterKinds.Count + " x " + machine + " " + layout.Replace("stacked, ", "stacked ").Replace("in a ring of ", "in a ring ") + where;
-            var fuses = BoosterKinds.Fuses.Where(f => _fuses.Contains(f.GId)).Select(f => f.Label).ToList();
-            if (_optimizer != null && fuses.Count > 0)
-                text += "; " + fuses.Count + " " + BoosterKinds.Optimizers.First(o => o.GId == _optimizer).Label + (fuses.Count > 1 ? "s" : "") + " with " + string.Join(", ", fuses.ToArray()) + " fuses";
+            if (_optimizer != null)
+            {
+                var fuses = BoosterKinds.Fuses.Where(f => _kind.DefaultFuses.Contains(f.GId)).Select(f => f.Label).ToArray();
+                text += "; " + fuses.Length + " " + BoosterKinds.Optimizers.First(o => o.GId == _optimizer).Label + (fuses.Length > 1 ? "s" : "") + (_prefill ? " with " + string.Join(" and ", fuses) + " fuses" : " (empty)");
+            }
+
             if (!string.IsNullOrEmpty(_fill) && _kind.Fill != null)
                 text += "; filled with " + _kind.Fill.First(c => c.GId == _fill).Label;
             return text;
@@ -375,6 +369,18 @@ namespace RRSOS.PCC.Boosters
             }
 
             return y + ((options.Count + cols - 1) / cols) * (height + gap) + 12f;
+        }
+
+        // A tick box with its label beside it; returns the y below it.
+        private float CheckBox(string text, float x, float y, bool ticked, bool enabled, Action toggle)
+        {
+            Button(_body, ticked ? "X" : "", x, y, 44f, 44f, 26f, enabled ? Lit : Off, enabled && !_building, () =>
+            {
+                toggle();
+                Redraw();
+            });
+            Label(_body, text, x + 56f, y + 4f, 520f, 36f, 22f, enabled ? Dim : Off, TextAlignmentOptions.Left);
+            return y + 60f;
         }
 
         private static void Place(RectTransform rect, float x, float y, float w, float h)

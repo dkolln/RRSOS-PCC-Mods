@@ -15,7 +15,8 @@ namespace RRSOS.PCC.Boosters
         public Kind Kind;
         public string Machine;          // the machine's group id
         public string Optimizer;        // Optimizer1 or Optimizer2; null for none
-        public List<string> Fuses = new List<string>();   // one optimizer each
+        public List<string> Fuses = new List<string>();   // one optimizer each, the kind's own fuses
+        public bool Prefill = true;     // the optimizers are filled with their fuses; when false they are placed empty
         public string Fill = "";        // what each machine's inventory is filled with; "" for empty
     }
 
@@ -173,7 +174,7 @@ namespace RRSOS.PCC.Boosters
                     break;
                 }
 
-                for (var s = 0; s < inventory.GetSize(); s++)
+                for (var s = 0; request.Prefill && s < inventory.GetSize(); s++)
                 {
                     var result = new Result();
                     yield return Add(inventory, fuses[i], result);

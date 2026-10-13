@@ -118,19 +118,19 @@ namespace RRSOS.PCC.Boosters
                 Machines = Machines("Ecosystem1", "Ecosystem"),
                 DefaultFuses = new[] { "FusePlants1", "FuseInsects1" }, Ring = true, Spacing = 10.5, SupplyEverything = true },
 
-            new Kind { Key = "Frogs", Name = "Frog Farm", Aliases = new[] { "frog", "toad", "amphib" },
+            new Kind { Key = "Frogs", Name = "Frog", Aliases = new[] { "frog", "toad", "amphib" },
                 Machines = Machines("AmphibiansFarm1", "Amphibian Farm"),
                 DefaultFuses = new[] { "FusePlants1", "FuseAnimals1" }, Ring = true, Spacing = 6.6, Fill = FrogEggs },
 
-            new Kind { Key = "Trees", Name = "Tree Spreader Farm", Aliases = new[] { "tree", "spreader", "redwood", "forest" },
+            new Kind { Key = "Trees", Name = "Tree", Aliases = new[] { "tree", "spreader", "redwood", "forest" },
                 Machines = Machines("TreeSpreader0", "Tree Spreader T1", "TreeSpreader1", "Tree Spreader T2", "TreeSpreader2", "Tree Spreader T3"),
                 DefaultFuses = new[] { "FuseOxygen1", "FusePlants1" }, Ring = true, Spacing = 7.3, Fill = TreeSeeds, FillDefault = "Tree15Seed", Grown = true },
 
-            new Kind { Key = "Grass", Name = "Grass Spreader Farm", Aliases = new[] { "grass", "lawn" },
+            new Kind { Key = "Grass", Name = "Grass", Aliases = new[] { "grass", "lawn" },
                 Machines = Machines("GrassSpreader1", "Grass Spreader"),
                 DefaultFuses = new[] { "FuseOxygen1", "FusePlants1" }, Ring = true, Spacing = 7.3, Grown = true },
 
-            new Kind { Key = "Flowers", Name = "Flower Spreader Farm", Aliases = new[] { "flower", "bloom" },
+            new Kind { Key = "Flowers", Name = "Flower", Aliases = new[] { "flower", "bloom" },
                 Machines = Machines("SeedSpreader1", "Flower Spreader T1", "SeedSpreader2", "Flower Spreader T2"),
                 DefaultFuses = new[] { "FusePlants1" }, Ring = true, Spacing = 7.3, Grown = true }
         };
