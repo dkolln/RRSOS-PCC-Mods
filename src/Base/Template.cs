@@ -20,11 +20,6 @@ namespace RRSOS.PCC.Base
         public string panels;   // a pod's panel types
         public string color;    // the game's own colour text
         public string fill;     // what the piece holds when it is made (the seeds of a vegetube): group ids separated by commas
-        public string from;     // growth: the panels the piece must still have for the change to be made
-        public string needs;    // growth: the group that must be unlocked first
-        public string op;       // growth: "add" (make the piece), "remove" (take the piece away), empty = change a pod's panels
-        public int count;       // growth, add: how many of the piece stand on the spot when done (a stack); 0 or 1 = one
-        public bool all;        // growth, remove: take every piece of the group(s) on the spot, not just one (a stack)
     }
 
     [Serializable]
@@ -88,11 +83,6 @@ namespace RRSOS.PCC.Base
                             case "panels": piece.panels = text; break;
                             case "color": piece.color = text; break;
                             case "fill": piece.fill = text; break;
-                            case "from": piece.from = text; break;
-                            case "needs": piece.needs = text; break;
-                            case "op": piece.op = text; break;
-                            case "count": piece.count = int.Parse(value, CultureInfo.InvariantCulture); break;
-                            case "all": piece.all = value == "true"; break;
                             case "x": piece.x = float.Parse(value, CultureInfo.InvariantCulture); break;
                             case "y": piece.y = float.Parse(value, CultureInfo.InvariantCulture); break;
                             case "z": piece.z = float.Parse(value, CultureInfo.InvariantCulture); break;
@@ -132,29 +122,6 @@ namespace RRSOS.PCC.Base
             }
 
             return sb.ToString();
-        }
-    }
-
-    /// <summary>What was added to the base after T0 (tools/capture-growth.ps1): entries that are made when the group they need is unlocked. May be empty.</summary>
-    internal static class Growth
-    {
-        private static Template _template;
-
-        public static Template Get()
-        {
-            if (_template != null)
-                return _template;
-
-            using (var stream = typeof(Growth).Assembly.GetManifestResourceStream("Growth.json"))
-            {
-                if (stream == null)
-                    throw new InvalidOperationException("Growth.json is not built into this DLL.");
-
-                using (var reader = new StreamReader(stream))
-                    _template = T0.Parse(reader.ReadToEnd());
-            }
-
-            return _template;
         }
     }
 }

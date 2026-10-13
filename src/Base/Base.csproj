@@ -24,7 +24,6 @@
     <EmbeddedResource Include="..\Shared\DefaultNames.txt" LogicalName="DefaultNames.txt" />
     <!-- The T0 base, captured from a save by tools\capture-t0.py. -->
     <EmbeddedResource Include="T0.json" LogicalName="T0.json" />
-    <EmbeddedResource Include="Growth.json" LogicalName="Growth.json" />
   </ItemGroup>
 
   <ItemGroup>
