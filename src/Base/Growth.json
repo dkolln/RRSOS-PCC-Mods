@@ -393,51 +393,6 @@
                        "needs":  "ScreenTerraStage"
                    },
                    {
-                       "g":  "Desktop1",
-                       "x":  28,
-                       "y":  3.53583,
-                       "z":  10.9,
-                       "rot":  "0,0.7071068,0,0.7071068",
-                       "op":  "remove",
-                       "needs":  "ScreenMessage"
-                   },
-                   {
-                       "g":  "ComAntenna",
-                       "x":  11.9809,
-                       "y":  8.62565,
-                       "z":  0.0554,
-                       "rot":  "0,0,0,1",
-                       "op":  "add",
-                       "needs":  "ScreenMessage"
-                   },
-                   {
-                       "g":  "ScreenMessage",
-                       "x":  35.2272,
-                       "y":  4.5136,
-                       "z":  9.8643,
-                       "rot":  "0,0,0,1",
-                       "op":  "add",
-                       "needs":  "ScreenMessage"
-                   },
-                   {
-                       "g":  "Desktop1",
-                       "x":  36,
-                       "y":  3.53583,
-                       "z":  10.7,
-                       "rot":  "0,0.7071068,0,0.7071068",
-                       "op":  "add",
-                       "needs":  "ScreenMessage"
-                   },
-                   {
-                       "g":  "ScreenUnlockables",
-                       "x":  36.733,
-                       "y":  4.5136,
-                       "z":  9.7977,
-                       "rot":  "0,-8.742278E-08,0,-1",
-                       "op":  "add",
-                       "needs":  "ScreenMessage"
-                   },
-                   {
                        "g":  "VegetubeOutside1",
                        "x":  41.8,
                        "y":  2.52,
@@ -1423,6 +1378,33 @@
                        "rot":  "0,0,0,1",
                        "op":  "add",
                        "needs":  "BedDouble"
+                   },
+                   {
+                       "g":  "ComAntenna",
+                       "x":  11.9809,
+                       "y":  8.62565,
+                       "z":  0.0554,
+                       "rot":  "0,0,0,1",
+                       "op":  "add",
+                       "needs":  "ScreenMessage"
+                   },
+                   {
+                       "g":  "Desktop1",
+                       "x":  68.1,
+                       "y":  3.53583,
+                       "z":  3,
+                       "rot":  "0,0.7071068,0,0.7071068",
+                       "op":  "add",
+                       "needs":  "ScreenMessage"
+                   },
+                   {
+                       "g":  "ScreenMessage",
+                       "x":  68.8593,
+                       "y":  4.5136,
+                       "z":  2.2648,
+                       "rot":  "0,-8.742278E-08,0,-1",
+                       "op":  "add",
+                       "needs":  "ScreenMessage"
                    }
                ]
 }
