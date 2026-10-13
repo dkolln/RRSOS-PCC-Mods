@@ -14,6 +14,8 @@ Entries already in Growth.json with the same -Needs are replaced, so a stage can
 stay in T0; /power on|off switches them), drills (the player's own), the plants that grow in a food grower (the game makes them from the seed), the escape pod, and anything
 without a position. -LabelOnly names groups that keep just their label (a crate: no linked group, no contents). -Only and -Except limit a capture to (or keep it from) the named groups, to split one save into stages by what unlocked when. -Include names groups that are normally left out (for example ScreenTerraStage) so that one can be captured as a stage of its own. Upgrades (Heater1 -> Heater2, Vegetube1 -> Vegetube2, lamp -> beacon) count as the same piece: the Base mod's upgrade chains do those.
 
+A stage captured out of order: -SkipNeeds names the stages of Growth.json the save has not reached yet (their pieces are not in the save, so they stay out of the earlier base it is compared with and do not show up as removes). Their entries are kept in the file.
+
 .EXAMPLE
 powershell -ExecutionPolicy Bypass -File tools\capture-growth.ps1 -Save "$env:USERPROFILE\AppData\LocalLow\MijuGames\Planet Crafter\Custom-1.json" -Needs VegetableGrower1
 #>
@@ -25,9 +27,12 @@ param(
     [string[]] $Only = @(),
     [string[]] $Except = @(),
     [string[]] $LabelOnly = @(),
+    [string[]] $SkipNeeds = @(),
     [switch] $DryRun
 )
 $ErrorActionPreference = 'Stop'
+# a list given with -File arrives as one comma separated text
+foreach ($name in 'Include', 'Only', 'Except', 'LabelOnly', 'SkipNeeds') { Set-Variable -Name $name -Value @((Get-Variable -Name $name -ValueOnly) | ForEach-Object { $_ -split ',' } | Where-Object { $_ }) }
 $inv = [Globalization.CultureInfo]::InvariantCulture
 $root = Split-Path -Parent $PSScriptRoot
 $t0Path = Join-Path $root 'src\Base\T0.json'
@@ -90,14 +95,15 @@ $keep = @()
 if (Test-Path $Out) {
     $old = Get-Content $Out -Raw | ConvertFrom-Json
     $keep = @($old.pieces | Where-Object { $_.needs -ne $Needs })
+    $keepBefore = @($keep | Where-Object { $SkipNeeds -notcontains $_.needs })   # what the base looked like before this stage: the stages the save has reached
     # Every stage's adds first, then the removes, then the pod panel changes, whatever order the stages sit in the file: a later stage may remove or change what an earlier one
     # added, and a stage captured again lands at the end of the file.
-    foreach ($e in ($keep | Where-Object { $_.op -eq 'add' -and $Ignore -notcontains $_.g })) { [void]$before.Add((ToItem $e)) }
-    foreach ($e in ($keep | Where-Object { $_.op -eq 'remove' })) {
+    foreach ($e in ($keepBefore | Where-Object { $_.op -eq 'add' -and $Ignore -notcontains $_.g })) { [void]$before.Add((ToItem $e)) }
+    foreach ($e in ($keepBefore | Where-Object { $_.op -eq 'remove' })) {
         $gone = $before | Where-Object { $_.g -eq $e.g -and (Dist @($_.x, $_.y, $_.z) @($e.x, $e.y, $e.z)) -lt 0.3 } | Select-Object -First 1
         if ($gone) { $before.Remove($gone) }
     }
-    foreach ($e in ($keep | Where-Object { -not $_.op })) {
+    foreach ($e in ($keepBefore | Where-Object { -not $_.op })) {
         $pod = $before | Where-Object { $_.g -eq $e.g -and (Dist @($_.x, $_.y, $_.z) @($e.x, $e.y, $e.z)) -lt 0.05 } | Select-Object -First 1
         if ($pod) { $pod.panels = [string]$e.panels }
     }
