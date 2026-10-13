@@ -1,6 +1,6 @@
 {
     "name":  "Growth",
-    "capturedFrom":  "Stage-Vegetube3.json",
+    "capturedFrom":  "Stage-AdvCrafting.json",
     "anchor":  [
                    766,
                    29,
@@ -637,6 +637,15 @@
                        "op":  "add",
                        "needs":  "VegetubeOutside1",
                        "fill":  "SeedGold"
+                   },
+                   {
+                       "g":  "CraftStation2",
+                       "x":  44,
+                       "y":  3.53583,
+                       "z":  10,
+                       "rot":  "0,0.7071068,0,-0.7071068",
+                       "op":  "add",
+                       "needs":  "CraftStation2"
                    }
                ]
 }
