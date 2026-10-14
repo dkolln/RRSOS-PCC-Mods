@@ -303,7 +303,7 @@ namespace RRSOS.PCC.Boosters
 
             if (_kind != null && _kind.Fill != null)
             {
-                var fill = new List<Option> { new Option { Key = "", Label = "(leave empty)", Selected = string.IsNullOrEmpty(_fill) } };
+                var fill = new List<Option> { new Option { Key = "", Label = "No Fill", Selected = string.IsNullOrEmpty(_fill) } };
                 fill.AddRange(_kind.Fill.Select(c => new Option { Key = c.GId, Label = c.Label, Selected = c.GId == _fill }));
                 yRight = Section("Machine Fill", right, yRight, colW, 4, fill, key => _fill = key);
             }
