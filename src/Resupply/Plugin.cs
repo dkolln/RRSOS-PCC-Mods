@@ -17,7 +17,7 @@ namespace RRSOS.PCC.Resupply
         public const string Version = "0.2.0";
 
         internal static ConfigEntry<bool> Enabled;
-        internal static ConfigEntry<string> Groups;
+        internal static ConfigEntry<string> Groups, DroneStationGroup;
         internal static ConfigEntry<float> NudgeX, NudgeY;
         internal static ConfigEntry<bool> AutoTopUp;
         internal static ConfigEntry<int> TopUpBelowPercent;
@@ -28,6 +28,7 @@ namespace RRSOS.PCC.Resupply
             ModLog.Init("Resupply", Logger);
             Enabled = Config.Bind("General", "Enabled", false, "Show the resupply icon on crate windows, and /resupply on the terminal. Writes into the running game.");
             Groups = Config.Bind("General", "Groups", "Container1,Container2,Container3", "The crates that get the resupply icon (and that /resupply tops up).");
+            DroneStationGroup = Config.Bind("General", "DroneStationGroup", "DroneStation1", "The game's id for the drone station. Set Drone Demand and Set Drone Supply on the Supply Manager screen can be used once it is unlocked.");
             NudgeX = Config.Bind("Placement", "NudgeX", 0f, "Fine adjustment of the icon, sideways from its default spot (UI units, positive is right).");
             NudgeY = Config.Bind("Placement", "NudgeY", 0f, "Fine adjustment of the icon, up from its default spot (UI units, positive is up).");
 

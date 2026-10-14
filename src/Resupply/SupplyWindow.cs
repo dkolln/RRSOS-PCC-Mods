@@ -178,9 +178,10 @@ namespace RRSOS.PCC.Resupply
             const float textX = m + buttonW + 28f;
             var textW = w - textX - m;
 
-            Row("Set Drone Demand", "Every crate with an item (its label, or its category) asks the drones for that item, and for nothing else. Crates already set are left alone.", m, y, buttonW, textX, textW, Lit, () => Do(SetDemand));
+            var drones = DronesUnlocked();
+            Row("Set Drone Demand", "Every crate with an item (its label, or its category) asks the drones for that item, and for nothing else. Crates already set are left alone.", m, y, buttonW, textX, textW, Lit, () => Do(SetDemand), false, drones);
             y += rowH;
-            Row("Set Drone Supply", "Producers (extractors, collectors, beehives, ecosystem, ...) offer what they make to the drones. A hive offers honey and bee larvae, an ecosystem its larvae and eggs.", m, y, buttonW, textX, textW, Lit, () => Do(SetSupply));
+            Row("Set Drone Supply", "Producers (extractors, collectors, beehives, ecosystem, ...) offer what they make to the drones. A hive offers honey and bee larvae, an ecosystem its larvae and eggs.", m, y, buttonW, textX, textW, Lit, () => Do(SetSupply), false, drones);
             y += rowH;
             Row("Resupply", "Fill the empty slots of every crate with its item, at once.", m, y, buttonW, textX, textW, Lit, () => Do(ResupplyNow));
             y += rowH;
@@ -199,10 +200,31 @@ namespace RRSOS.PCC.Resupply
             _statusText = Label(_body, _status, m, h - 150f, w - 2 * m, 120f, 24f, _status.StartsWith("Could") || _status.StartsWith("The world") ? Warn : Dim, TextAlignmentOptions.TopLeft, true);
         }
 
-        private void Row(string label, string description, float x, float y, float buttonW, float textX, float textW, Color colour, Action onClick, bool alwaysEnabled = false)
+        private void Row(string label, string description, float x, float y, float buttonW, float textX, float textW, Color colour, Action onClick, bool alwaysEnabled = false, bool available = true)
         {
-            Button(_body, label, x, y, buttonW, 64f, 28f, colour, alwaysEnabled || !_busy, onClick);
-            Label(_body, description, textX, y - 2f, textW, 80f, 20f, Dim, TextAlignmentOptions.TopLeft, true);
+            Button(_body, label, x, y, buttonW, 64f, 28f, colour, available && (alwaysEnabled || !_busy), onClick);
+            Label(_body, available ? description : "Needs the drone station: it is not unlocked yet.", textX, y - 2f, textW, 80f, 20f, available ? Dim : Warn, TextAlignmentOptions.TopLeft, true);
+        }
+
+        // The drone settings only make sense once the drone station is unlocked in the game (everything is, in a game with everything unlocked).
+        private static bool DronesUnlocked()
+        {
+            try
+            {
+                if (Managers.GetManager<GameSettingsHandler>().GetCurrentGameSettings().GetEverythingUnlocked())
+                    return true;
+
+                var station = GroupsHandler.GetGroupViaId(Plugin.DroneStationGroup.Value);
+                if (station == null)
+                    return true;   // the game has no such group (it changed): do not lock the buttons for good
+
+                return station.GetUnlockingInfos().GetIsUnlocked(true) || station.GetIsGloballyUnlocked();
+            }
+            catch (Exception e)
+            {
+                ModLog.LogOnce("supply-drones", "Supply Manager: could not tell whether the drone station is unlocked: " + e.GetType().Name + ": " + e.Message);
+                return true;
+            }
         }
 
         // ---- the actions ----------------------------------------------------------------------------------------------------
