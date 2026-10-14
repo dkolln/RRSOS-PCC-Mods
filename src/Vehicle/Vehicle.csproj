@@ -3,8 +3,8 @@
   <PropertyGroup>
     <AssemblyName>RRSOS.PCC.Vehicle</AssemblyName>
     <RootNamespace>RRSOS.PCC.Vehicle</RootNamespace>
-    <Description>/vehicle on the terminal: spawns a rover and fits its gear</Description>
-    <Version>0.1.0</Version>
+    <Description>Buttons on the vehicle station window: spawn a rover, fit its gear at the first or top tier</Description>
+    <Version>0.2.0</Version>
     <ModFolder>RRSOS-PCC-Vehicle</ModFolder>
   </PropertyGroup>
 
@@ -13,8 +13,22 @@
   <ItemGroup>
     <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
     <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
-    <Compile Include="..\Shared\Placement.cs" Link="Shared\Placement.cs" />
-    <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The buttons are Unity UI objects with the game's text. -->
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GameManaged)Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameManaged)UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GameManaged)UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
 </Project>
