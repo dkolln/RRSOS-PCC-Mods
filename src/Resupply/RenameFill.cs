@@ -172,10 +172,32 @@ namespace RRSOS.PCC.Resupply
         internal void OnResupplyCommand(string args)
         {
             var words = (args ?? "").Trim().Split(new[] { ' ', '	' }, 2, StringSplitOptions.RemoveEmptyEntries);
-            if (words.Length > 0 && string.Equals(words[0], "add", StringComparison.OrdinalIgnoreCase))
+            if (words.Length == 0)
+                ResupplyAllNow();
+            else if (string.Equals(words[0], "add", StringComparison.OrdinalIgnoreCase))
                 AddName(words.Length > 1 ? words[1] : "");
             else
-                ChatHook.Say("Usage: /resupply add <item id> <name>, for example /resupply add waterbottle1 water");
+                ChatHook.Say("Usage: /resupply (fill every crate), or /resupply add <item id> <name>, for example /resupply add waterbottle1 water");
+        }
+
+        /// <summary>/resupply on its own: every crate with an item is filled, as the Supply Manager's Resupply button does. One line in the chat when done.</summary>
+        private void ResupplyAllNow()
+        {
+            var resupplier = Resupplier.Instance;
+            if (resupplier == null || resupplier.Busy)
+            {
+                ChatHook.Say("Still busy filling crates; try again in a moment.");
+                return;
+            }
+
+            StartCoroutine(RunResupplyAll(resupplier));
+        }
+
+        private IEnumerator RunResupplyAll(Resupplier resupplier)
+        {
+            var lines = new List<string>();
+            yield return resupplier.ResupplyAll(line => lines.Add(line));
+            ChatHook.Say(lines.LastOrDefault(l => l.StartsWith("Done:")) ?? lines.LastOrDefault() ?? "Done.");
         }
 
         private void AddName(string args)

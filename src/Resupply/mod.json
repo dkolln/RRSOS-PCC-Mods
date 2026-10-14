@@ -2,12 +2,17 @@
   "id": "com.rrsos.pcc.resupply",
   "name": "RRSOS PCC Resupply",
   "version": "0.2.0",
-  "description": "Everything about storage crates and what is in them. Label a crate (Container1-3) with an item's name and its empty slots are filled once, at the rename (whole-name matches only; what is in the crate stays). A recycle-arrows icon on a crate's window refills that crate with the item its label or category names. A Supply Manager screen in the build menu (Iron, Silicon, Aluminium): Set Drone Demand makes every crate with an item ask the drones for it, Set Drone Supply makes producers (extractors, collectors, hives, ecosystem) offer what they make, Resupply fills the crates, and Auto Top-Up (off by default) keeps crates above a fill level. Chat command /resupply add <item id> <name> gives an item another name for labels.",
+  "description": "Everything about storage crates and what is in them. Label a crate (Container1-3) with an item's name and its empty slots are filled once, at the rename (whole-name matches only; what is in the crate stays). A recycle-arrows icon on a crate's window refills that crate with the item its label or category names. A Supply Manager screen in the build menu (Iron, Silicon, Aluminium): Set Drone Demand makes every crate with an item ask the drones for it, Set Drone Supply makes producers (extractors, collectors, hives, ecosystem) offer what they make, Resupply fills the crates, and Auto Top-Up (off by default) keeps crates above a fill level. Chat commands: /resupply fills every crate with its item, /resupply add <item id> <name> gives an item another name for labels.",
   "plugin": "RRSOS.PCC.Resupply.dll",
   "pluginFolder": "RRSOS-PCC-Resupply",
   "config": "com.rrsos.pcc.resupply.cfg",
   "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Resupply",
   "commands": [
+    {
+      "name": "/resupply",
+      "usage": "/resupply",
+      "help": "fill every crate with its item"
+    },
     {
       "name": "/resupply add",
       "usage": "/resupply add <item id> <name>",

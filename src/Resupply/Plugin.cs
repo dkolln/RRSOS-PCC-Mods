@@ -41,7 +41,7 @@ namespace RRSOS.PCC.Resupply
             gameObject.AddComponent<Resupplier>();
             var rename = gameObject.AddComponent<RenameFill>();
             ChatHook.Enabled = () => Enabled.Value;
-            ChatHook.Add("/resupply", rename.OnResupplyCommand, "give an item another name for crate labels: /resupply add <item id> <name>");
+            ChatHook.Add("/resupply", rename.OnResupplyCommand, "fill every crate with its item, or give an item another name: /resupply add <item id> <name>");
             gameObject.AddComponent<ChatHook>();
             gameObject.AddComponent<SupplyItem>();
             gameObject.AddComponent<SupplyWindow>();
