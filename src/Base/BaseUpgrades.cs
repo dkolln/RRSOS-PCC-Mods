@@ -25,6 +25,8 @@ namespace RRSOS.PCC.Base
 # After the steps a line may add ; label=Text ; color=green ; only=1 : the last step is then made with that label and colour,
 # and only=N means only when exactly N buildings of the swapped kind stand in the world (the swap itself happens either way).
 # ; turn=90 turns every building made as the last step 90 degrees to the right (clockwise from above; negative turns left).
+# ; ore=Iron,Silicon,... is for ore extractors: a building keeps the ore it already extracts (the vein it stands on) through every step; one that has no ore yet gets, when it becomes
+# the last step, whichever ore of this list the world has the fewest of, so the extractors spread evenly over the list.
 # Colours: green red blue yellow orange purple cyan white.
 
 # Wind Turbine > T1 Solar Panel > T2 Solar Panel (the T2 panel is turned 90 degrees to the right)
@@ -32,6 +34,9 @@ EnergyGenerator1 > EnergyGenerator2 > EnergyGenerator3 ; turn=90
 
 # Heater T1 > T2 > T3
 Heater1 > Heater2 > Heater3
+
+# Ore Extractor T1 > T2 > T3 (on a vein it keeps that vein's ore; off a vein the T3 takes the ore that is least mined)
+OreExtractor1 > OreExtractor2 > OreExtractor3 ; ore=Iron,Silicon,Titanium,Cobalt,Sulfur,Magnesium
 
 # Heater T4 > T5
 Heater4 > Heater5
@@ -73,6 +78,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             public string Label;
             public string Color;     // the game's own colour text
             public int OnlyIf;       // 0 = always; N = only when exactly N buildings of the swapped kind stand in the world
+            public string[] Ore;     // ore group ids to spread over (ore extractors); null = the chain does not deal with ore
             public float Turn;       // degrees to the right (clockwise seen from above) that the last step is turned when it is made
         }
 
@@ -176,6 +182,15 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                         chain.Color = DataTreatments.ColorToString(colour);
                     else if (name == "only" && int.TryParse(value, out var only))
                         chain.OnlyIf = only;
+                    else if (name == "ore")
+                    {
+                        var ores = value.Split(',').Select(o => o.Trim()).Where(o => o.Length > 0).ToArray();
+                        var missing = ores.Where(o => GroupsHandler.GetGroupViaId(o) == null).ToArray();
+                        if (ores.Length == 0 || missing.Length > 0)
+                            ModLog.Note("upgrades.txt: ore= in \"" + line + "\" ignored (" + (ores.Length == 0 ? "no ores" : "the game has no group " + string.Join(", ", missing)) + ").");
+                        else
+                            chain.Ore = ores;
+                    }
                     else if (name == "turn" && float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var turn))
                         chain.Turn = turn;
                     else
@@ -276,6 +291,24 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
 
             ModLog.Note("Upgrades: " + todo.Count + " buildings to swap (" + string.Join(", ", todo.GroupBy(w => w.GetGroup().GetId() + " > " + targets[w.GetGroup().GetId()]).Select(g => g.Count() + " x " + g.Key).ToArray()) + ").");
 
+            // How many extractors of each ore the world has, for the chains that spread ore (counted on the last step, and kept up to date as this pass makes more).
+            var oreUsage = new Dictionary<Chain, Dictionary<string, int>>();
+            foreach (var oreChain in _chainOf.Values.Distinct().Where(c => c.Ore != null))
+            {
+                var usage = oreChain.Ore.ToDictionary(o => o, o => 0);
+                var lastStep = oreChain.Steps[oreChain.Steps.Length - 1];
+                foreach (var wo in handler.GetAllWorldObjects().Values)
+                {
+                    if (wo == null || wo.GetGroup() == null || wo.GetGroup().GetId() != lastStep || wo.GetPlanetHash() != planetHash)
+                        continue;
+                    var ore = OreOf(wo).FirstOrDefault();
+                    if (ore != null && usage.ContainsKey(ore))
+                        usage[ore]++;
+                }
+
+                oreUsage[oreChain] = usage;
+            }
+
             var swapped = new Dictionary<string, int>();   // "from > to" -> how many
             var failed = new Dictionary<string, int>();
             var newIds = new Dictionary<int, KeyValuePair<int, string>>(); // old id -> new id and group, for the undo list
@@ -300,11 +333,32 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                     }
                 }
 
+                // Ore extractors: keep the ore of the vein it stands on; when it has none and becomes the last step, take the least-used ore of the chain's list.
+                string linked = null, chosenOre = null;
+                if (chain.Ore != null)
+                {
+                    var own = OreOf(old);
+                    if (own.Count > 0)
+                    {
+                        linked = to == chain.Steps[chain.Steps.Length - 1] ? own[0] : string.Join(",", own.ToArray());
+                    }
+                    else if (to == chain.Steps[chain.Steps.Length - 1])
+                    {
+                        var usage = oreUsage[chain];
+                        chosenOre = chain.Ore.OrderBy(o => usage[o]).First(); // OrderBy is stable: ties go to the earlier ore in the list
+                        linked = chosenOre;
+                    }
+                }
+
                 var result = new SwapResult();
-                yield return Swap(old, to, planetHash, result, null, color, label, turn);
+                yield return Swap(old, to, planetHash, result, null, color, label, turn, linked);
                 if (result.Made != null)
                 {
                     swapped[pair] = (swapped.TryGetValue(pair, out var n) ? n : 0) + 1;
+                    if (chain.Ore != null && linked != null && to == chain.Steps[chain.Steps.Length - 1] && oreUsage[chain].ContainsKey(linked.Split(',')[0]))
+                        oreUsage[chain][linked.Split(',')[0]]++;
+                    if (chosenOre != null)
+                        ModLog.Note("Upgrades: " + from + " #" + result.OldId + " is on no vein; the new " + to + " extracts " + chosenOre + ".");
                     newIds[result.OldId] = new KeyValuePair<int, string>(result.Made.GetId(), to);
                 }
                 else
@@ -362,6 +416,13 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             File.WriteAllLines(BaseBuilder.UndoFile, all.ToArray());
         }
 
+        /// <summary>The distinct ores (group ids) a building extracts, in the order the game lists them; empty when it stands on no vein. A T2 extractor lists its ore once per slot.</summary>
+        private static List<string> OreOf(WorldObject wo)
+        {
+            var groups = wo.HasLinkedGroups() ? wo.GetLinkedGroups() : null;
+            return groups == null ? new List<string>() : groups.Where(g => g != null).Select(g => g.GetId()).Distinct().ToList();
+        }
+
         private sealed class SwapResult
         {
             public WorldObject Made;
@@ -369,7 +430,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
         }
 
         /// <summary>Swaps one building: place the new one, move what is inside, and only then remove the old one. On any problem the old one stays.</summary>
-        private static IEnumerator Swap(WorldObject old, string to, int planetHash, SwapResult result, int[] panels = null, string color = null, string text = null, float turn = 0f)
+        private static IEnumerator Swap(WorldObject old, string to, int planetHash, SwapResult result, int[] panels = null, string color = null, string text = null, float turn = 0f, string linked = null)
         {
             var handler = WorldObjectsHandler.Instance;
             var from = old.GetGroup().GetId();
@@ -378,7 +439,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             WorldObject made = null;
             try
             {
-                made = Placement.PlaceAt(to, old.GetPosition(), Quaternion.Euler(0f, turn, 0f) * old.GetRotation(), planetHash, panels, color, text);
+                made = Placement.PlaceAt(to, old.GetPosition(), Quaternion.Euler(0f, turn, 0f) * old.GetRotation(), planetHash, panels, color, text, linked);
             }
             catch (Exception e)
             {
