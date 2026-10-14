@@ -31,6 +31,23 @@ namespace RRSOS.PCC.Shared
         }
 
         /// <summary>
+        /// A message for the player, shown on the terminal's screens and nowhere else. With no terminal installed (or none built) it is only written to the mod's log, never to the chat.
+        /// The chat is kept for the start-up sequence at planetfall and for the answers to commands typed into it.
+        /// </summary>
+        public static void Notice(string message)
+        {
+            ModLog.Note("notice: " + message);
+            try
+            {
+                TryNotify(message);
+            }
+            catch (Exception e)
+            {
+                ModLog.LogOnce("notice-terminal", "Could not post on the terminal: " + e.GetType().Name + ": " + e.Message);
+            }
+        }
+
+        /// <summary>
         /// Registers a terminal command. The handler gets the text typed after the command and a function that prints a line on the terminal's screen (it may be called later,
         /// for work that takes a while). Returns true once registered, false while the terminal is not loaded (try again later).
         /// </summary>

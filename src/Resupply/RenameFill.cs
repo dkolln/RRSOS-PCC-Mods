@@ -11,7 +11,7 @@ namespace RRSOS.PCC.Resupply
     /// <summary>
     /// When a crate is given a label, looks the label up: if it names an item (its group id, its display name, or an extra name) the crate's EMPTY slots are filled with that
     /// item. Only at a rename; what is already in the crate stays; a crate that already had its label when the world loaded is never touched. Switched by FillOnRename.
-    /// Also the /addname chat command, which gives an item one more name for labels (saved in the shared aliases.txt and used at once). This used to be the Auto Fill mod.
+    /// Also the /resupply add chat command, which gives an item one more name for labels (saved in the shared aliases.txt and used at once). This used to be the Auto Fill mod.
     /// </summary>
     internal sealed class RenameFill : MonoBehaviour
     {
@@ -27,7 +27,7 @@ namespace RRSOS.PCC.Resupply
         private bool _baselineDone;
         private bool _busy;
 
-        // one lookup for the whole mod, so a name added with /addname is known to the icon, the Supply Manager and this at once
+        // one lookup for the whole mod, so a name added with /resupply add is known to the icon, the Supply Manager and this at once
         private ItemLookup Lookup => Resupplier.Instance.Lookup;
 
         private IEnumerator Start()
@@ -161,15 +161,46 @@ namespace RRSOS.PCC.Resupply
 
             var name = Readable.GetGroupName(item);
             if (result.Empty == 0)
-                ChatHook.Say("\"" + CrateFill.Label(crate) + "\" is " + name + ", but the crate has no empty slots.");
+                TerminalRegistration.Notice("\"" + CrateFill.Label(crate) + "\" is " + name + ", but the crate has no empty slots.");
             else
-                ChatHook.Say("Filled " + result.Added + " empty slot" + (result.Added == 1 ? "" : "s") + " with " + name + ".");
+                TerminalRegistration.Notice("Filled " + result.Added + " empty slot" + (result.Added == 1 ? "" : "s") + " with " + name + ".");
         }
 
-        // ---- /addname ---------------------------------------------------------------------------------------------------------
+        // ---- /resupply add ---------------------------------------------------------------------------------------------------------
 
-        /// <summary>/addname &lt;item id&gt; &lt;name&gt;: gives an item one more name, saved in aliases.txt and used straight away.</summary>
-        internal void OnAddName(string args)
+        /// <summary>/resupply add &lt;item id&gt; &lt;name&gt;: gives an item one more name for crate labels, saved in aliases.txt and used straight away.</summary>
+        internal void OnResupplyCommand(string args)
+        {
+            var words = (args ?? "").Trim().Split(new[] { ' ', '	' }, 2, StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length == 0)
+                ResupplyAllNow();
+            else if (string.Equals(words[0], "add", StringComparison.OrdinalIgnoreCase))
+                AddName(words.Length > 1 ? words[1] : "");
+            else
+                ChatHook.Say("Usage: /resupply (fill every crate), or /resupply add <item id> <name>, for example /resupply add waterbottle1 water");
+        }
+
+        /// <summary>/resupply on its own: every crate with an item is filled, as the Supply Manager's Resupply button does. One line in the chat when done.</summary>
+        private void ResupplyAllNow()
+        {
+            var resupplier = Resupplier.Instance;
+            if (resupplier == null || resupplier.Busy)
+            {
+                ChatHook.Say("Still busy filling crates; try again in a moment.");
+                return;
+            }
+
+            StartCoroutine(RunResupplyAll(resupplier));
+        }
+
+        private IEnumerator RunResupplyAll(Resupplier resupplier)
+        {
+            var lines = new List<string>();
+            yield return resupplier.ResupplyAll(line => lines.Add(line));
+            ChatHook.Say(lines.LastOrDefault(l => l.StartsWith("Done:")) ?? lines.LastOrDefault() ?? "Done.");
+        }
+
+        private void AddName(string args)
         {
             var say = (Action<string>)ChatHook.Say;
             if (GroupsHandler.GetAllGroups() == null || Resupplier.Instance == null)
@@ -181,7 +212,7 @@ namespace RRSOS.PCC.Resupply
             var parts = (args ?? "").Trim().Split(new[] { ' ', '\t' }, 2, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 2)
             {
-                say("Usage: /addname <item id> <name>, for example /addname waterbottle1 water");
+                say("Usage: /resupply add <item id> <name>, for example /resupply add waterbottle1 water");
                 return;
             }
 

@@ -105,19 +105,8 @@ namespace RRSOS.PCC.Unlocks
                 if (!settings.GetFreeCraft())
                     continue;
 
-                // On the terminal's screens; in the chat only when no terminal is installed.
-                var message = "Unlocked: " + Readable.GetGroupName(group);
-                try
-                {
-                    if (TerminalRegistration.TryNotify(message))
-                        continue;
-                }
-                catch (Exception e)
-                {
-                    ModLog.LogOnce("unlocks-terminal", "Could not post on the terminal: " + e.GetType().Name + ": " + e.Message);
-                }
-
-                ChatHook.Say(message);
+                // On the terminal's screens only (nothing is shown when there is no terminal).
+                TerminalRegistration.Notice("Unlocked: " + Readable.GetGroupName(group));
             }
         }
     }

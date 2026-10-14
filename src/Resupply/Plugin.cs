@@ -5,10 +5,11 @@ using RRSOS.PCC.Shared;
 namespace RRSOS.PCC.Resupply
 {
     /// <summary>
-    /// Everything about storage crates and what is in them: a resupply icon on a crate's window, the fill when a crate is labelled, the Supply Manager screen (drone demand and supply, resupply, auto top-up), and /addname for item names. A live-write mod, so it does nothing until
+    /// Everything about storage crates and what is in them: a resupply icon on a crate's window, the fill when a crate is labelled, the Supply Manager screen (drone demand and supply, resupply, auto top-up), and /resupply add for item names. A live-write mod, so it does nothing until
     /// <c>Enabled</c> is true in its config file.
     /// </summary>
     [BepInPlugin(Guid, Name, Version)]
+    [BepInDependency(TerminalRegistration.TerminalGuid, BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "com.rrsos.pcc.resupply";
@@ -41,7 +42,7 @@ namespace RRSOS.PCC.Resupply
             gameObject.AddComponent<Resupplier>();
             var rename = gameObject.AddComponent<RenameFill>();
             ChatHook.Enabled = () => Enabled.Value;
-            ChatHook.Add("/addname", rename.OnAddName, "give an item another name for labels: /addname <item id> <name>");
+            ChatHook.Add("/resupply", rename.OnResupplyCommand, "fill every crate with its item, or give an item another name: /resupply add <item id> <name>");
             gameObject.AddComponent<ChatHook>();
             gameObject.AddComponent<SupplyItem>();
             gameObject.AddComponent<SupplyWindow>();

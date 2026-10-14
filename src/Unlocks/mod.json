@@ -2,7 +2,7 @@
   "id": "com.rrsos.pcc.unlocks",
   "name": "RRSOS PCC Unlocks",
   "version": "0.1.0",
-  "description": "In a free-build game the game's own 'new blueprint unlocked' popups are switched off. This says 'Unlocked: <name>' in the chat when terraformation unlocks a new item. Nothing is said in a game that is not free build (the game shows its own popup there).",
+  "description": "In a free-build game the game's own 'new blueprint unlocked' popups are switched off. This says 'Unlocked: <name>' on the Commands terminal's screens (nothing is shown without a terminal) when terraformation unlocks a new item. Nothing is said in a game that is not free build (the game shows its own popup there).",
   "plugin": "RRSOS.PCC.Unlocks.dll",
   "pluginFolder": "RRSOS-PCC-Unlocks",
   "config": "com.rrsos.pcc.unlocks.cfg",

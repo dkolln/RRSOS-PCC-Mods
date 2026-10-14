@@ -16,6 +16,8 @@
     <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
     <Compile Include="..\Shared\ItemLookup.cs" Link="Shared\ItemLookup.cs" />
     <Compile Include="..\Shared\CrateFill.cs" Link="Shared\CrateFill.cs" />
+    <!-- Messages go to the terminal when that mod is installed (it is optional). -->
+    <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
     <Compile Include="..\Shared\GroupCloner.cs" Link="Shared\GroupCloner.cs" />
     <Compile Include="..\Shared\CustomIcons.cs" Link="Shared\CustomIcons.cs" />
     <!-- The built-in extra names for items, read at start-up. -->

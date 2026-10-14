@@ -143,7 +143,7 @@ namespace RRSOS.PCC.StackedCrate
                         ModLog.Note("Stacked crate: could not place even one crate: " + e2.Message);
                     }
 
-                    ChatHook.Say("The stacked crate could not be built, so I put a single crate where it was.");
+                    TerminalRegistration.Notice("The stacked crate could not be built, so I put a single crate where it was.");
                 }
 
                 handler.DestroyWorldObject(placeholder, true);
