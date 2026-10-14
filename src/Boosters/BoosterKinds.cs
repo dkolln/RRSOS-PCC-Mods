@@ -69,8 +69,8 @@ namespace RRSOS.PCC.Boosters
         // Seed4 to Seed8Humble and the golden seed; the lower seeds are left out to keep the choice short
         private static readonly Choice[] FlowerSeeds =
         {
-            new Choice("Seed4", "Tuska"), new Choice("Seed5", "Orema"), new Choice("Seed6", "Seed 6"), new Choice("Seed7Humble", "Humble Bean"),
-            new Choice("Seed8Humble", "Humble Flower"), new Choice("SeedGold", "Golden")
+            new Choice("Seed4", "Tuska"), new Choice("Seed5", "Orema"), new Choice("Seed6", "Volnus"), new Choice("Seed7Humble", "Bean"),
+            new Choice("Seed8Humble", "Flower"), new Choice("SeedGold", "Golden")
         };
 
         private static readonly Choice[] FrogEggs =
