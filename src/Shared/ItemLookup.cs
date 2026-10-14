@@ -10,7 +10,7 @@ namespace RRSOS.PCC.Shared
     /// Turns a label ("O2", "oxygen capsule", "waterbottle1") into an item. Whole-name matches only, never part of a name: a label matches an item when, ignoring case, spaces and
     /// punctuation, it equals the item's id, its display name in the game, one of its extra names in DefaultNames.txt (built into the DLL), or one of the names in the user's
     /// aliases.txt (which win). A name that two items go by is not guessed at.
-    /// Shared source: compiled into each mod that needs it (Auto Fill, the terminal), so the mods do not depend on each other.
+    /// Shared source: compiled into each mod that needs it (Resupply, Give Item, Base), so the mods do not depend on each other.
     /// </summary>
     internal sealed class ItemLookup
     {

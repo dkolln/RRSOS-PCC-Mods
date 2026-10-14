@@ -6,18 +6,16 @@ using RRSOS.PCC.Shared;
 using SpaceCraft;
 using UnityEngine;
 
-namespace RRSOS.PCC.AutoFill
+namespace RRSOS.PCC.Resupply
 {
     /// <summary>
     /// When a crate is given a label, looks the label up: if it names an item (its group id, its display name, or an extra name) the crate's EMPTY slots are filled with that
-    /// item. Only at a rename; what is already in the crate stays; a crate that already had its label when the world loaded is never touched.
-    /// /addname works in the chat and, when a terminal is installed, on the terminal. (/resupply and the per-crate resupply icon are the Resupply mod.)
+    /// item. Only at a rename; what is already in the crate stays; a crate that already had its label when the world loaded is never touched. Switched by FillOnRename.
+    /// Also the /addname chat command, which gives an item one more name for labels (saved in the shared aliases.txt and used at once). This used to be the Auto Fill mod.
     /// </summary>
-    internal sealed class AutoFiller : MonoBehaviour
+    internal sealed class RenameFill : MonoBehaviour
     {
         private const float PollSeconds = 0.5f;
-
-        private readonly ItemLookup _lookup = new ItemLookup();
 
         // crate id -> the label we have already dealt with
         private readonly Dictionary<int, string> _handled = new Dictionary<int, string>();
@@ -28,7 +26,9 @@ namespace RRSOS.PCC.AutoFill
         private string _worldKey;
         private bool _baselineDone;
         private bool _busy;
-        private bool _terminalChecked;
+
+        // one lookup for the whole mod, so a name added with /addname is known to the icon, the Supply Manager and this at once
+        private ItemLookup Lookup => Resupplier.Instance.Lookup;
 
         private IEnumerator Start()
         {
@@ -36,11 +36,8 @@ namespace RRSOS.PCC.AutoFill
             {
                 yield return new WaitForSecondsRealtime(PollSeconds);
 
-                if (!Plugin.Enabled.Value)
+                if (!Plugin.Enabled.Value || !Plugin.FillOnRename.Value || Resupplier.Instance == null)
                     continue;
-
-                if (!_terminalChecked)
-                    RegisterWithTerminal();
 
                 if (_busy)
                     continue;
@@ -53,7 +50,7 @@ namespace RRSOS.PCC.AutoFill
                 }
                 catch (Exception e)
                 {
-                    ModLog.LogOnce("autofill-ready", "Could not tell whether the world is ready: " + e.Message);
+                    ModLog.LogOnce("rename-ready", "Could not tell whether the world is ready: " + e.Message);
                     continue;
                 }
 
@@ -73,7 +70,7 @@ namespace RRSOS.PCC.AutoFill
                 }
                 catch (Exception e)
                 {
-                    ModLog.LogOnce("autofill-scan", "Could not scan the crates: " + e.GetType().Name + ": " + e.Message);
+                    ModLog.LogOnce("rename-scan", "Could not scan the crates: " + e.GetType().Name + ": " + e.Message);
                 }
 
                 if (work != null)
@@ -87,7 +84,7 @@ namespace RRSOS.PCC.AutoFill
         }
 
         private HashSet<string> CrateGroupIds() =>
-            new HashSet<string>(Plugin.CrateGroups.Value.Split(',').Select(g => g.Trim()).Where(g => g.Length > 0));
+            new HashSet<string>(Plugin.Groups.Value.Split(',').Select(g => g.Trim()).Where(g => g.Length > 0));
 
         /// <summary>Notes every crate's label. Returns the crates whose label has just been settled on an item name.</summary>
         private List<KeyValuePair<WorldObject, GroupItem>> Scan()
@@ -140,7 +137,7 @@ namespace RRSOS.PCC.AutoFill
                 if (label.Length == 0)
                     continue;
 
-                var item = _lookup.Resolve(label);
+                var item = Lookup.Resolve(label);
                 if (item == null)
                 {
                     ModLog.Note("Crate #" + id + " labelled \"" + label + "\": not an item name, nothing to fill.");
@@ -152,8 +149,6 @@ namespace RRSOS.PCC.AutoFill
 
             return jobs;
         }
-
-        // ---- the rename fill --------------------------------------------------------------------------------------------------
 
         /// <summary>The fill after a rename, with its answer in the chat.</summary>
         private IEnumerator Fill(WorldObject crate, GroupItem item)
@@ -174,12 +169,10 @@ namespace RRSOS.PCC.AutoFill
         // ---- /addname ---------------------------------------------------------------------------------------------------------
 
         /// <summary>/addname &lt;item id&gt; &lt;name&gt;: gives an item one more name, saved in aliases.txt and used straight away.</summary>
-        internal void OnAddName(string args) => AddName(args, ChatHook.Say);
-
-        /// <summary>The same, answering through the given function: the chat's reply, or a line on a terminal's screen.</summary>
-        private void AddName(string args, Action<string> say)
+        internal void OnAddName(string args)
         {
-            if (GroupsHandler.GetAllGroups() == null)
+            var say = (Action<string>)ChatHook.Say;
+            if (GroupsHandler.GetAllGroups() == null || Resupplier.Instance == null)
             {
                 say("The game is not ready yet.");
                 return;
@@ -193,7 +186,7 @@ namespace RRSOS.PCC.AutoFill
             }
 
             var name = parts[1].Trim();
-            var item = _lookup.ById(parts[0]);
+            var item = Lookup.ById(parts[0]);
             if (item == null)
             {
                 say("No item has the id \"" + parts[0] + "\".");
@@ -206,36 +199,16 @@ namespace RRSOS.PCC.AutoFill
                 return;
             }
 
-            var existing = _lookup.Existing(name);
+            var existing = Lookup.Existing(name);
             if (existing != null)
             {
                 say("Name: " + name + " already exists" + (existing == item ? "." : " (it names " + Readable.GetGroupName(existing) + ")."));
                 return;
             }
 
-            _lookup.AddExplicit(name, item);
+            Lookup.AddExplicit(name, item);
             ModLog.Append(ItemLookup.AliasFile, item.GetId() + " = " + name);
             say("Name: " + name + " added.");
-        }
-
-        // ---- /addname (on the terminal) -----------------------------------------------------------------------------------------
-
-        // The terminal is optional. When its mod is loaded this puts /addname on it; otherwise there is nothing to do and the mod works as before.
-        private void RegisterWithTerminal()
-        {
-            try
-            {
-                if (TerminalRegistration.TryRegister("/addname", "/addname <item id> <name>", "give an item another name", (args, print) => AddName(args, print)))
-                {
-                    _terminalChecked = true;
-                    ModLog.Note("The terminal is installed: /addname is on it.");
-                }
-            }
-            catch (Exception e)
-            {
-                _terminalChecked = true; // do not try again every half second
-                ModLog.Note("Could not register /addname with the terminal: " + e.Message);
-            }
         }
     }
 }

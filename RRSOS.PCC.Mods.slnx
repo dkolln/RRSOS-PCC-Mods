@@ -1,6 +1,5 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/AutoFill/AutoFill.csproj" />
     <Project Path="src/Base/Base.csproj" />
     <Project Path="src/Blueprints/Blueprints.csproj" />
     <Project Path="src/Commands/Commands.csproj" />

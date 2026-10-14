@@ -18,7 +18,7 @@
     <Compile Include="..\Shared\Boot.cs" Link="Shared\Boot.cs" />
     <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
     <Compile Include="..\Shared\Welcome.cs" Link="Shared\Welcome.cs" />
-    <!-- Crates are stocked from their labels, as Auto Fill does. -->
+    <!-- Crates are stocked from their labels, as Resupply does. -->
     <Compile Include="..\Shared\ItemLookup.cs" Link="Shared\ItemLookup.cs" />
     <Compile Include="..\Shared\CrateFill.cs" Link="Shared\CrateFill.cs" />
     <EmbeddedResource Include="..\Shared\DefaultNames.txt" LogicalName="DefaultNames.txt" />
