@@ -29,8 +29,8 @@ namespace RRSOS.PCC.Base
 # the last step, whichever ore of this list the world has the fewest of, so the extractors spread evenly over the list.
 # Colours: green red blue yellow orange purple cyan white.
 
-# Wind Turbine > T1 Solar Panel > T2 Solar Panel (the T2 panel is turned 90 degrees to the right)
-EnergyGenerator1 > EnergyGenerator2 > EnergyGenerator3 ; turn=90
+# Wind Turbine > T1 Solar Panel > T2 Solar Panel
+EnergyGenerator1 > EnergyGenerator2 > EnergyGenerator3
 
 # Heater T1 > T2 > T3
 Heater1 > Heater2 > Heater3
