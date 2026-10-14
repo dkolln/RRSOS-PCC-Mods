@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>RRSOS.PCC.Vehicle</AssemblyName>
+    <RootNamespace>RRSOS.PCC.Vehicle</RootNamespace>
+    <Description>/vehicle on the terminal: spawns a rover and fits its gear</Description>
+    <Version>0.1.0</Version>
+    <ModFolder>RRSOS-PCC-Vehicle</ModFolder>
+  </PropertyGroup>
+
+  <Import Project="..\Mod.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
+    <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
+    <Compile Include="..\Shared\Placement.cs" Link="Shared\Placement.cs" />
+    <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The spawn spot is found by a ray down to the ground. -->
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(GameManaged)UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
