@@ -1,16 +1,14 @@
 {
   "id": "com.rrsos.pcc.vehicle",
   "name": "RRSOS PCC Vehicle",
-  "version": "0.1.0",
-  "description": "Terminal command /vehicle: 'spawn' puts a new rover (no gear) on the vehicle station nearest to the player (needs a station); 'upgrade min' gives the nearest rover the first tier of each piece of rover gear it does not have; 'upgrade max' replaces its gear with the top tier of every piece. Terminal only (needs the Commands mod's terminal).",
+  "version": "0.2.0",
+  "description": "Three buttons on the vehicle station's window (the terminal you open at the station): Spawn Rover puts a new rover, with no gear, on the station's spawn spot; Gear Min gives the rover at the station the first tier of each piece of rover gear it has none of; Gear Max leaves it with the top tier of every piece (other gear is deleted). No terminal command and no Commands mod needed.",
   "plugin": "RRSOS.PCC.Vehicle.dll",
   "pluginFolder": "RRSOS-PCC-Vehicle",
   "config": "com.rrsos.pcc.vehicle.cfg",
-  "dataFolder": "%LOCALAPPDATA%\RRSOS-PCC-Mods\Vehicle",
+  "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Vehicle",
   "commands": [],
-  "terminalCommands": [
-    { "name": "/vehicle", "usage": "/vehicle spawn | /vehicle upgrade min|max", "help": "spawn a rover, or fit its gear at the first or top tier" }
-  ],
+  "terminalCommands": [],
   "requestFiles": [],
   "writesToRunningGame": true
 }

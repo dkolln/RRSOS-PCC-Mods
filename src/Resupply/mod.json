@@ -6,7 +6,7 @@
   "plugin": "RRSOS.PCC.Resupply.dll",
   "pluginFolder": "RRSOS-PCC-Resupply",
   "config": "com.rrsos.pcc.resupply.cfg",
-  "dataFolder": "%LOCALAPPDATA%\RRSOS-PCC-Mods\Resupply",
+  "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Resupply",
   "commands": [],
   "terminalCommands": [
     { "name": "/resupply", "usage": "/resupply", "help": "top up every labelled or demanded crate (needs the Commands mod's terminal)" }
