@@ -235,28 +235,45 @@ namespace RRSOS.PCC.ModManager
             });
         }
 
-        /// <summary>Starts the game again through Steam a few seconds from now, and closes it. From the main menu nothing is unsaved.</summary>
+        /// <summary>
+        /// Starts the game again through Steam a few seconds from now, and closes it. From the main menu nothing is unsaved. The waiting helper is started through Windows' own process
+        /// service (so it is not a child of the game, which Steam would count as the game still running); if that fails it is started the plain way.
+        /// </summary>
         private void RestartGame()
         {
+            const string wait = "ping -n 9 127.0.0.1 >nul & start \"\" \"steam://rungameid/1284190\"";
             try
             {
-                var start = new ProcessStartInfo("cmd.exe", "/c ping -n 9 127.0.0.1 >nul & start \"\" \"steam://rungameid/1284190\"")
+                var detached = new ProcessStartInfo("powershell.exe",
+                    "-NoProfile -WindowStyle Hidden -Command \"Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = 'cmd.exe /c " + wait.Replace("\"", "\\\"").Replace("'", "''") + "' }\"")
                 {
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     WindowStyle = ProcessWindowStyle.Hidden
                 };
-                Process.Start(start);
-                ModLog.Note("Restart: the game is closing and will be started again through Steam in a few seconds.");
-                Application.Quit();
+                var starter = Process.Start(detached);
+                if (starter == null || !starter.WaitForExit(5000) || starter.ExitCode != 0)
+                    throw new InvalidOperationException("the detached start did not work");
             }
-            catch (Exception e)
+            catch (Exception first)
             {
-                _asking = false;
-                _message = "Could not restart the game (" + e.Message + "). Close it and start it again by hand.";
-                ModLog.Note("Restart failed: " + e.GetType().Name + ": " + e.Message);
-                Redraw();
+                ModLog.Note("Restart: could not start the helper through Windows (" + first.Message + "); starting it directly.");
+                try
+                {
+                    Process.Start(new ProcessStartInfo("cmd.exe", "/c " + wait) { CreateNoWindow = true, UseShellExecute = false, WindowStyle = ProcessWindowStyle.Hidden });
+                }
+                catch (Exception e)
+                {
+                    _asking = false;
+                    _message = "Could not restart the game (" + e.Message + "). Close it and start it again by hand.";
+                    ModLog.Note("Restart failed: " + e.GetType().Name + ": " + e.Message);
+                    Redraw();
+                    return;
+                }
             }
+
+            ModLog.Note("Restart: the game is closing and will be started again through Steam in a few seconds.");
+            Application.Quit();
         }
 
         // "RRSOS PCC Base" is shown as "Base": every mod of the set carries the prefix, so it only takes room
