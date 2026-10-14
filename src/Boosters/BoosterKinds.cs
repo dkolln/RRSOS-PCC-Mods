@@ -66,11 +66,12 @@ namespace RRSOS.PCC.Boosters
             new Choice("Tree16Seed", "Pamelia"), new Choice("Tree17Seed", "Detoxo"), new Choice("Tree18Seed", "Brojo")
         };
 
-        // Seed4 to Seed8Humble and the golden seed; the lower seeds are left out to keep the choice short
+        // The flowers a spreader can be filled with, by the names the game gives their seeds (Seed1 to Seed10Humble, and the golden one; Seed0 is left out)
         private static readonly Choice[] FlowerSeeds =
         {
-            new Choice("Seed4", "Tuska"), new Choice("Seed5", "Orema"), new Choice("Seed6", "Volnus"), new Choice("Seed7Humble", "Bean"),
-            new Choice("Seed8Humble", "Flower"), new Choice("SeedGold", "Golden")
+            new Choice("Seed1", "Shanga"), new Choice("Seed2", "Pestera"), new Choice("Seed3", "Nulna"), new Choice("Seed4", "Tuska"),
+            new Choice("Seed5", "Orema"), new Choice("Seed6", "Volnus"), new Choice("Seed8Humble", "Brelea"), new Choice("Seed7Humble", "Snepea"),
+            new Choice("Seed10Humble", "Furteo"), new Choice("Seed9Humble", "Seleus"), new Choice("SeedGold", "Golden")
         };
 
         private static readonly Choice[] FrogEggs =
