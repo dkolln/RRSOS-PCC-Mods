@@ -17,6 +17,14 @@ namespace RRSOS.PCC.Shared
         /// <summary>The user's own names, "item id = name, name, ...". One file for every mod that resolves item names.</summary>
         public static string AliasFile => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RRSOS-PCC-Mods", "aliases.txt");
 
+        private readonly string _aliasFile;
+
+        /// <summary>A lookup that reads the shared aliases.txt, or the given file when a mod keeps names of its own (Base).</summary>
+        public ItemLookup(string aliasFile = null)
+        {
+            _aliasFile = aliasFile;
+        }
+
         // lower-case item id -> item; plain name -> the items that go by it; plain name -> the item the user's file chose
         private Dictionary<string, GroupItem> _byId;
         private Dictionary<string, HashSet<GroupItem>> _byName;
@@ -125,7 +133,7 @@ namespace RRSOS.PCC.Shared
             }
 
             var mine = 0;
-            foreach (var pair in ReadNames(ReadUserNames()))
+            foreach (var pair in ReadNames(ReadUserNames(_aliasFile)))
             {
                 if (_byId.TryGetValue(pair.Key.ToLowerInvariant(), out var item))
                 {
@@ -190,15 +198,16 @@ namespace RRSOS.PCC.Shared
         }
 
         /// <summary>aliases.txt: "item id = name, name, ...", the same format as the default table. Made with a few comment lines the first time (an earlier copy in Auto Fill's own folder is carried over).</summary>
-        private static IEnumerable<string> ReadUserNames()
+        private static IEnumerable<string> ReadUserNames(string own)
         {
             try
             {
-                var path = AliasFile;
+                var path = own ?? AliasFile;
                 if (!File.Exists(path))
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(path));
-                    var earlier = Path.Combine(Path.GetDirectoryName(path), "AutoFill", "aliases.txt");
+                    // a mod's own file starts as a copy of the shared one; the shared file itself starts from Auto Fill's old copy
+                    var earlier = own != null ? AliasFile : Path.Combine(Path.GetDirectoryName(path), "AutoFill", "aliases.txt");
                     if (File.Exists(earlier))
                     {
                         File.Copy(earlier, path);

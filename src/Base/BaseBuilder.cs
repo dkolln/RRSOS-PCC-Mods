@@ -398,7 +398,7 @@ namespace RRSOS.PCC.Base
 
         private IEnumerator Stock(List<WorldObject> crates, bool automatic)
         {
-            var lookup = new ItemLookup();
+            var lookup = new ItemLookup(ModLog.FileIn("aliases.txt"));   // Base keeps its own names, in its own data folder
             int stocked = 0, items = 0, labelOnly = 0;
             foreach (var crate in crates)
             {
