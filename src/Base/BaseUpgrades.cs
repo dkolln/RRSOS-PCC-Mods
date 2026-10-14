@@ -276,21 +276,8 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
 
         // ---- the swap ---------------------------------------------------------------------------------------------------------
 
-        // On the terminal's screens; in the chat only when no terminal is installed.
-        private static void Tell(string message)
-        {
-            try
-            {
-                if (TerminalRegistration.TryNotify(message))
-                    return;
-            }
-            catch (Exception e)
-            {
-                ModLog.LogOnce("upgrades-terminal", "Could not post on the terminal: " + e.GetType().Name + ": " + e.Message);
-            }
-
-            ChatHook.Say(message);
-        }
+        // On the terminal's screens only (nothing is shown when there is no terminal).
+        private static void Tell(string message) => TerminalRegistration.Notice(message);
 
         private IEnumerator Run(string key, int planetHash)
         {

@@ -161,9 +161,9 @@ namespace RRSOS.PCC.Resupply
 
             var name = Readable.GetGroupName(item);
             if (result.Empty == 0)
-                ChatHook.Say("\"" + CrateFill.Label(crate) + "\" is " + name + ", but the crate has no empty slots.");
+                TerminalRegistration.Notice("\"" + CrateFill.Label(crate) + "\" is " + name + ", but the crate has no empty slots.");
             else
-                ChatHook.Say("Filled " + result.Added + " empty slot" + (result.Added == 1 ? "" : "s") + " with " + name + ".");
+                TerminalRegistration.Notice("Filled " + result.Added + " empty slot" + (result.Added == 1 ? "" : "s") + " with " + name + ".");
         }
 
         // ---- /resupply add ---------------------------------------------------------------------------------------------------------

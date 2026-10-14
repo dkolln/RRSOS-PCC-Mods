@@ -9,6 +9,7 @@ namespace RRSOS.PCC.Resupply
     /// <c>Enabled</c> is true in its config file.
     /// </summary>
     [BepInPlugin(Guid, Name, Version)]
+    [BepInDependency(TerminalRegistration.TerminalGuid, BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "com.rrsos.pcc.resupply";

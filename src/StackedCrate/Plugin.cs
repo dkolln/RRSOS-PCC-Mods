@@ -8,6 +8,7 @@ namespace RRSOS.PCC.StackedCrate
     /// A "Stacked crate" in the build menu (3 Iron, places three Container1 on top of each other). A live-write mod, so it does nothing until <c>Enabled</c> is true in its config file.
     /// </summary>
     [BepInPlugin(Guid, Name, Version)]
+    [BepInDependency(TerminalRegistration.TerminalGuid, BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "com.rrsos.pcc.stackedcrate";

@@ -51,7 +51,7 @@ namespace RRSOS.PCC.Resupply
                 yield return ResupplyAll(line => lines.Add(line), Mathf.Clamp(Plugin.TopUpBelowPercent.Value, 1, 99));
                 var done = lines.LastOrDefault(l => l.StartsWith("Done:")) ?? "";
                 if (done.Length > 0 && !done.StartsWith("Done: 0 crates topped up"))
-                    ChatHook.Say("Auto top-up. " + done);
+                    TerminalRegistration.Notice("Auto top-up. " + done);
             }
         }
 
@@ -195,7 +195,7 @@ namespace RRSOS.PCC.Resupply
                     yield break;
 
                 var name = Readable.GetGroupName(item);
-                ChatHook.Say(result.Empty == 0
+                TerminalRegistration.Notice(result.Empty == 0
                     ? "The crate has no empty slots (" + name + ")."
                     : "Resupplied " + result.Added + " x " + name + ".");
             }
