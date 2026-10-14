@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using BepInEx.Configuration;
+using RRSOS.PCC.Shared;
+using SpaceCraft;
 
 namespace RRSOS.PCC.Boosters
 {
@@ -66,6 +69,14 @@ namespace RRSOS.PCC.Boosters
             new Choice("Tree16Seed", "Pamelia"), new Choice("Tree17Seed", "Detoxo"), new Choice("Tree18Seed", "Brojo")
         };
 
+        // The flowers a spreader can be filled with, by the names the game gives their seeds (Seed1 to Seed10Humble, and the golden one; Seed0 is left out)
+        private static readonly Choice[] FlowerSeeds =
+        {
+            new Choice("Seed1", "Shanga"), new Choice("Seed2", "Pestera"), new Choice("Seed3", "Nulna"), new Choice("Seed4", "Tuska"),
+            new Choice("Seed5", "Orema"), new Choice("Seed6", "Volnus"), new Choice("Seed8Humble", "Brelea"), new Choice("Seed7Humble", "Snepea"),
+            new Choice("Seed10Humble", "Furteo"), new Choice("Seed9Humble", "Seleus"), new Choice("SeedGold", "Golden")
+        };
+
         private static readonly Choice[] FrogEggs =
         {
             new Choice("Frog1Eggs", "Generic"), new Choice("Frog2Eggs", "Huli"), new Choice("Frog3Eggs", "Felicianna"), new Choice("Frog4Eggs", "Strabo"),
@@ -112,7 +123,7 @@ namespace RRSOS.PCC.Boosters
 
             new Kind { Key = "Butterflies", Name = "Butterflies", Aliases = new[] { "butterfl", "moth" },
                 Machines = Machines("ButterflyFarm1", "Butterfly Farm T1", "ButterflyFarm2", "Butterfly Farm T2"),
-                DefaultFuses = new[] { "FuseInsects1" }, Ring = true, Spacing = 6.6, Fill = ButterflyLarvae },
+                DefaultFuses = new[] { "FuseInsects1" }, Ring = true, Spacing = 6.6, Fill = ButterflyLarvae, FillDefault = "Butterfly21Larvae" },
 
             new Kind { Key = "Bees", Name = "Bees", Aliases = new[] { "bee", "hive", "honey" },
                 Machines = Machines("Beehive1", "Beehive T1", "Beehive2", "Beehive T2"),
@@ -124,7 +135,7 @@ namespace RRSOS.PCC.Boosters
 
             new Kind { Key = "Frogs", Name = "Frog", Aliases = new[] { "frog", "toad", "amphib" },
                 Machines = Machines("AmphibiansFarm1", "Amphibian Farm"),
-                DefaultFuses = new[] { "FusePlants1", "FuseAnimals1" }, Ring = true, Spacing = 6.6, Fill = FrogEggs },
+                DefaultFuses = new[] { "FusePlants1", "FuseAnimals1" }, Ring = true, Spacing = 6.6, Fill = FrogEggs, FillDefault = "Frog14Eggs" },
 
             new Kind { Key = "Trees", Name = "Tree", Aliases = new[] { "tree", "spreader", "redwood", "forest" },
                 Machines = Machines("TreeSpreader0", "Tree Spreader T1", "TreeSpreader1", "Tree Spreader T2", "TreeSpreader2", "Tree Spreader T3"),
@@ -136,8 +147,51 @@ namespace RRSOS.PCC.Boosters
 
             new Kind { Key = "Flowers", Name = "Flower", Aliases = new[] { "flower", "bloom" },
                 Machines = Machines("SeedSpreader1", "Flower Spreader T1", "SeedSpreader2", "Flower Spreader T2"),
-                DefaultFuses = new[] { "FusePlants1" }, Ring = true, Spacing = 7.3, Grown = true }
+                DefaultFuses = new[] { "FusePlants1" }, Ring = true, Spacing = 7.3, Fill = FlowerSeeds, FillDefault = "SeedGold", Grown = true }
         };
+
+        private const string NoFill = "No Fill";
+        private static readonly Dictionary<string, ConfigEntry<string>> FillSettings = new Dictionary<string, ConfigEntry<string>>();
+
+        /// <summary>One setting per kind that has a fill list (flowers, frogs, trees, butterflies, and any kind added later): what its machines are filled with when the screen opens on it. A fixed list, so the Mod Manager offers it as a cycling button.</summary>
+        public static void BindFillSettings(ConfigFile config)
+        {
+            foreach (var kind in All.Where(k => k.Fill != null))
+            {
+                var labels = new[] { NoFill }.Concat(kind.Fill.Select(c => c.Label)).ToArray();
+                var start = string.IsNullOrEmpty(kind.FillDefault) ? NoFill : kind.Fill.First(c => c.GId == kind.FillDefault).Label;
+                FillSettings[kind.Key] = config.Bind("Fill", kind.Key, start,
+                    new ConfigDescription("What the machines of a " + kind.Name + " booster are filled with when the Boosters screen opens on it. It can still be changed on the screen.", new AcceptableValueList<string>(labels)));
+            }
+        }
+
+        /// <summary>The id the kind starts with on the screen: its setting, or its built-in default; "" for no fill. A choice that is not available on the planet the player is on is not used.</summary>
+        public static string DefaultFill(Kind kind)
+        {
+            var id = kind.FillDefault ?? "";
+            if (kind.Fill != null && FillSettings.TryGetValue(kind.Key, out var setting))
+            {
+                var chosen = kind.Fill.FirstOrDefault(c => c.Label == setting.Value);
+                id = chosen == null ? "" : chosen.GId;
+            }
+
+            return id.Length > 0 && !AvailableHere(id) ? "" : id;
+        }
+
+        /// <summary>Whether the game lets this item be used on the planet the player is on (a seed that belongs to one planet is offered only there). When that cannot be told, it is offered.</summary>
+        public static bool AvailableHere(string groupId)
+        {
+            try
+            {
+                var group = GroupsHandler.GetGroupViaId(groupId);
+                return group == null || group.GetUnlockingInfos() == null || group.GetUnlockingInfos().GetIsAvailableOnCurrentPlanet();
+            }
+            catch (Exception e)
+            {
+                ModLog.LogOnce("boosters-planet-" + groupId, "Boosters: could not tell whether " + groupId + " is for this planet: " + e.GetType().Name + ": " + e.Message);
+                return true;
+            }
+        }
 
         public static Kind ByKey(string key) => All.FirstOrDefault(k => string.Equals(k.Key, key, StringComparison.OrdinalIgnoreCase));
 

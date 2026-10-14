@@ -27,6 +27,8 @@ namespace RRSOS.PCC.Boosters
 
             ExcludeBeacons = Config.Bind("General", "ExcludeBeacons", "Base", "Beacon names that are never offered on the Boosters screen, separated by commas (capitals and spaces around a name do not matter; the whole name must match).");
 
+            BoosterKinds.BindFillSettings(Config);
+
             gameObject.AddComponent<BoosterItem>();
             gameObject.AddComponent<BoosterWindow>();
             ModLog.Note($"{Name} {Version} loaded. Enabled: {Enabled.Value}. Log: {ModLog.LogFile}");

@@ -199,7 +199,7 @@ namespace RRSOS.PCC.Boosters
             _kind = kind;
             _machine = kind.Machines.Select(m => m.GId).LastOrDefault(Allowed);
             _optimizer = null;   // optimizers are built only when one is picked
-            _fill = kind.FillDefault ?? "";
+            _fill = BoosterKinds.DefaultFill(kind);
         }
 
         private void StartBuild()
@@ -303,8 +303,8 @@ namespace RRSOS.PCC.Boosters
 
             if (_kind != null && _kind.Fill != null)
             {
-                var fill = new List<Option> { new Option { Key = "", Label = "(leave empty)", Selected = string.IsNullOrEmpty(_fill) } };
-                fill.AddRange(_kind.Fill.Select(c => new Option { Key = c.GId, Label = c.Label, Selected = c.GId == _fill }));
+                var fill = new List<Option> { new Option { Key = "", Label = "No Fill", Selected = string.IsNullOrEmpty(_fill) } };
+                fill.AddRange(_kind.Fill.Where(c => BoosterKinds.AvailableHere(c.GId)).Select(c => new Option { Key = c.GId, Label = c.Label, Selected = c.GId == _fill }));
                 yRight = Section("Machine Fill", right, yRight, colW, 4, fill, key => _fill = key);
             }
 
