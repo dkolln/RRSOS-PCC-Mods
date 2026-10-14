@@ -10,6 +10,7 @@
     <Project Path="src/Resupply/Resupply.csproj" />
     <Project Path="src/StackedCrate/StackedCrate.csproj" />
     <Project Path="src/Trash/Trash.csproj" />
+    <Project Path="src/Vehicle/Vehicle.csproj" />
     <Project Path="src/Unlocks/Unlocks.csproj" />
   </Folder>
 </Solution>
