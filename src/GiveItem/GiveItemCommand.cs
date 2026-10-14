@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using RRSOS.PCC.Shared;
 using SpaceCraft;
 using UnityEngine;
@@ -7,7 +8,7 @@ using UnityEngine;
 namespace RRSOS.PCC.GiveItem
 {
     /// <summary>
-    /// /giveitem &lt;item&gt; [quantity] on the terminal. The item is the game's item id (or any whole name the item lookup knows, such as "water"); the quantity is 1 when left out.
+    /// /giveitem &lt;item&gt; [quantity] in the game's chat, and /giveitem add &lt;item id&gt; &lt;name&gt; to give an item another name. The item is the game's item id (or any whole name the item lookup knows, such as "water", from this mod's own aliases.txt); the quantity is 1 when left out.
     /// Items are added to the backpack one at a time through the game's own add-to-inventory call, so they land where the game puts them; when the backpack has less room than
     /// asked for, it takes what fits.
     /// </summary>
@@ -15,38 +16,13 @@ namespace RRSOS.PCC.GiveItem
     {
         private const float WaitForItemSeconds = 3f;
 
-        private readonly ItemLookup _lookup = new ItemLookup();
-        private bool _registered;
+        private ItemLookup _lookup;   // made once the mod's data folder is known: this mod keeps its own aliases.txt, first made as a copy of the shared one
         private bool _busy;
 
-        private IEnumerator Start()
+        // The chat command is registered by the plugin (ChatHook.Add); this answers it in the chat.
+        internal void OnCommand(string args)
         {
-            while (!_registered)
-            {
-                yield return new WaitForSecondsRealtime(0.5f);
-
-                if (!Plugin.Enabled.Value)
-                    continue;
-
-                try
-                {
-                    // The terminal is the only place this command lives. Without it the mod does nothing.
-                    if (TerminalRegistration.TryRegister("/giveitem", "/giveitem <item id> [quantity]", "put an item into your backpack", OnCommand))
-                    {
-                        _registered = true;
-                        ModLog.Note("The terminal is installed: /giveitem is on it.");
-                    }
-                }
-                catch (Exception e)
-                {
-                    _registered = true; // do not try again every half second
-                    ModLog.Note("Could not register /giveitem with the terminal: " + e.Message);
-                }
-            }
-        }
-
-        private void OnCommand(string args, Action<string> print)
-        {
+            Action<string> print = ChatHook.Say;
             try
             {
                 if (_busy)
@@ -61,10 +37,19 @@ namespace RRSOS.PCC.GiveItem
                     return;
                 }
 
+                _lookup = _lookup ?? new ItemLookup(ModLog.FileIn("aliases.txt"));
+
                 var parts = (args ?? "").Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                // /giveitem add <item id> <name>: one more name for an item, kept in this mod's own aliases.txt
+                if (parts.Length > 0 && string.Equals(parts[0], "add", StringComparison.OrdinalIgnoreCase))
+                {
+                    AddName(parts.Skip(1).ToArray(), print);
+                    return;
+                }
+
                 if (parts.Length == 0)
                 {
-                    print("Usage: /giveitem <item id> [quantity]");
+                    print("Usage: /giveitem <item> [quantity], for example /giveitem Iron 20. Another name for an item: /giveitem add <item id> <name>");
                     return;
                 }
 
@@ -104,6 +89,41 @@ namespace RRSOS.PCC.GiveItem
                 ModLog.Note("/giveitem failed: " + e.GetType().Name + ": " + e.Message);
                 print("That did not work (" + e.Message + "). See the mod's log.");
             }
+        }
+
+        /// <summary>/giveitem add &lt;item id&gt; &lt;name&gt;: gives an item one more name, saved in this mod's own aliases.txt and used straight away.</summary>
+        private void AddName(string[] parts, Action<string> say)
+        {
+            if (parts.Length < 2)
+            {
+                say("Usage: /giveitem add <item id> <name>, for example /giveitem add waterbottle1 water");
+                return;
+            }
+
+            var name = string.Join(" ", parts, 1, parts.Length - 1).Trim();
+            var item = _lookup.ById(parts[0]);
+            if (item == null)
+            {
+                say("No item has the id \"" + parts[0] + "\".");
+                return;
+            }
+
+            if (ItemLookup.Plain(name).Length == 0)
+            {
+                say("The name needs at least one letter or digit.");
+                return;
+            }
+
+            var existing = _lookup.Existing(name);
+            if (existing != null)
+            {
+                say("Name: " + name + " already exists" + (existing == item ? "." : " (it names " + Readable.GetGroupName(existing) + ")."));
+                return;
+            }
+
+            _lookup.AddExplicit(name, item);
+            ModLog.Append(ModLog.FileIn("aliases.txt"), item.GetId() + " = " + name);
+            say("Name: " + name + " added.");
         }
 
         private IEnumerator Give(GroupItem item, int quantity, Action<string> print)
