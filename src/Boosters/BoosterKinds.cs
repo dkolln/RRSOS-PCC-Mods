@@ -123,7 +123,7 @@ namespace RRSOS.PCC.Boosters
 
             new Kind { Key = "Butterflies", Name = "Butterflies", Aliases = new[] { "butterfl", "moth" },
                 Machines = Machines("ButterflyFarm1", "Butterfly Farm T1", "ButterflyFarm2", "Butterfly Farm T2"),
-                DefaultFuses = new[] { "FuseInsects1" }, Ring = true, Spacing = 6.6, Fill = ButterflyLarvae },
+                DefaultFuses = new[] { "FuseInsects1" }, Ring = true, Spacing = 6.6, Fill = ButterflyLarvae, FillDefault = "Butterfly21Larvae" },
 
             new Kind { Key = "Bees", Name = "Bees", Aliases = new[] { "bee", "hive", "honey" },
                 Machines = Machines("Beehive1", "Beehive T1", "Beehive2", "Beehive T2"),
@@ -135,7 +135,7 @@ namespace RRSOS.PCC.Boosters
 
             new Kind { Key = "Frogs", Name = "Frog", Aliases = new[] { "frog", "toad", "amphib" },
                 Machines = Machines("AmphibiansFarm1", "Amphibian Farm"),
-                DefaultFuses = new[] { "FusePlants1", "FuseAnimals1" }, Ring = true, Spacing = 6.6, Fill = FrogEggs },
+                DefaultFuses = new[] { "FusePlants1", "FuseAnimals1" }, Ring = true, Spacing = 6.6, Fill = FrogEggs, FillDefault = "Frog14Eggs" },
 
             new Kind { Key = "Trees", Name = "Tree", Aliases = new[] { "tree", "spreader", "redwood", "forest" },
                 Machines = Machines("TreeSpreader0", "Tree Spreader T1", "TreeSpreader1", "Tree Spreader T2", "TreeSpreader2", "Tree Spreader T3"),
@@ -147,7 +147,7 @@ namespace RRSOS.PCC.Boosters
 
             new Kind { Key = "Flowers", Name = "Flower", Aliases = new[] { "flower", "bloom" },
                 Machines = Machines("SeedSpreader1", "Flower Spreader T1", "SeedSpreader2", "Flower Spreader T2"),
-                DefaultFuses = new[] { "FusePlants1" }, Ring = true, Spacing = 7.3, Fill = FlowerSeeds, Grown = true }
+                DefaultFuses = new[] { "FusePlants1" }, Ring = true, Spacing = 7.3, Fill = FlowerSeeds, FillDefault = "SeedGold", Grown = true }
         };
 
         private const string NoFill = "No Fill";
