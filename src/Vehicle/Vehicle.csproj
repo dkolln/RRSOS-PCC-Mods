@@ -17,12 +17,4 @@
     <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- The spawn spot is found by a ray down to the ground. -->
-    <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>$(GameManaged)UnityEngine.PhysicsModule.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
-
 </Project>

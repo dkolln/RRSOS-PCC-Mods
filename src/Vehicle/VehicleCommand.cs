@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using RRSOS.PCC.Shared;
@@ -11,7 +12,7 @@ namespace RRSOS.PCC.Vehicle
 {
     /// <summary>
     /// /vehicle on the terminal.
-    ///   spawn          puts a new rover, with no gear, in front of the player.
+    ///   spawn          puts a new rover, with no gear, on the vehicle station nearest to the player (and does nothing when no station is built).
     ///   upgrade min    gives the nearest rover the first tier of every piece of rover gear it has no tier of yet.
     ///   upgrade max    leaves the nearest rover with exactly the top tier of every piece of rover gear: other gear is taken out and deleted, what is already the top tier stays.
     /// Gear is whatever item groups the game calls Vehicle...N (equipment size, inventory size, speed, oxygen, lights, beacon), grouped by the name without its tier number. It goes into
@@ -89,28 +90,44 @@ namespace RRSOS.PCC.Vehicle
 
         // ---- spawn ------------------------------------------------------------------------------------------------------------
 
+        /// <summary>The vehicle station closest to the player (on this planet), or null when none is built.</summary>
+        private static WorldObject NearestStation(int planetHash)
+        {
+            var player = Managers.GetManager<PlayersManager>().GetActivePlayerController().transform.position;
+            return WorldObjectsHandler.Instance.GetAllWorldObjects().Values
+                .Where(w => w != null && w.GetGroup() != null && w.GetGroup().GetId() == Plugin.StationGroup.Value && w.GetPosition().sqrMagnitude > 0f && w.GetPlanetHash() == planetHash)
+                .OrderBy(w => (w.GetPosition() - player).sqrMagnitude).FirstOrDefault();
+        }
+
+        private static Vector3 SpawnOffset()
+        {
+            var parts = Plugin.SpawnOffset.Value.Split(',');
+            if (parts.Length == 3 && float.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var x) && float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var y)
+                && float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var z))
+                return new Vector3(x, y, z);
+
+            return new Vector3(0.05f, 5.45f, -1.06f);
+        }
+
         private IEnumerator Spawn(int planetHash, Action<string> print)
         {
             _busy = true;
             try
             {
-                var player = Managers.GetManager<PlayersManager>().GetActivePlayerController();
-                var at = player.transform.position;
-                var forward = Vector3.ProjectOnPlane(player.transform.forward, Vector3.up).normalized;
-                if (forward.sqrMagnitude < 0.01f)
-                    forward = Vector3.forward;
+                var station = NearestStation(planetHash);
+                if (station == null)
+                {
+                    print("There is no vehicle station. Build one first.");
+                    yield break;
+                }
 
-                // in front of the player, on the ground there
-                var spot = at + forward * Plugin.SpawnDistance.Value;
-                if (Physics.Raycast(spot + Vector3.up * 30f, Vector3.down, out var hit, 80f))
-                    spot = hit.point + Vector3.up * 1f;
-                else
-                    spot = new Vector3(spot.x, at.y + 1f, spot.z);
+                // Where the game keeps a rover that sits on its station: a fixed offset from the station, in the station's own directions.
+                var spot = station.GetPosition() + station.GetRotation() * SpawnOffset();
 
                 WorldObject made;
                 try
                 {
-                    made = Placement.PlaceAt(Plugin.VehicleGroup.Value, spot, Quaternion.LookRotation(forward), planetHash);
+                    made = Placement.PlaceAt(Plugin.VehicleGroup.Value, spot, station.GetRotation(), planetHash);
                 }
                 catch (Exception e)
                 {
@@ -121,9 +138,9 @@ namespace RRSOS.PCC.Vehicle
 
                 yield return null;
                 var gearInventory = EquipmentInventory(made);
-                ModLog.Note("/vehicle spawn: " + made.GetGroup().GetId() + " #" + made.GetId() + " at " + spot + "; storage inventory " + made.GetLinkedInventoryId()
+                ModLog.Note("/vehicle spawn: " + made.GetGroup().GetId() + " #" + made.GetId() + " at " + spot + " on station #" + station.GetId() + "; storage inventory " + made.GetLinkedInventoryId()
                     + ", equipment inventory " + (gearInventory == null ? "none" : gearInventory.GetId().ToString()) + ".");
-                print("Rover spawned in front of you" + (gearInventory == null ? " (it has no equipment inventory; see the log)." : ", with no gear."));
+                print("Rover spawned at the vehicle station" + (gearInventory == null ? " (it has no equipment inventory; see the log)." : ", with no gear."));
             }
             finally
             {

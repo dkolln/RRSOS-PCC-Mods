@@ -17,14 +17,15 @@ namespace RRSOS.PCC.Vehicle
 
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<string> VehicleGroup;
-        internal static ConfigEntry<float> SpawnDistance;
+        internal static ConfigEntry<string> StationGroup, SpawnOffset;
 
         private void Awake()
         {
             ModLog.Init("Vehicle", Logger);
             Enabled = Config.Bind("General", "Enabled", false, "Add /vehicle to the terminal: spawns a rover and fits its gear. Writes into the running game.");
             VehicleGroup = Config.Bind("General", "VehicleGroup", "VehicleTruck", "The game's id for the vehicle (the rover).");
-            SpawnDistance = Config.Bind("General", "SpawnDistance", 8f, "How far in front of the player a spawned rover appears, in metres.");
+            StationGroup = Config.Bind("General", "StationGroup", "VehicleCrafter1", "The game's id for the vehicle station. /vehicle spawn needs one built, and spawns at the nearest.");
+            SpawnOffset = Config.Bind("General", "SpawnOffset", "0.05,5.45,-1.06", "Where the rover appears, relative to the station (x,y,z in metres, in the station's own directions). The default is where the game keeps a rover on its station.");
 
             gameObject.AddComponent<VehicleCommand>();
             ModLog.Note($"{Name} {Version} loaded. Enabled: {Enabled.Value}. Log: {ModLog.LogFile}");
