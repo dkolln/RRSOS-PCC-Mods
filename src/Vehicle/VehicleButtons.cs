@@ -14,7 +14,7 @@ namespace RRSOS.PCC.Vehicle
 {
     /// <summary>
     /// Three buttons on the vehicle station's window (the game's crafting window, opened from the station's terminal, so they are there only at a vehicle station):
-    ///   Spawn Rover   puts a new rover, with no gear, on the station's own spawn spot (the game's own spawn call; nothing happens while the spot is taken).
+    ///   Spawn Rover   puts a new rover, with no gear, on the station's own spawn spot (the game's own spawn call). Not while any rover already exists in the game, or while the spot is taken.
     ///   Gear Min      gives the rover at the station the first tier of every piece of rover gear it has no tier of yet.
     ///   Gear Max      leaves the rover with exactly the top tier of every piece of rover gear: other gear is taken out and deleted, what is already the top tier stays.
     /// Gear is whatever item groups the game calls Vehicle...N (equipment size, inventory size, speed, oxygen, lights, beacon), grouped by the name without its tier number. It goes into the
@@ -194,6 +194,13 @@ namespace RRSOS.PCC.Vehicle
             if (group == null)
             {
                 say("The game has no group " + Plugin.VehicleGroup.Value + ".");
+                yield break;
+            }
+
+            // one rover in the game is enough: no second one is spawned while any rover exists
+            if (WorldObjectsHandler.Instance.GetAllWorldObjects().Values.Any(w => w != null && w.GetGroup() != null && w.GetGroup().GetId() == group.GetId()))
+            {
+                say("There is already a rover in the game, so another is not spawned.");
                 yield break;
             }
 
