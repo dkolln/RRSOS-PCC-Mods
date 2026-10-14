@@ -27,13 +27,13 @@ namespace RRSOS.PCC.Base
 # ; turn=90 turns every building made as the last step 90 degrees to the right (clockwise from above; negative turns left).
 # ; ore=Iron,Silicon,... is for ore extractors: a building keeps the ore it already extracts (the vein it stands on) through every step; one that has no ore yet gets, when it becomes
 # the last step, whichever ore of this list the world has the fewest of, so the extractors spread evenly over the list.
+# ; gate=Step:Name cuts the chain in two at that step while the config switch of that name is off (the buildings before it do not swap into it or beyond; from it on is a chain of its own).
+# gate=Name alone means the last step. Switches: SolarToNuclear, NuclearToFusion (in the Base config).
 # Colours: green red blue yellow orange purple cyan white.
 
-# Wind Turbine > T1 Solar Panel > T2 Solar Panel
-EnergyGenerator1 > EnergyGenerator2 > EnergyGenerator3
-
-# Nuclear Reactor T1 > T2 > Fusion Generator
-EnergyGenerator4 > EnergyGenerator5 > EnergyGenerator6
+# Wind Turbine > T1 Solar Panel > T2 Solar Panel > T1 Nuclear Reactor > T2 Nuclear Reactor > Fusion Generator
+# (T2 Solar to Nuclear only while SolarToNuclear is true in the Base config, which is off to begin with; T2 Nuclear to Fusion only while NuclearToFusion is true)
+EnergyGenerator1 > EnergyGenerator2 > EnergyGenerator3 > EnergyGenerator4 > EnergyGenerator5 > EnergyGenerator6 ; gate=EnergyGenerator4:SolarToNuclear ; gate=EnergyGenerator6:NuclearToFusion
 
 # Heater T1 > T2 > T3
 Heater1 > Heater2 > Heater3
@@ -81,6 +81,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             public string Label;
             public string Color;     // the game's own colour text
             public int OnlyIf;       // 0 = always; N = only when exactly N buildings of the swapped kind stand in the world
+            public Dictionary<string, string> Gates = new Dictionary<string, string>(); // step id -> config switch (gate=Step:Name) that must be on for the chain to run into that step
             public string[] Ore;     // ore group ids to spread over (ore extractors); null = the chain does not deal with ore
             public float Turn;       // degrees to the right (clockwise seen from above) that the last step is turned when it is made
         }
@@ -185,6 +186,17 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                         chain.Color = DataTreatments.ColorToString(colour);
                     else if (name == "only" && int.TryParse(value, out var only))
                         chain.OnlyIf = only;
+                    else if (name == "gate" && value.Length > 0)
+                    {
+                        // gate=Step:Name, or gate=Name for the last step
+                        var gate = value.Split(new[] { ':' }, 2);
+                        var step = gate.Length == 2 ? gate[0].Trim() : steps[steps.Length - 1];
+                        var switchName = (gate.Length == 2 ? gate[1] : gate[0]).Trim();
+                        if (steps.Contains(step))
+                            chain.Gates[step] = switchName;
+                        else
+                            ModLog.Note("upgrades.txt: gate=" + value + " in \"" + line + "\" ignored (" + step + " is not a step of the chain).");
+                    }
                     else if (name == "ore")
                     {
                         var ores = value.Split(',').Select(o => o.Trim()).Where(o => o.Length > 0).ToArray();
@@ -232,19 +244,30 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             _chainOf = new Dictionary<string, Chain>();
             foreach (var chain in _chains)
             {
-                // the highest unlocked step, and every step before it swaps to it
-                var top = -1;
-                for (var i = chain.Steps.Length - 1; i > 0; i--)
-                    if (Unlocked(chain.Steps[i]))
+                // A step with a closed gate is where the chain is cut in two: what comes before it does not swap into it or beyond; from it on is a chain of its own.
+                var from = 0;
+                for (var i = 1; i <= chain.Steps.Length; i++)
+                {
+                    var cut = i == chain.Steps.Length || (chain.Gates.TryGetValue(chain.Steps[i], out var gate) && !Plugin.GateOpen(gate));
+                    if (!cut)
+                        continue;
+
+                    // the highest unlocked step of this part, and every step before it swaps to it
+                    var top = -1;
+                    for (var j = i - 1; j > from; j--)
+                        if (Unlocked(chain.Steps[j]))
+                        {
+                            top = j;
+                            break;
+                        }
+
+                    for (var j = from; j < top; j++)
                     {
-                        top = i;
-                        break;
+                        targets[chain.Steps[j]] = chain.Steps[top];
+                        _chainOf[chain.Steps[j]] = chain;
                     }
 
-                for (var i = 0; i < top; i++)
-                {
-                    targets[chain.Steps[i]] = chain.Steps[top];
-                    _chainOf[chain.Steps[i]] = chain;
+                    from = i;
                 }
             }
 
