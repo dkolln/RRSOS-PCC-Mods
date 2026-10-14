@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace RRSOS.PCC.Shared
 {
-    /// <summary>Filling a crate's empty slots with an item. Shared source, used by Auto Fill (at a rename) and by the terminal's /resupply.</summary>
+    /// <summary>Filling a crate's empty slots with an item. Shared source, used by Auto Fill (at a rename) and by Resupply.</summary>
     internal static class CrateFill
     {
         private const float WaitForItemSeconds = 3f;
@@ -18,6 +18,24 @@ namespace RRSOS.PCC.Shared
 
         /// <summary>The crate's label, trimmed (empty when it has none).</summary>
         public static string Label(WorldObject crate) => (crate.GetText() ?? "").Trim();
+
+        /// <summary>
+        /// What a crate is meant to hold: the item its label names; failing that, its demand (the drone supply setting) when that is exactly one item. Null when neither says
+        /// (no label, a label that is not an item name, a demand of several groups or of a group that is not a single item), so nothing is guessed.
+        /// </summary>
+        public static GroupItem ItemFor(WorldObject crate, ItemLookup lookup)
+        {
+            var label = Label(crate);
+            var item = label.Length == 0 ? null : lookup.Resolve(label);
+            if (item != null)
+                return item;
+
+            var demand = crate.HasLinkedGroups() ? crate.GetLinkedGroups() : null;
+            if (demand == null || demand.Count != 1)
+                return null;
+
+            return demand[0] as GroupItem;
+        }
 
         /// <summary>
         /// Adds the item to each empty slot of the crate, one at a time through the game's own add-to-inventory call. What is in the crate already is never touched.

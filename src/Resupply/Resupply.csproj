@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>RRSOS.PCC.Resupply</AssemblyName>
+    <RootNamespace>RRSOS.PCC.Resupply</RootNamespace>
+    <Description>A resupply icon on a storage container's window that refills it with the item its label or demand names, and /resupply on the terminal</Description>
+    <Version>0.1.0</Version>
+    <ModFolder>RRSOS-PCC-Resupply</ModFolder>
+  </PropertyGroup>
+
+  <Import Project="..\Mod.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
+    <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
+    <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
+    <Compile Include="..\Shared\ItemLookup.cs" Link="Shared\ItemLookup.cs" />
+    <Compile Include="..\Shared\CrateFill.cs" Link="Shared\CrateFill.cs" />
+    <!-- /resupply goes on the terminal when that mod is installed (it is optional). -->
+    <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
+    <!-- The built-in extra names for items, read at start-up. -->
+    <EmbeddedResource Include="..\Shared\DefaultNames.txt" LogicalName="DefaultNames.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The icon is a Unity UI object. -->
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameManaged)UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GameManaged)UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

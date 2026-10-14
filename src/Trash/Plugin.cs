@@ -5,7 +5,7 @@ using RRSOS.PCC.Shared;
 namespace RRSOS.PCC.Trash
 {
     /// <summary>
-    /// A trash can on the window of a storage container: one click deletes everything in that container for good. A live-write mod, so it does nothing until <c>Enabled</c> is true in its config file.
+    /// A trash can on the window of a storage container, and optionally on the personal inventory: one click deletes everything in that container (or the backpack) for good. A live-write mod, so it does nothing until <c>Enabled</c> is true in its config file.
     /// </summary>
     [BepInPlugin(Guid, Name, Version)]
     public class Plugin : BaseUnityPlugin
@@ -16,6 +16,7 @@ namespace RRSOS.PCC.Trash
 
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<string> Groups;
+        internal static ConfigEntry<bool> OnPerson;
         internal static ConfigEntry<float> NudgeX, NudgeY;
 
         private void Awake()
@@ -23,6 +24,7 @@ namespace RRSOS.PCC.Trash
             ModLog.Init("Trash", Logger);
             Enabled = Config.Bind("General", "Enabled", false, "Show the trash can on container windows. One click deletes everything in that container, for good, with no question asked.");
             Groups = Config.Bind("General", "Groups", "Container1,Container2,Container3,Fridge1,Vault1,Locker1", "The containers that get the trash can.");
+            OnPerson = Config.Bind("General", "TrashOnPerson", true, "Also show the trash can on your personal inventory window. One click deletes everything in your backpack (never the equipment), for good, with no question asked.");
             NudgeX = Config.Bind("Placement", "NudgeX", 0f, "Fine adjustment of the trash can, sideways from its default spot above the sort icon (UI units, positive is right).");
             NudgeY = Config.Bind("Placement", "NudgeY", 0f, "Fine adjustment of the trash can, up from its default spot above the sort icon (UI units, positive is up).");
 

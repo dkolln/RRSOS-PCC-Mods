@@ -7,6 +7,7 @@
     <Project Path="src/GiveItem/GiveItem.csproj" />
     <Project Path="src/Loadout/Loadout.csproj" />
     <Project Path="src/ModManager/ModManager.csproj" />
+    <Project Path="src/Resupply/Resupply.csproj" />
     <Project Path="src/StackedCrate/StackedCrate.csproj" />
     <Project Path="src/Trash/Trash.csproj" />
     <Project Path="src/Unlocks/Unlocks.csproj" />

@@ -13,7 +13,7 @@ namespace RRSOS.PCC.Trash
 {
     /// <summary>
     /// A small trash can on a container's window, one slot above the sort icon, on the left of its grid (the game's own icons there are sort, move all and the drone supply icon). One click deletes
-    /// everything in that container for good. It is shown only for the groups in the Groups setting and only for the container side of the window, never the backpack.
+    /// everything in that container for good. On a container window it is shown only for the groups in the Groups setting; on the personal inventory window (TrashOnPerson) it empties the backpack only, never the equipment.
     /// </summary>
     internal sealed class TrashButton : MonoBehaviour
     {
@@ -46,6 +46,14 @@ namespace RRSOS.PCC.Trash
 
                         Refresh(window);
                     }
+
+                    foreach (var window in Resources.FindObjectsOfTypeAll<UiWindowEquipment>())
+                    {
+                        if (window == null || !window.gameObject.scene.IsValid() || !window.IsOpen)
+                            continue;
+
+                        RefreshBackpack(window);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -75,10 +83,41 @@ namespace RRSOS.PCC.Trash
             target.Inventory = inventory;
             target.Name = owner.GetGroup().GetId() + " #" + owner.GetId();
 
+            Place(root, window.containerInventoryContainer.transform, grid);
+        }
+
+        /// <summary>The trash can on the personal inventory window; it deletes only what is in the backpack, never the equipment.</summary>
+        private static void RefreshBackpack(UiWindowEquipment window)
+        {
+            var existing = window.transform.Find(RootName);
+            var container = window.playerInventoryContainer;
+            var grid = container == null ? null : container.GetComponentInChildren<GridLayoutGroup>();
+            var player = Managers.GetManager<PlayersManager>()?.GetActivePlayerController();
+            var inventory = player == null ? null : player.GetPlayerBackpack().GetInventory();
+
+            if (!Plugin.OnPerson.Value || inventory == null || grid == null)
+            {
+                if (existing != null)
+                    existing.gameObject.SetActive(false);
+                return;
+            }
+
+            var root = existing != null ? (RectTransform)existing : Build(window);
+            root.gameObject.SetActive(true);
+
+            var target = root.GetComponent<Target>();
+            target.Inventory = inventory;
+            target.Name = "the backpack";
+
+            Place(root, container.transform, grid);
+        }
+
+        private static void Place(RectTransform root, Transform container, GridLayoutGroup grid)
+        {
             // One icon slot above the game's sort icon: the sort icon's centre plus the step from "MoveAll" up to "Order". Centres are in world space, so the UI's scale is allowed for.
             var scale = root.lossyScale.x;
-            var order = Find(window.containerInventoryContainer.transform, "Order");
-            var moveAll = Find(window.containerInventoryContainer.transform, "MoveAll");
+            var order = Find(container, "Order");
+            var moveAll = Find(container, "MoveAll");
             Vector3 centre;
             if (order != null && moveAll != null)
             {
@@ -107,7 +146,7 @@ namespace RRSOS.PCC.Trash
             return WorldObjectsHandler.Instance.GetAllWorldObjects().Values.FirstOrDefault(w => w != null && w.GetGroup() != null && w.GetLinkedInventoryId() == id);
         }
 
-        private static RectTransform Build(UiWindowContainer window)
+        private static RectTransform Build(Component window)
         {
             var go = new GameObject(RootName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(Target), typeof(LayoutElement));
             var rect = (RectTransform)go.transform;
