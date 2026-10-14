@@ -24,6 +24,7 @@ namespace RRSOS.PCC.Vehicle
     {
         private const string RootName = "RRSOS_VehicleButtons";
         private const float WaitForItemSeconds = 3f;
+        private const float MessageSeconds = 6f;
         private static readonly Regex GearId = new Regex(@"^(Vehicle[A-Za-z]+?)(\d+)$");
         private static readonly FieldInfo SourceCrafter = typeof(UiWindowCraft).GetField("sourceCrafter", BindingFlags.Instance | BindingFlags.NonPublic);
         private static readonly Color Lit = new Color(0.45f, 1f, 0.55f, 1f);
@@ -32,6 +33,7 @@ namespace RRSOS.PCC.Vehicle
 
         private bool _busy;
         private TMP_Text _status;
+        private float _statusUntil;   // the message stays this long
 
         /// <summary>The station the buttons are working for: the crafter whose window is open.</summary>
         private sealed class Station : MonoBehaviour
@@ -62,12 +64,16 @@ namespace RRSOS.PCC.Vehicle
                         {
                             if (existing != null)
                                 existing.gameObject.SetActive(false);
+                            if (_status != null && _status.text.Length > 0)
+                                _status.text = "";   // leaving the window clears the message
                             continue;
                         }
 
                         var root = existing != null ? (RectTransform)existing : Build(window);
                         root.gameObject.SetActive(true);
                         root.GetComponent<Station>().Crafter = crafter;
+                        if (_status != null && _status.text.Length > 0 && Time.realtimeSinceStartup > _statusUntil)
+                            _status.text = "";
                     }
                 }
                 catch (Exception e)
@@ -134,6 +140,7 @@ namespace RRSOS.PCC.Vehicle
         {
             if (_status != null)
                 _status.text = message;
+            _statusUntil = Time.realtimeSinceStartup + MessageSeconds;
             ModLog.Note("Vehicle: " + message);
         }
 
