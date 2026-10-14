@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="..\Shared\ModLog.cs" Link="Shared\ModLog.cs" />
+    <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
   </ItemGroup>
 
   <ItemGroup>
