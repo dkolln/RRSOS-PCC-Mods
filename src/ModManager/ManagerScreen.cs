@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using BepInEx.Configuration;
 using RRSOS.PCC.Shared;
@@ -14,7 +15,7 @@ namespace RRSOS.PCC.ModManager
     /// <summary>
     /// The Manage Mods screen: it covers the main menu (whose own buttons are hidden while it is open). On the left the mods, on the right the selected mod's settings. A setting
     /// is changed through BepInEx's own config entry, which applies it at once and saves it to the mod's .cfg file. A mod can also be switched off for the next start by moving its
-    /// folder out of BepInEx\plugins (ModList). Escape or Back closes it.
+    /// folder out of BepInEx\plugins (ModList). Escape or Back closes it, after asking about a restart when something was changed.
     /// </summary>
     internal sealed class ManagerScreen : MonoBehaviour
     {
@@ -28,6 +29,8 @@ namespace RRSOS.PCC.ModManager
         private ModInfo _selected;
         private string _message = "";
         private bool _open;
+        private bool _asking;                         // the restart question is on the screen
+        private Dictionary<string, string> _before = new Dictionary<string, string>();   // every setting and mod switch as it was when the screen opened
         private float _listScroll, _configScroll;
         private RectTransform _listContent, _configContent;
 
@@ -38,6 +41,8 @@ namespace RRSOS.PCC.ModManager
             _mods = ModList.Load();
             _selected = _selected == null ? _mods.FirstOrDefault() : _mods.FirstOrDefault(m => m.Top == _selected.Top && m.Guid == _selected.Guid) ?? _mods.FirstOrDefault();
             _message = "";
+            _asking = false;
+            _before = Snapshot();
             _listScroll = _configScroll = 0f;
 
             var canvas = (RectTransform)intro.baseContainer.transform;
@@ -79,12 +84,36 @@ namespace RRSOS.PCC.ModManager
             Redraw();
         }
 
+        /// <summary>Back and Escape: when something was changed since the screen opened, the player is asked about a restart first.</summary>
+        public void RequestClose()
+        {
+            if (!_open)
+                return;
+
+            if (_asking)
+            {
+                _asking = false;   // Escape on the question is "not now"
+                Close();
+                return;
+            }
+
+            if (ChangeCount() > 0)
+            {
+                _asking = true;
+                Redraw();
+                return;
+            }
+
+            Close();
+        }
+
         public void Close()
         {
             if (!_open)
                 return;
 
             _open = false;
+            _asking = false;
             if (_root != null)
                 Destroy(_root.gameObject);
             _root = null;
@@ -108,7 +137,7 @@ namespace RRSOS.PCC.ModManager
 
             var keyboard = Keyboard.current;
             if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame && EventSystemNotTyping())
-                Close();
+                RequestClose();
         }
 
         // Escape leaves a text box first; it only closes the screen when no box is being edited.
@@ -152,14 +181,82 @@ namespace RRSOS.PCC.ModManager
             if (_selected != null)
                 DrawDetails(rightX, rightW, height);
 
-            _ui.Button(_root, "Back", 60f, height - 120f, 280f, 70f, 34f, UiKit.Lit, true, Close);
+            _ui.Button(_root, "Back", 60f, height - 120f, 280f, 70f, 34f, UiKit.Lit, true, RequestClose);
             _ui.Label(_root, _message, 370f, height - 112f, width - 430f, 56f, 22f, _message.StartsWith("Could") || _message.StartsWith("Not") || _message.StartsWith("The") ? UiKit.Warn : UiKit.Dim, TextAlignmentOptions.Left, true);
+
+            if (_asking)
+                DrawRestartQuestion(width, height);
 
             Canvas.ForceUpdateCanvases();
             if (_listContent != null)
                 _listContent.anchoredPosition = new Vector2(0f, _listScroll);
             if (_configContent != null)
                 _configContent.anchoredPosition = new Vector2(0f, _configScroll);
+        }
+
+        // ---- the restart question ----------------------------------------------------------------------------------------------
+
+        private Dictionary<string, string> Snapshot()
+        {
+            var all = new Dictionary<string, string>();
+            foreach (var mod in _mods)
+            {
+                all["off|" + mod.Guid + "|" + mod.Top] = mod.OffAtNextStart.ToString();
+                if (mod.Config == null || !mod.Loaded)
+                    continue;
+                foreach (var key in mod.Config.Keys)
+                    all[mod.Guid + "|" + key.Section + "|" + key.Key] = mod.Config[key].GetSerializedValue();
+            }
+
+            return all;
+        }
+
+        private int ChangeCount()
+        {
+            var now = Snapshot();
+            return now.Count(pair => !_before.TryGetValue(pair.Key, out var was) || was != pair.Value);
+        }
+
+        private void DrawRestartQuestion(float width, float height)
+        {
+            var count = ChangeCount();
+            var cover = _ui.Panel(_root, "RestartQuestion", new Color(0f, 0f, 0f, 0.82f));
+            UiKit.Place(cover, 0f, 0f, width, height);
+            var box = _ui.Panel(cover, "Box", new Color(0.05f, 0.08f, 0.1f, 1f));
+            UiKit.Place(box, width / 2f - 450f, height / 2f - 200f, 900f, 400f);
+            _ui.Label(box, "Restart the game?", 0f, 30f, 900f, 70f, 50f, UiKit.Lit, TextAlignmentOptions.Center);
+            _ui.Label(box, count + (count == 1 ? " change was" : " changes were") + " made. Some settings, and mods switched on or off, only take effect when the game starts again.",
+                50f, 120f, 800f, 120f, 26f, UiKit.Dim, TextAlignmentOptions.Center, true);
+            _ui.Button(box, "Restart now", 80f, 290f, 360f, 70f, 32f, UiKit.Lit, true, RestartGame);
+            _ui.Button(box, "Not now", 460f, 290f, 360f, 70f, 32f, UiKit.Dim, true, () =>
+            {
+                _asking = false;
+                Close();
+            });
+        }
+
+        /// <summary>Starts the game again through Steam a few seconds from now, and closes it. From the main menu nothing is unsaved.</summary>
+        private void RestartGame()
+        {
+            try
+            {
+                var start = new ProcessStartInfo("cmd.exe", "/c ping -n 9 127.0.0.1 >nul & start \"\" \"steam://rungameid/1284190\"")
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+                Process.Start(start);
+                ModLog.Note("Restart: the game is closing and will be started again through Steam in a few seconds.");
+                Application.Quit();
+            }
+            catch (Exception e)
+            {
+                _asking = false;
+                _message = "Could not restart the game (" + e.Message + "). Close it and start it again by hand.";
+                ModLog.Note("Restart failed: " + e.GetType().Name + ": " + e.Message);
+                Redraw();
+            }
         }
 
         // "RRSOS PCC Base" is shown as "Base": every mod of the set carries the prefix, so it only takes room
