@@ -188,9 +188,16 @@ namespace RRSOS.PCC.Trash
             var inventories = InventoriesHandler.Instance;
             var handler = WorldObjectsHandler.Instance;
             var deleted = 0;
+            var kept = 0;
             foreach (var item in inventory.GetInsideWorldObjects().ToList())
             {
                 var id = item.GetId();
+                if (Plugin.LockItems.Value && ItemLocks.IsLocked(id))
+                {
+                    kept++;
+                    continue;
+                }
+
                 try
                 {
                     inventories.RemoveItemFromInventory(item, inventory, true);
@@ -204,7 +211,7 @@ namespace RRSOS.PCC.Trash
                 }
             }
 
-            ModLog.Note("Trash button: " + deleted + " items deleted from " + what + "; " + inventory.GetInsideWorldObjects().Count + " left.");
+            ModLog.Note("Trash button: " + deleted + " items deleted from " + what + "; " + kept + " locked kept; " + inventory.GetInsideWorldObjects().Count + " left.");
         }
 
         /// <summary>A white trash can, drawn once, transparent around it.</summary>

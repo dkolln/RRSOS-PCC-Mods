@@ -2,7 +2,7 @@
   "id": "com.rrsos.pcc.trash",
   "name": "RRSOS PCC Trash",
   "version": "0.1.0",
-  "description": "A small trash can on the window of a storage container (Container1-3, fridge, vault, locker), one slot above the game's sort icon on the left of the grid. One click deletes everything in that container for good, with no question asked; the container stays. The same can sits on the personal inventory window (setting TrashOnPerson, on by default) and deletes only the backpack, never the equipment.",
+  "description": "A small trash can on the window of a storage container (Container1-3, fridge, vault, locker), one slot above the game's sort icon on the left of the grid. One click deletes everything in that container for good, with no question asked; the container stays. The same can sits on the personal inventory window (setting TrashOnPerson, on by default) and deletes only the backpack, never the equipment. A middle click on an item in any inventory window locks it (shows the lock icon): the trash can skips it and Move All leaves it behind; click again to unlock.",
   "plugin": "RRSOS.PCC.Trash.dll",
   "pluginFolder": "RRSOS-PCC-Trash",
   "config": "com.rrsos.pcc.trash.cfg",
