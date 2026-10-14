@@ -67,14 +67,9 @@ namespace RRSOS.PCC.ModManager
                 }
             }
 
-            // a loaded mod with no settings to show (the Live plugin; the Mod Manager, whose only setting is hidden) has nothing to manage; a switched-off folder stays so it can be switched on
-            result = result.Where(m => !m.Loaded || HasSettings(m)).ToList();
-
             // RRSOS mods first, then the rest, each by name
             return result.OrderBy(m => m.Guid.StartsWith("com.rrsos.", StringComparison.Ordinal) || m.Name.StartsWith("RRSOS", StringComparison.Ordinal) ? 0 : 1).ThenBy(m => m.Name, StringComparer.OrdinalIgnoreCase).ToList();
         }
-
-        private static bool HasSettings(ModInfo mod) => mod.Config != null && mod.Config.Keys.Any(k => !(mod.IsSelf && k.Key == "Enabled"));
 
         public static string FolderText(ModInfo mod) => mod.Top == null ? "" : Path.Combine(mod.OffAtNextStart ? DisabledRoot : PluginsRoot, mod.Top);
 
