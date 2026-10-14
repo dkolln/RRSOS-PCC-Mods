@@ -32,6 +32,9 @@ namespace RRSOS.PCC.Base
 # Wind Turbine > T1 Solar Panel > T2 Solar Panel
 EnergyGenerator1 > EnergyGenerator2 > EnergyGenerator3
 
+# Nuclear Reactor T1 > T2 > Fusion Generator
+EnergyGenerator4 > EnergyGenerator5 > EnergyGenerator6
+
 # Heater T1 > T2 > T3
 Heater1 > Heater2 > Heater3
 
