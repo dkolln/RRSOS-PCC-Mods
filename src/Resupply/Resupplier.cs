@@ -13,7 +13,7 @@ namespace RRSOS.PCC.Resupply
     /// <summary>
     /// A recycle-arrows icon on a crate's window. One click fills that crate's empty slots with the item it is meant for (CrateFill.ItemFor: its label, or else its demand when that is
     /// exactly one item); what is in the crate stays. The icon sits one slot above the game's sort icon, or two when the Trash mod's can is showing there. The same fill serves
-    /// /resupply on the terminal, which goes through every such crate on the planet.
+    /// the Supply Manager screen's Resupply button and the auto top-up, which go through every such crate on the planet.
     /// </summary>
     internal sealed class Resupplier : MonoBehaviour
     {
@@ -24,7 +24,36 @@ namespace RRSOS.PCC.Resupply
 
         private readonly ItemLookup _lookup = new ItemLookup();
         private bool _busy;
-        private bool _terminalChecked;
+
+        /// <summary>The one Resupplier, for the Supply Manager screen.</summary>
+        internal static Resupplier Instance;
+
+        internal bool Busy => _busy;
+        internal ItemLookup Lookup => _lookup;
+
+        private void Awake()
+        {
+            Instance = this;
+            StartCoroutine(AutoTopUp());
+        }
+
+        // Every TopUpSeconds, while AutoTopUp is on: crates that have an item and are below TopUpBelowPercent full are topped up. Off unless the player switched it on.
+        private IEnumerator AutoTopUp()
+        {
+            while (true)
+            {
+                yield return new WaitForSecondsRealtime(Mathf.Max(5f, Plugin.TopUpSeconds.Value));
+
+                if (!Plugin.Enabled.Value || !Plugin.AutoTopUp.Value || _busy)
+                    continue;
+
+                var lines = new List<string>();
+                yield return ResupplyAll(line => lines.Add(line), Mathf.Clamp(Plugin.TopUpBelowPercent.Value, 1, 99));
+                var done = lines.LastOrDefault(l => l.StartsWith("Done:")) ?? "";
+                if (done.Length > 0 && !done.StartsWith("Done: 0 crates topped up"))
+                    ChatHook.Say("Auto top-up. " + done);
+            }
+        }
 
         /// <summary>What the icon refills: the crate it is showing.</summary>
         private sealed class Target : MonoBehaviour
@@ -40,9 +69,6 @@ namespace RRSOS.PCC.Resupply
 
                 if (!Plugin.Enabled.Value)
                     continue;
-
-                if (!_terminalChecked)
-                    RegisterWithTerminal();
 
                 try
                 {
@@ -180,7 +206,7 @@ namespace RRSOS.PCC.Resupply
         }
 
         /// <summary>Two arrows chasing each other round a circle, white on transparent, drawn once.</summary>
-        private static Sprite DrawSprite()
+        internal static Sprite DrawSprite()
         {
             if (_sprite != null)
                 return _sprite;
@@ -237,41 +263,12 @@ namespace RRSOS.PCC.Resupply
             return _sprite;
         }
 
-        // ---- /resupply (on the terminal) ----------------------------------------------------------------------------------------
-
-        // The terminal is optional. When its mod is loaded this puts /resupply on it; otherwise there is nothing to do.
-        private void RegisterWithTerminal()
-        {
-            try
-            {
-                if (TerminalRegistration.TryRegister("/resupply", "/resupply", "top up every labelled or demanded crate", OnResupply))
-                {
-                    _terminalChecked = true;
-                    ModLog.Note("The terminal is installed: /resupply is on it.");
-                }
-            }
-            catch (Exception e)
-            {
-                _terminalChecked = true; // do not try again every half second
-                ModLog.Note("Could not register /resupply with the terminal: " + e.Message);
-            }
-        }
-
-        private void OnResupply(string args, Action<string> print)
-        {
-            if (_busy)
-            {
-                print("Busy filling crates; try again in a moment.");
-                return;
-            }
-
-            StartCoroutine(ResupplyAll(print));
-        }
+        // ---- resupply all (the Supply Manager screen's Resupply button and the auto top-up) --------------------------------------
 
         /// <summary>
         /// Every crate on this planet (the Groups setting) that has an item, by label or demand, is topped up the same way the icon does it. Crates with neither are left alone, and so is everything already in a crate.
         /// </summary>
-        private IEnumerator ResupplyAll(Action<string> print)
+        internal IEnumerator ResupplyAll(Action<string> print, int belowPercent = 100)
         {
             _busy = true;
             try
@@ -295,6 +292,17 @@ namespace RRSOS.PCC.Resupply
                     {
                         noItem++;
                         continue;
+                    }
+
+                    // the auto top-up leaves crates that are still full enough alone
+                    if (belowPercent < 100)
+                    {
+                        var inventory = InventoriesHandler.Instance.GetInventoryById(crate.GetLinkedInventoryId());
+                        if (inventory == null || inventory.GetSize() == 0 || inventory.GetInsideWorldObjects().Count * 100 >= belowPercent * inventory.GetSize())
+                        {
+                            full++;
+                            continue;
+                        }
                     }
 
                     var result = new CrateFill.Result();
