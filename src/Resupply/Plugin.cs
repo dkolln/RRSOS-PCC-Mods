@@ -5,7 +5,7 @@ using RRSOS.PCC.Shared;
 namespace RRSOS.PCC.Resupply
 {
     /// <summary>
-    /// A resupply icon on a storage crate's window: one click fills that crate's empty slots with its item (its label, or else its demand). A live-write mod, so it does nothing until
+    /// Everything about storage crates and what is in them: a resupply icon on a crate's window, the fill when a crate is labelled, the Supply Manager screen (drone demand and supply, resupply, auto top-up), and /addname for item names. A live-write mod, so it does nothing until
     /// <c>Enabled</c> is true in its config file.
     /// </summary>
     [BepInPlugin(Guid, Name, Version)]
@@ -18,9 +18,9 @@ namespace RRSOS.PCC.Resupply
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<string> Groups, DroneStationGroup;
         internal static ConfigEntry<float> NudgeX, NudgeY;
-        internal static ConfigEntry<bool> AutoTopUp;
+        internal static ConfigEntry<bool> AutoTopUp, FillOnRename;
         internal static ConfigEntry<int> TopUpBelowPercent;
-        internal static ConfigEntry<float> TopUpSeconds;
+        internal static ConfigEntry<float> TopUpSeconds, SettleSeconds;
 
         private void Awake()
         {
@@ -35,7 +35,14 @@ namespace RRSOS.PCC.Resupply
             TopUpBelowPercent = Config.Bind("Auto Top-Up", "TopUpBelowPercent", 50, new ConfigDescription("A crate is topped up by the auto top-up when it is less full than this (percent of its slots).", new AcceptableValueRange<int>(1, 99)));
             TopUpSeconds = Config.Bind("Auto Top-Up", "TopUpSeconds", 30f, new ConfigDescription("How often the auto top-up looks at the crates (seconds, at least 5).", new AcceptableValueRange<float>(5f, 600f)));
 
+            FillOnRename = Config.Bind("Fill On Rename", "FillOnRename", true, "When a crate is given a label that names an item (an id, its name in the game, or a name from aliases.txt), fill its empty slots with that item, once. What is in the crate already stays.");
+            SettleSeconds = Config.Bind("Fill On Rename", "SettleSeconds", 1.0f, "A new label must stay unchanged this long, with the naming window closed, before it counts (the game writes the label while it is typed).");
+
             gameObject.AddComponent<Resupplier>();
+            var rename = gameObject.AddComponent<RenameFill>();
+            ChatHook.Enabled = () => Enabled.Value;
+            ChatHook.Add("/addname", rename.OnAddName, "give an item another name for labels: /addname <item id> <name>");
+            gameObject.AddComponent<ChatHook>();
             gameObject.AddComponent<SupplyItem>();
             gameObject.AddComponent<SupplyWindow>();
             ModLog.Note($"{Name} {Version} loaded. Enabled: {Enabled.Value}. It writes into the running game only when Enabled is true. Log: {ModLog.LogFile}");
