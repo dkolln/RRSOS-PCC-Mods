@@ -11,7 +11,7 @@ namespace RRSOS.PCC.AutoFill
     /// <summary>
     /// When a crate is given a label, looks the label up: if it names an item (its group id, its display name, or an extra name) the crate's EMPTY slots are filled with that
     /// item. Only at a rename; what is already in the crate stays; a crate that already had its label when the world loaded is never touched.
-    /// The same lookup and fill also serve /resupply (tops up every labelled crate), and /addname works there too; this mod puts both on the terminal when one is installed.
+    /// /addname works in the chat and, when a terminal is installed, on the terminal. (/resupply and the per-crate resupply icon are the Resupply mod.)
     /// </summary>
     internal sealed class AutoFiller : MonoBehaviour
     {
@@ -218,88 +218,23 @@ namespace RRSOS.PCC.AutoFill
             say("Name: " + name + " added.");
         }
 
-        // ---- /resupply (on the terminal) ----------------------------------------------------------------------------------------
+        // ---- /addname (on the terminal) -----------------------------------------------------------------------------------------
 
-        // The terminal is optional. When its mod is loaded this puts /resupply on it; otherwise there is nothing to do and the mod works as before.
+        // The terminal is optional. When its mod is loaded this puts /addname on it; otherwise there is nothing to do and the mod works as before.
         private void RegisterWithTerminal()
         {
             try
             {
-                if (TerminalRegistration.TryRegister("/resupply", "/resupply", "top up every labelled crate", OnResupply))
+                if (TerminalRegistration.TryRegister("/addname", "/addname <item id> <name>", "give an item another name", (args, print) => AddName(args, print)))
                 {
-                    TerminalRegistration.TryRegister("/addname", "/addname <item id> <name>", "give an item another name", (args, print) => AddName(args, print));
                     _terminalChecked = true;
-                    ModLog.Note("The terminal is installed: /resupply and /addname are on it.");
+                    ModLog.Note("The terminal is installed: /addname is on it.");
                 }
             }
             catch (Exception e)
             {
                 _terminalChecked = true; // do not try again every half second
-                ModLog.Note("Could not register /resupply with the terminal: " + e.Message);
-            }
-        }
-
-        private void OnResupply(string args, Action<string> print)
-        {
-            if (_busy)
-            {
-                print("Busy filling crates; try again in a moment.");
-                return;
-            }
-
-            StartCoroutine(Resupply(print));
-        }
-
-        /// <summary>
-        /// Every labelled crate on this planet whose label names an item is topped up, the same way as at a rename. Crates with no label, or a label that is not an item name
-        /// (Seeds, Plants), are left alone, and so is everything already in a crate.
-        /// </summary>
-        private IEnumerator Resupply(Action<string> print)
-        {
-            _busy = true;
-            try
-            {
-                if (!WorldState.Ready(out var planetHash, out _))
-                {
-                    print("The world is not ready yet.");
-                    yield break;
-                }
-
-                var crateGroups = CrateGroupIds();
-                var crates = WorldObjectsHandler.Instance.GetAllWorldObjects().Values
-                    .Where(w => w != null && w.GetGroup() != null && crateGroups.Contains(w.GetGroup().GetId()) && w.GetLinkedInventoryId() != 0 && w.GetPlanetHash() == planetHash).ToList();
-
-                print("Resupplying " + crates.Count + " crates...");
-                int toppedUp = 0, full = 0, noItem = 0, total = 0;
-                foreach (var crate in crates)
-                {
-                    var label = CrateFill.Label(crate);
-                    var item = label.Length == 0 ? null : _lookup.Resolve(label);
-                    if (item == null)
-                    {
-                        noItem++;
-                        continue;
-                    }
-
-                    var result = new CrateFill.Result();
-                    yield return CrateFill.Fill(crate, item, result);
-                    if (result.Added > 0)
-                    {
-                        toppedUp++;
-                        total += result.Added;
-                        print(label + ": +" + result.Added + " " + Readable.GetGroupName(item));
-                    }
-                    else if (result.Empty == 0)
-                    {
-                        full++;
-                    }
-                }
-
-                print("Done: " + toppedUp + " crates topped up (" + total + " items), " + full + " already full, " + noItem + " with no item label.");
-            }
-            finally
-            {
-                _busy = false;
+                ModLog.Note("Could not register /addname with the terminal: " + e.Message);
             }
         }
     }

@@ -84,6 +84,15 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             { "cyan", new Color(0.1f, 0.9f, 0.9f, 1f) }, { "white", Color.white },
         };
 
+        // This session only: ids that survived being destroyed, and the spots (to 0.1) where a swap already happened.
+        private static readonly HashSet<int> Untouchable = new HashSet<int>();
+        private static readonly HashSet<string> SwappedSpots = new HashSet<string>();
+
+        private static string SpotKey(Vector3 p)
+        {
+            return Mathf.RoundToInt(p.x * 10f) + "," + Mathf.RoundToInt(p.y * 10f) + "," + Mathf.RoundToInt(p.z * 10f);
+        }
+
         private List<Chain> _chains = new List<Chain>();
         private DateTime _rulesRead = DateTime.MinValue;
 
@@ -257,6 +266,8 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                     continue;
                 if (wo.GetPosition().sqrMagnitude <= 0f || wo.GetPlanetHash() != planetHash)
                     continue; // inside an inventory, or on another planet
+                if (Untouchable.Contains(wo.GetId()) || SwappedSpots.Contains(SpotKey(wo.GetPosition()) + "|" + wo.GetGroup().GetId()))
+                    continue; // could not be removed before, or a building of this kind at this very spot was already swapped (a world item that comes back)
                 todo.Add(wo);
             }
 
@@ -445,6 +456,24 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                 yield break;
             }
 
+            // Some world objects (the heaters lying in wrecks) cannot be removed, or come back. Leave those alone from now on instead of piling up copies.
+            if (handler.GetWorldObjectViaId(result.OldId) != null)
+            {
+                Untouchable.Add(result.OldId);
+                ModLog.Note("Upgrades: the old " + from + " #" + result.OldId + " could not be removed (a world item?); leaving it alone and removing the new " + to + ".");
+                try
+                {
+                    handler.DestroyWorldObject(made, true);
+                }
+                catch (Exception e)
+                {
+                    ModLog.Note("Upgrades: could not remove the new " + to + ": " + e.GetType().Name + ": " + e.Message);
+                }
+
+                yield break;
+            }
+
+            SwappedSpots.Add(SpotKey(old.GetPosition()) + "|" + from);
             result.Made = made;
         }
     }
