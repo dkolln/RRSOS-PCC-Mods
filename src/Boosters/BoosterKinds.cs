@@ -66,6 +66,13 @@ namespace RRSOS.PCC.Boosters
             new Choice("Tree16Seed", "Pamelia"), new Choice("Tree17Seed", "Detoxo"), new Choice("Tree18Seed", "Brojo")
         };
 
+        // Seed4 to Seed8Humble and the golden seed; the lower seeds are left out to keep the choice short
+        private static readonly Choice[] FlowerSeeds =
+        {
+            new Choice("Seed4", "Tuska"), new Choice("Seed5", "Orema"), new Choice("Seed6", "Seed 6"), new Choice("Seed7Humble", "Humble Bean"),
+            new Choice("Seed8Humble", "Humble Flower"), new Choice("SeedGold", "Golden")
+        };
+
         private static readonly Choice[] FrogEggs =
         {
             new Choice("Frog1Eggs", "Generic"), new Choice("Frog2Eggs", "Huli"), new Choice("Frog3Eggs", "Felicianna"), new Choice("Frog4Eggs", "Strabo"),
@@ -136,7 +143,7 @@ namespace RRSOS.PCC.Boosters
 
             new Kind { Key = "Flowers", Name = "Flower", Aliases = new[] { "flower", "bloom" },
                 Machines = Machines("SeedSpreader1", "Flower Spreader T1", "SeedSpreader2", "Flower Spreader T2"),
-                DefaultFuses = new[] { "FusePlants1" }, Ring = true, Spacing = 7.3, Grown = true }
+                DefaultFuses = new[] { "FusePlants1" }, Ring = true, Spacing = 7.3, Fill = FlowerSeeds, Grown = true }
         };
 
         public static Kind ByKey(string key) => All.FirstOrDefault(k => string.Equals(k.Key, key, StringComparison.OrdinalIgnoreCase));
