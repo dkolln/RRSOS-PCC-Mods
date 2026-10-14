@@ -4,7 +4,7 @@
     <AssemblyName>RRSOS.PCC.Resupply</AssemblyName>
     <RootNamespace>RRSOS.PCC.Resupply</RootNamespace>
     <Description>A resupply icon on a storage container's window that refills it with the item its label or demand names, and /resupply on the terminal</Description>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <ModFolder>RRSOS-PCC-Resupply</ModFolder>
   </PropertyGroup>
 
@@ -16,6 +16,8 @@
     <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
     <Compile Include="..\Shared\ItemLookup.cs" Link="Shared\ItemLookup.cs" />
     <Compile Include="..\Shared\CrateFill.cs" Link="Shared\CrateFill.cs" />
+    <Compile Include="..\Shared\GroupCloner.cs" Link="Shared\GroupCloner.cs" />
+    <Compile Include="..\Shared\CustomIcons.cs" Link="Shared\CustomIcons.cs" />
     <!-- /resupply goes on the terminal when that mod is installed (it is optional). -->
     <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
     <!-- The built-in extra names for items, read at start-up. -->
@@ -23,7 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The icon is a Unity UI object. -->
+    <!-- The icon and the Supply Manager screen are Unity UI objects with TextMeshPro text. -->
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GameManaged)Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>$(GameManaged)UnityEngine.UI.dll</HintPath>
       <Private>false</Private>

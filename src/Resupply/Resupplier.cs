@@ -26,6 +26,36 @@ namespace RRSOS.PCC.Resupply
         private bool _busy;
         private bool _terminalChecked;
 
+        /// <summary>The one Resupplier, for the Supply Manager screen.</summary>
+        internal static Resupplier Instance;
+
+        internal bool Busy => _busy;
+        internal ItemLookup Lookup => _lookup;
+
+        private void Awake()
+        {
+            Instance = this;
+            StartCoroutine(AutoTopUp());
+        }
+
+        // Every TopUpSeconds, while AutoTopUp is on: crates that have an item and are below TopUpBelowPercent full are topped up. Off unless the player switched it on.
+        private IEnumerator AutoTopUp()
+        {
+            while (true)
+            {
+                yield return new WaitForSecondsRealtime(Mathf.Max(5f, Plugin.TopUpSeconds.Value));
+
+                if (!Plugin.Enabled.Value || !Plugin.AutoTopUp.Value || _busy)
+                    continue;
+
+                var lines = new List<string>();
+                yield return ResupplyAll(line => lines.Add(line), Mathf.Clamp(Plugin.TopUpBelowPercent.Value, 1, 99));
+                var done = lines.LastOrDefault(l => l.StartsWith("Done:")) ?? "";
+                if (done.Length > 0 && !done.StartsWith("Done: 0 crates topped up"))
+                    ChatHook.Say("Auto top-up. " + done);
+            }
+        }
+
         /// <summary>What the icon refills: the crate it is showing.</summary>
         private sealed class Target : MonoBehaviour
         {
@@ -180,7 +210,7 @@ namespace RRSOS.PCC.Resupply
         }
 
         /// <summary>Two arrows chasing each other round a circle, white on transparent, drawn once.</summary>
-        private static Sprite DrawSprite()
+        internal static Sprite DrawSprite()
         {
             if (_sprite != null)
                 return _sprite;
@@ -271,7 +301,7 @@ namespace RRSOS.PCC.Resupply
         /// <summary>
         /// Every crate on this planet (the Groups setting) that has an item, by label or demand, is topped up the same way the icon does it. Crates with neither are left alone, and so is everything already in a crate.
         /// </summary>
-        private IEnumerator ResupplyAll(Action<string> print)
+        internal IEnumerator ResupplyAll(Action<string> print, int belowPercent = 100)
         {
             _busy = true;
             try
@@ -295,6 +325,17 @@ namespace RRSOS.PCC.Resupply
                     {
                         noItem++;
                         continue;
+                    }
+
+                    // the auto top-up leaves crates that are still full enough alone
+                    if (belowPercent < 100)
+                    {
+                        var inventory = InventoriesHandler.Instance.GetInventoryById(crate.GetLinkedInventoryId());
+                        if (inventory == null || inventory.GetSize() == 0 || inventory.GetInsideWorldObjects().Count * 100 >= belowPercent * inventory.GetSize())
+                        {
+                            full++;
+                            continue;
+                        }
                     }
 
                     var result = new CrateFill.Result();

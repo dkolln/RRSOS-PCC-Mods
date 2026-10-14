@@ -1,15 +1,19 @@
 {
   "id": "com.rrsos.pcc.resupply",
   "name": "RRSOS PCC Resupply",
-  "version": "0.1.0",
-  "description": "A recycle-arrows icon on the window of a storage crate (Container1-3) that refills that crate's empty slots with the item it is meant for: the item its label names, or else its demand (drone supply) when that is exactly one item. It sits above the Trash mod's can when that is shown, otherwise just above the game's sort icon. Also puts /resupply on the terminal, which does the same for every such crate on the planet.",
+  "version": "0.2.0",
+  "description": "A recycle-arrows icon on the window of a storage crate (Container1-3) that refills that crate's empty slots with the item it is meant for: the item its label names, or else its demand (drone supply) when that is exactly one item. It sits above the Trash mod's can when that is shown, otherwise just above the game's sort icon. Also puts /resupply on the terminal, which does the same for every such crate on the planet. Also a Supply Manager screen in the build menu (Iron, Silicon, Aluminium): Set Drone Demand makes every crate with an item ask the drones for it, Set Drone Supply makes producers (extractors, collectors, hives, ecosystem) offer what they make, Resupply fills the crates, and Auto Top-Up (off by default) keeps crates above a fill level.",
   "plugin": "RRSOS.PCC.Resupply.dll",
   "pluginFolder": "RRSOS-PCC-Resupply",
   "config": "com.rrsos.pcc.resupply.cfg",
   "dataFolder": "%LOCALAPPDATA%\\RRSOS-PCC-Mods\\Resupply",
   "commands": [],
   "terminalCommands": [
-    { "name": "/resupply", "usage": "/resupply", "help": "top up every labelled or demanded crate (needs the Commands mod's terminal)" }
+    {
+      "name": "/resupply",
+      "usage": "/resupply",
+      "help": "top up every labelled or demanded crate (needs the Commands mod's terminal)"
+    }
   ],
   "requestFiles": [],
   "writesToRunningGame": true

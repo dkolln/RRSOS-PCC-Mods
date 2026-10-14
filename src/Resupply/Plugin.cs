@@ -14,11 +14,14 @@ namespace RRSOS.PCC.Resupply
     {
         public const string Guid = "com.rrsos.pcc.resupply";
         public const string Name = "RRSOS PCC Resupply";
-        public const string Version = "0.1.0";
+        public const string Version = "0.2.0";
 
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<string> Groups;
         internal static ConfigEntry<float> NudgeX, NudgeY;
+        internal static ConfigEntry<bool> AutoTopUp;
+        internal static ConfigEntry<int> TopUpBelowPercent;
+        internal static ConfigEntry<float> TopUpSeconds;
 
         private void Awake()
         {
@@ -28,7 +31,13 @@ namespace RRSOS.PCC.Resupply
             NudgeX = Config.Bind("Placement", "NudgeX", 0f, "Fine adjustment of the icon, sideways from its default spot (UI units, positive is right).");
             NudgeY = Config.Bind("Placement", "NudgeY", 0f, "Fine adjustment of the icon, up from its default spot (UI units, positive is up).");
 
+            AutoTopUp = Config.Bind("Auto Top-Up", "AutoTopUp", false, "Every TopUpSeconds, top up the crates that have an item (by label or category) and are less than TopUpBelowPercent full. It is free stock, so it is off unless you switch it on (also on the Supply Manager screen).");
+            TopUpBelowPercent = Config.Bind("Auto Top-Up", "TopUpBelowPercent", 50, new ConfigDescription("A crate is topped up by the auto top-up when it is less full than this (percent of its slots).", new AcceptableValueRange<int>(1, 99)));
+            TopUpSeconds = Config.Bind("Auto Top-Up", "TopUpSeconds", 30f, new ConfigDescription("How often the auto top-up looks at the crates (seconds, at least 5).", new AcceptableValueRange<float>(5f, 600f)));
+
             gameObject.AddComponent<Resupplier>();
+            gameObject.AddComponent<SupplyItem>();
+            gameObject.AddComponent<SupplyWindow>();
             ModLog.Note($"{Name} {Version} loaded. Enabled: {Enabled.Value}. It writes into the running game only when Enabled is true. Log: {ModLog.LogFile}");
         }
     }
