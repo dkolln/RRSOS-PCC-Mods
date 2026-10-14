@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace RRSOS.PCC.Shared
 {
-    /// <summary>Filling a crate's empty slots with an item. Shared source, used by Auto Fill (at a rename) and by Resupply.</summary>
+    /// <summary>Filling a crate's empty slots with an item. Shared source, used by Resupply (at a rename, and on demand) and by Base (stocking the T0 crates).</summary>
     internal static class CrateFill
     {
         private const float WaitForItemSeconds = 3f;
