@@ -106,6 +106,10 @@ namespace RRSOS.PCC.Boosters
                 Machines = Machines("Drill0", "Drill T1", "Drill1", "Drill T2", "Drill2", "Drill T3", "Drill3", "Drill T4", "Drill4", "Drill T5"),
                 DefaultFuses = new[] { "FuseHeat1", "FusePressure1" } },
 
+            new Kind { Key = "Power", Name = "Power", Aliases = new[] { "power", "energy", "electric", "generator", "solar", "wind" },
+                Machines = Machines("EnergyGenerator1", "Wind Turbine", "EnergyGenerator2", "Solar Panel T1", "EnergyGenerator3", "Solar Panel T2"),
+                DefaultFuses = new[] { "FuseEnergy1" } },
+
             new Kind { Key = "Butterflies", Name = "Butterflies", Aliases = new[] { "butterfl", "moth" },
                 Machines = Machines("ButterflyFarm1", "Butterfly Farm T1", "ButterflyFarm2", "Butterfly Farm T2"),
                 DefaultFuses = new[] { "FuseInsects1" }, Ring = true, Spacing = 6.6, Fill = ButterflyLarvae },
