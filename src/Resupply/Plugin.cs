@@ -9,7 +9,6 @@ namespace RRSOS.PCC.Resupply
     /// <c>Enabled</c> is true in its config file.
     /// </summary>
     [BepInPlugin(Guid, Name, Version)]
-    [BepInDependency(TerminalRegistration.TerminalGuid, BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "com.rrsos.pcc.resupply";
@@ -26,8 +25,8 @@ namespace RRSOS.PCC.Resupply
         private void Awake()
         {
             ModLog.Init("Resupply", Logger);
-            Enabled = Config.Bind("General", "Enabled", false, "Show the resupply icon on crate windows, and /resupply on the terminal. Writes into the running game.");
-            Groups = Config.Bind("General", "Groups", "Container1,Container2,Container3", "The crates that get the resupply icon (and that /resupply tops up).");
+            Enabled = Config.Bind("General", "Enabled", false, "Show the resupply icon on crate windows and the Supply Manager screen in the build menu. Writes into the running game.");
+            Groups = Config.Bind("General", "Groups", "Container1,Container2,Container3", "The crates that get the resupply icon (and that Resupply and the auto top-up fill).");
             DroneStationGroup = Config.Bind("General", "DroneStationGroup", "DroneStation1", "The game's id for the drone station. Set Drone Demand and Set Drone Supply on the Supply Manager screen can be used once it is unlocked.");
             NudgeX = Config.Bind("Placement", "NudgeX", 0f, "Fine adjustment of the icon, sideways from its default spot (UI units, positive is right).");
             NudgeY = Config.Bind("Placement", "NudgeY", 0f, "Fine adjustment of the icon, up from its default spot (UI units, positive is up).");

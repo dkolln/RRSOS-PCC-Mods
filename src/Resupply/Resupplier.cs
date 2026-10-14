@@ -13,7 +13,7 @@ namespace RRSOS.PCC.Resupply
     /// <summary>
     /// A recycle-arrows icon on a crate's window. One click fills that crate's empty slots with the item it is meant for (CrateFill.ItemFor: its label, or else its demand when that is
     /// exactly one item); what is in the crate stays. The icon sits one slot above the game's sort icon, or two when the Trash mod's can is showing there. The same fill serves
-    /// /resupply on the terminal, which goes through every such crate on the planet.
+    /// the Supply Manager screen's Resupply button and the auto top-up, which go through every such crate on the planet.
     /// </summary>
     internal sealed class Resupplier : MonoBehaviour
     {
@@ -24,7 +24,6 @@ namespace RRSOS.PCC.Resupply
 
         private readonly ItemLookup _lookup = new ItemLookup();
         private bool _busy;
-        private bool _terminalChecked;
 
         /// <summary>The one Resupplier, for the Supply Manager screen.</summary>
         internal static Resupplier Instance;
@@ -70,9 +69,6 @@ namespace RRSOS.PCC.Resupply
 
                 if (!Plugin.Enabled.Value)
                     continue;
-
-                if (!_terminalChecked)
-                    RegisterWithTerminal();
 
                 try
                 {
@@ -267,36 +263,7 @@ namespace RRSOS.PCC.Resupply
             return _sprite;
         }
 
-        // ---- /resupply (on the terminal) ----------------------------------------------------------------------------------------
-
-        // The terminal is optional. When its mod is loaded this puts /resupply on it; otherwise there is nothing to do.
-        private void RegisterWithTerminal()
-        {
-            try
-            {
-                if (TerminalRegistration.TryRegister("/resupply", "/resupply", "top up every labelled or demanded crate", OnResupply))
-                {
-                    _terminalChecked = true;
-                    ModLog.Note("The terminal is installed: /resupply is on it.");
-                }
-            }
-            catch (Exception e)
-            {
-                _terminalChecked = true; // do not try again every half second
-                ModLog.Note("Could not register /resupply with the terminal: " + e.Message);
-            }
-        }
-
-        private void OnResupply(string args, Action<string> print)
-        {
-            if (_busy)
-            {
-                print("Busy filling crates; try again in a moment.");
-                return;
-            }
-
-            StartCoroutine(ResupplyAll(print));
-        }
+        // ---- resupply all (the Supply Manager screen's Resupply button and the auto top-up) --------------------------------------
 
         /// <summary>
         /// Every crate on this planet (the Groups setting) that has an item, by label or demand, is topped up the same way the icon does it. Crates with neither are left alone, and so is everything already in a crate.

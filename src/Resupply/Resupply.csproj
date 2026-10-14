@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>RRSOS.PCC.Resupply</AssemblyName>
     <RootNamespace>RRSOS.PCC.Resupply</RootNamespace>
-    <Description>A resupply icon on a storage container's window that refills it with the item its label or demand names, and /resupply on the terminal</Description>
+    <Description>A resupply icon on a storage container's window that refills it with the item its label or category names, and a Supply Manager screen for the drone network</Description>
     <Version>0.2.0</Version>
     <ModFolder>RRSOS-PCC-Resupply</ModFolder>
   </PropertyGroup>
@@ -18,8 +18,6 @@
     <Compile Include="..\Shared\CrateFill.cs" Link="Shared\CrateFill.cs" />
     <Compile Include="..\Shared\GroupCloner.cs" Link="Shared\GroupCloner.cs" />
     <Compile Include="..\Shared\CustomIcons.cs" Link="Shared\CustomIcons.cs" />
-    <!-- /resupply goes on the terminal when that mod is installed (it is optional). -->
-    <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
     <!-- The built-in extra names for items, read at start-up. -->
     <EmbeddedResource Include="..\Shared\DefaultNames.txt" LogicalName="DefaultNames.txt" />
     <!-- The Supply Manager screen's pictures: the build menu icon, and the face of a placed screen. -->
