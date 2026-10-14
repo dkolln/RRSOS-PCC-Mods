@@ -74,9 +74,8 @@ namespace RRSOS.PCC.Resupply
 
             if (_group == null)
             {
-                // the build menu's picture: the recycle arrows, drawn once into CustomIcons (a PNG dropped there instead is used as it is)
-                if (!System.IO.File.Exists(CustomIcons.PathFor(NewId)))
-                    CustomIcons.Save(NewId, Resupplier.DrawSprite());
+                // the build menu's picture: the screen with the warehouse in it, put into CustomIcons once (a PNG dropped there instead is used as it is)
+                Seed(NewId, "SupplyManager.png");
 
                 _group = GroupCloner.Clone(SourceId, NewId, Ingredients);
                 if (_group == null)
@@ -91,12 +90,51 @@ namespace RRSOS.PCC.Resupply
             }
         }
 
-        // The placed screen shows the Energy screen's picture on its face; this puts the recycle arrows there instead (white on transparent, so the black of the screen shows).
+        // Copies a picture built into this mod to CustomIcons, unless a file of that name is there already (then that one is used, so a picture can be replaced by dropping a PNG in).
+        private static void Seed(string iconName, string resource)
+        {
+            try
+            {
+                var path = CustomIcons.PathFor(iconName);
+                if (System.IO.File.Exists(path))
+                    return;
+
+                using (var stream = typeof(SupplyItem).Assembly.GetManifestResourceStream(resource))
+                {
+                    if (stream == null)
+                    {
+                        ModLog.Note("Supply Manager: the picture " + resource + " is not in the mod.");
+                        return;
+                    }
+
+                    System.IO.Directory.CreateDirectory(CustomIcons.Folder);
+                    using (var file = System.IO.File.Create(path))
+                        stream.CopyTo(file);
+                }
+            }
+            catch (Exception e)
+            {
+                ModLog.Note("Supply Manager: could not put " + resource + " in CustomIcons: " + e.Message);
+            }
+        }
+
+        // The placed screen shows the Energy screen's picture on its face; this puts the warehouse there instead (SupplyFace.png in CustomIcons: white on transparent, so the black of the screen shows).
+        private Sprite _warehouse;
+
         private void Face(GameObject go)
         {
             try
             {
-                var arrows = Resupplier.DrawSprite();
+                if (_warehouse == null)
+                {
+                    Seed("SupplyFace", "SupplyFace.png");
+                    _warehouse = CustomIcons.Load("SupplyFace", 100f);
+                }
+
+                var arrows = _warehouse;
+                if (arrows == null)
+                    return;
+
                 var changed = 0;
                 foreach (var image in go.GetComponentsInChildren<UnityEngine.UI.Image>(true))
                 {
@@ -115,7 +153,7 @@ namespace RRSOS.PCC.Resupply
                     changed++;
                 }
 
-                ModLog.Note("Supply Manager: put the arrows on the face of a screen (" + changed + " pictures changed).");
+                ModLog.Note("Supply Manager: put the warehouse on the face of a screen (" + changed + " pictures changed).");
             }
             catch (Exception e)
             {

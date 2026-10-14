@@ -22,6 +22,9 @@
     <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
     <!-- The built-in extra names for items, read at start-up. -->
     <EmbeddedResource Include="..\Shared\DefaultNames.txt" LogicalName="DefaultNames.txt" />
+    <!-- The Supply Manager screen's pictures: the build menu icon, and the face of a placed screen. -->
+    <EmbeddedResource Include="Assets\SupplyManager.png" LogicalName="SupplyManager.png" />
+    <EmbeddedResource Include="Assets\SupplyFace.png" LogicalName="SupplyFace.png" />
   </ItemGroup>
 
   <ItemGroup>
