@@ -145,6 +145,11 @@ namespace RRSOS.PCC.Boosters
                 Machines = Machines("GrassSpreader1", "Grass Spreader"),
                 DefaultFuses = new[] { "FuseOxygen1", "FusePlants1" }, Ring = true, Spacing = 7.3, Grown = true },
 
+            // Only the T3 vegetube (VegetubeOutside1) can be built outside, so it is the only machine offered. The ring spacing is a guess from how close the T2 vegetubes of the T0 base stand (2.1 to 2.4 m), with room for the bigger one.
+            new Kind { Key = "Vege", Name = "Vege", Aliases = new[] { "vege", "veg", "vegetube", "vegetable", "crop" },
+                Machines = Machines("VegetubeOutside1", "T3 Vegetube"),
+                DefaultFuses = new[] { "FuseOxygen1" }, Ring = true, Spacing = 3.3, Fill = FlowerSeeds, FillDefault = "SeedGold" },
+
             new Kind { Key = "Flowers", Name = "Flower", Aliases = new[] { "flower", "bloom" },
                 Machines = Machines("SeedSpreader1", "Flower Spreader T1", "SeedSpreader2", "Flower Spreader T2"),
                 DefaultFuses = new[] { "FusePlants1" }, Ring = true, Spacing = 7.3, Fill = FlowerSeeds, FillDefault = "SeedGold", Grown = true }
