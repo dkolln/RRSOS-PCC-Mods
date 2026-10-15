@@ -5,18 +5,18 @@ using RRSOS.PCC.Shared;
 using SpaceCraft;
 using UnityEngine;
 
-namespace RRSOS.PCC.GiveItem
+namespace RRSOS.PCC.Resupply
 {
     /// <summary>
-    /// /giveitem &lt;item&gt; [quantity] in the game's chat, and /giveitem add &lt;item id&gt; &lt;name&gt; to give an item another name. The item is the game's item id (or any whole name the item lookup knows, such as "water", from this mod's own aliases.txt); the quantity is 1 when left out.
+    /// /give &lt;item&gt; [quantity] in the game's chat (also /giveitem), and /give traits [count]. The item is the game's item id (or any whole name the item lookup knows, such as "water", from the shared aliases.txt; /add gives an item another name); the quantity is 1 when left out.
     /// Items are added to the backpack one at a time through the game's own add-to-inventory call, so they land where the game puts them; when the backpack has less room than
     /// asked for, it takes what fits.
     /// </summary>
-    internal sealed class GiveItemCommand : MonoBehaviour
+    internal sealed class GiveCommand : MonoBehaviour
     {
         private const float WaitForItemSeconds = 3f;
 
-        private ItemLookup _lookup;   // made once the mod's data folder is known: this mod keeps its own aliases.txt, first made as a copy of the shared one
+        private static ItemLookup Lookup => Resupplier.Instance.Lookup;
         private bool _busy;
 
         // The chat command is registered by the plugin (ChatHook.Add); this answers it in the chat.
@@ -27,7 +27,7 @@ namespace RRSOS.PCC.GiveItem
             {
                 if (_busy)
                 {
-                    print("Still busy with the last /giveitem.");
+                    print("Still busy with the last /give.");
                     return;
                 }
 
@@ -37,25 +37,22 @@ namespace RRSOS.PCC.GiveItem
                     return;
                 }
 
-                _lookup = _lookup ?? new ItemLookup(ModLog.FileIn("aliases.txt"));
-
-                var parts = (args ?? "").Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                // /giveitem add <item id> <name>: one more name for an item, kept in this mod's own aliases.txt
-                if (parts.Length > 0 && string.Equals(parts[0], "add", StringComparison.OrdinalIgnoreCase))
+                if (Resupplier.Instance == null)
                 {
-                    AddName(parts.Skip(1).ToArray(), print);
+                    print("The game is not ready yet.");
                     return;
                 }
 
-                // /giveitem traits [count]: random colour A and colour B genetic traits
+                var parts = (args ?? "").Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                // /give traits [count]: random colour A and colour B genetic traits
                 if (parts.Length > 0 && string.Equals(parts[0], "traits", StringComparison.OrdinalIgnoreCase))
                 {
                     var wanted = 20;
                     if (parts.Length > 1 && !int.TryParse(parts[1], out wanted))
                         wanted = 0;
-                    if (wanted < 1 || wanted > Plugin.MaxQuantity.Value)
+                    if (wanted < 1 || wanted > Plugin.MaxGive.Value)
                     {
-                        print("Usage: /giveitem traits [count], 1 to " + Plugin.MaxQuantity.Value + " (20 when left out).");
+                        print("Usage: /give traits [count], 1 to " + Plugin.MaxGive.Value + " (20 when left out).");
                         return;
                     }
 
@@ -65,7 +62,7 @@ namespace RRSOS.PCC.GiveItem
 
                 if (parts.Length == 0)
                 {
-                    print("Usage: /giveitem <item> [quantity], for example /giveitem Iron 20 (or /giveitem traits for 20 random colour traits). Another name for an item: /giveitem add <item id> <name>");
+                    print("Usage: /give <item> [quantity], for example /give Iron 20 (or /give traits for 20 random colour traits). Another name for an item: /add <item id> <name>");
                     return;
                 }
 
@@ -84,14 +81,14 @@ namespace RRSOS.PCC.GiveItem
                     return;
                 }
 
-                if (quantity > Plugin.MaxQuantity.Value)
+                if (quantity > Plugin.MaxGive.Value)
                 {
-                    print("At most " + Plugin.MaxQuantity.Value + " at a time.");
+                    print("At most " + Plugin.MaxGive.Value + " at a time.");
                     return;
                 }
 
                 var name = string.Join(" ", parts, 0, nameParts);
-                var item = _lookup.Resolve(name);
+                var item = Lookup.Resolve(name);
                 if (item == null)
                 {
                     print("No item is called \"" + name + "\" (use the item's id, for example Iron).");
@@ -102,44 +99,9 @@ namespace RRSOS.PCC.GiveItem
             }
             catch (Exception e)
             {
-                ModLog.Note("/giveitem failed: " + e.GetType().Name + ": " + e.Message);
+                ModLog.Note("/give failed: " + e.GetType().Name + ": " + e.Message);
                 print("That did not work (" + e.Message + "). See the mod's log.");
             }
-        }
-
-        /// <summary>/giveitem add &lt;item id&gt; &lt;name&gt;: gives an item one more name, saved in this mod's own aliases.txt and used straight away.</summary>
-        private void AddName(string[] parts, Action<string> say)
-        {
-            if (parts.Length < 2)
-            {
-                say("Usage: /giveitem add <item id> <name>, for example /giveitem add waterbottle1 water");
-                return;
-            }
-
-            var name = string.Join(" ", parts, 1, parts.Length - 1).Trim();
-            var item = _lookup.ById(parts[0]);
-            if (item == null)
-            {
-                say("No item has the id \"" + parts[0] + "\".");
-                return;
-            }
-
-            if (ItemLookup.Plain(name).Length == 0)
-            {
-                say("The name needs at least one letter or digit.");
-                return;
-            }
-
-            var existing = _lookup.Existing(name);
-            if (existing != null)
-            {
-                say("Name: " + name + " already exists" + (existing == item ? "." : " (it names " + Readable.GetGroupName(existing) + ")."));
-                return;
-            }
-
-            _lookup.AddExplicit(name, item);
-            ModLog.Append(ModLog.FileIn("aliases.txt"), item.GetId() + " = " + name);
-            say("Name: " + name + " added.");
         }
 
         /// <summary>Random colour A and colour B genetic traits, made the way the game makes a looted one and put in the backpack.</summary>
@@ -193,7 +155,7 @@ namespace RRSOS.PCC.GiveItem
                 _busy = false;
             }
 
-            ModLog.Note("/giveitem traits x" + count + ": gave " + given + " (" + a + " colour A, " + (given - a) + " colour B).");
+            ModLog.Note("/give traits x" + count + ": gave " + given + " (" + a + " colour A, " + (given - a) + " colour B).");
             print(given == count ? "Gave " + given + " random colour traits (" + a + " colour A, " + (given - a) + " colour B)." : "Backpack full: gave " + given + " of " + count + " colour traits.");
         }
 
@@ -232,7 +194,7 @@ namespace RRSOS.PCC.GiveItem
             }
 
             var label = item.GetId();
-            ModLog.Note("/giveitem " + label + " x" + quantity + ": gave " + given + ".");
+            ModLog.Note("/give " + label + " x" + quantity + ": gave " + given + ".");
             if (given == quantity)
                 print("Gave " + given + " x " + label + ".");
             else if (given == 0)
