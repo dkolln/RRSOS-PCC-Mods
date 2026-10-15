@@ -29,9 +29,14 @@ namespace RRSOS.PCC.Boosters
     {
         private static readonly (int Dx, int Dz)[] RingCells = { (-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1) };
 
+        // the drone pad, in metres from the beacon (see Build): foundation centres, station places
+        private static readonly float[] PadX = { 6.3f, 12.3f, 18.3f, 24.3f }, PadZ = { -6f, 0f, 6f, 12f };
+        private static readonly float[] StationX = { 9.3f, 21.3f };
+        private const float StationZ = 8.1f, PadDrop = -2.519f;
+
         public sealed class Outcome
         {
-            public int Machines, Optimizers, Fuses, Items, Found;
+            public int Foundations, Machines, Optimizers, Fuses, Items, Found;
             public readonly List<string> Problems = new List<string>();
             public bool Ok => Problems.Count == 0;
         }
@@ -55,7 +60,31 @@ namespace RRSOS.PCC.Boosters
 
             // where the machines go
             var spots = new List<Vector3>();
-            if (kind.Ring)
+            var turns = new List<Quaternion>();
+            var pad = new List<Vector3>();
+            if (kind.Sides)
+            {
+                // The pad is laid out as the owner built it: a 4 x 4 foundation lying behind the beacon (the way opposite to where it points), a drone station at each end of its two long
+                // sides, each turned to look across the pad. Measured from a save in which the beacon looked down -X; any other way the beacon points turns the whole layout with it.
+                var yaw = Mathf.Round((beacon.GetRotation().eulerAngles.y - 270f) / 90f) * 90f;
+                var turn = Quaternion.Euler(0f, yaw, 0f);
+                Vector3 Local(float x, float z) => at + turn * new Vector3(x, 0f, z);
+
+                foreach (var x in PadX)
+                    foreach (var z in PadZ)
+                    {
+                        var p = Local(x, z);
+                        pad.Add(new Vector3(p.x, at.y + PadDrop, p.z));
+                    }
+
+                foreach (var x in StationX)
+                    foreach (var z in new[] { -StationZ, StationZ })
+                    {
+                        spots.Add(Local(x, z));
+                        turns.Add(turn * (z > 0 ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity));
+                    }
+            }
+            else if (kind.Ring)
             {
                 foreach (var (dx, dz) in RingCells)
                     spots.Add(new Vector3(at.x + (float)(dx * kind.Spacing), at.y, at.z + (float)(dz * kind.Spacing)));
@@ -82,34 +111,63 @@ namespace RRSOS.PCC.Boosters
 
             // machines: a ring cell that has one is kept; a stack counts what stands at its spot
             var toAdd = new List<Vector3>();
-            if (kind.Ring)
+            var toAddTurn = new List<Quaternion>();
+            if (kind.Ring || kind.Sides)
             {
-                foreach (var spot in spots)
+                for (var n = 0; n < spots.Count; n++)
                 {
-                    if (Standing(request.Machine, spot))
+                    if (Standing(request.Machine, spots[n]))
                         outcome.Found++;
                     else
-                        toAdd.Add(spot);
+                    {
+                        toAdd.Add(spots[n]);
+                        toAddTurn.Add(kind.Sides ? turns[n] : Quaternion.identity);
+                    }
                 }
             }
             else
             {
                 outcome.Found = all.Count(w => w.GetGroup().GetId() == request.Machine && Mathf.Abs(w.GetPosition().x - at.x) < 0.3f && Mathf.Abs(w.GetPosition().z - at.z) < 0.3f && Mathf.Abs(w.GetPosition().y - at.y) < 0.5f);
                 for (var i = outcome.Found; i < BoosterKinds.Count; i++)
+                {
                     toAdd.Add(at);
+                    toAddTurn.Add(Quaternion.identity);
+                }
             }
 
-            var total = toAdd.Count + fuses.Count;
+            var total = toAdd.Count + fuses.Count + pad.Count;
             var done = 0;
 
-            // the machines
-            foreach (var spot in toAdd)
+            // the foundations under a pad, before the machines stand on them
+            foreach (var spot in pad)
             {
+                progress("Placing foundation " + (++done) + " of " + total + "...");
+                if (all.Any(w => w.GetGroup().GetId() == "Foundation" && Mathf.Abs(w.GetPosition().x - spot.x) < 0.3f && Mathf.Abs(w.GetPosition().z - spot.z) < 0.3f))
+                    continue;
+
+                try
+                {
+                    Placement.PlaceAt("Foundation", spot, Quaternion.identity, planetHash);
+                    outcome.Foundations++;
+                }
+                catch (Exception e)
+                {
+                    outcome.Problems.Add("Could not place a foundation: " + e.Message);
+                    break;
+                }
+
+                yield return null;
+            }
+
+            // the machines
+            for (var n = 0; n < toAdd.Count; n++)
+            {
+                var spot = toAdd[n];
                 progress("Placing " + request.Machine + " " + (++done) + " of " + total + "...");
                 WorldObject machine = null;
                 try
                 {
-                    machine = Placement.PlaceAt(request.Machine, spot, Quaternion.identity, planetHash);
+                    machine = Placement.PlaceAt(request.Machine, spot, toAddTurn[n], planetHash);
                 }
                 catch (Exception e)
                 {
@@ -200,7 +258,7 @@ namespace RRSOS.PCC.Boosters
                 }
             }
 
-            ModLog.Note("Booster " + kind.Key + " at " + at + ": " + outcome.Machines + " machines (" + outcome.Found + " already there), " + outcome.Optimizers + " optimizers, " + outcome.Fuses + " fuses, " + outcome.Items + " items."
+            ModLog.Note("Booster " + kind.Key + " at " + at + ": " + outcome.Foundations + " foundations, " + outcome.Machines + " machines (" + outcome.Found + " already there), " + outcome.Optimizers + " optimizers, " + outcome.Fuses + " fuses, " + outcome.Items + " items."
                 + (outcome.Ok ? "" : " Problems: " + string.Join(" ", outcome.Problems.ToArray())));
         }
 
