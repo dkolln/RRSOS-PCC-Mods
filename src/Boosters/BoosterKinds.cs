@@ -36,6 +36,8 @@ namespace RRSOS.PCC.Boosters
         public bool Sides;                // two machines on each side of the beacon, turned toward it (drone stations); Number machines in all
         public int Number = BoosterKinds.Count;
         public string FillTitle = "Machine Fill";   // what the fill list is called on the screen
+        public string[] FillAlways;                 // choices offered whatever planet they belong to (the planet filter does not hide them)
+        public bool Foundation;                     // a foundation is placed under the beacon first, and the optimizers stand on it (a ring of floating machines on water)
         public bool FillAnywhere;                   // every choice is offered, whatever is unlocked or tied to a planet (drones)
         public double Spacing;
         public Choice[] Fill;             // what each machine's inventory can be filled with; null when the build leaves it empty
@@ -84,6 +86,14 @@ namespace RRSOS.PCC.Boosters
         private static readonly Choice[] Drones =
         {
             new Choice("Drone1", "Drone T1"), new Choice("Drone2", "Drone T2"), new Choice("Drone3", "Drone T3")
+        };
+
+        private static readonly Choice[] FishEggs =
+        {
+            new Choice("Fish1Eggs", "Provios"), new Choice("Fish2Eggs", "Vilnus"), new Choice("Fish3Eggs", "Gerrero"), new Choice("Fish4Eggs", "Khrom"),
+            new Choice("Fish5Eggs", "Ulani"), new Choice("Fish6Eggs", "Aelera"), new Choice("Fish7Eggs", "Tegede"), new Choice("Fish8Eggs", "Ecaru"),
+            new Choice("Fish9Eggs", "Buyu"), new Choice("Fish10Eggs", "Tiloo"), new Choice("Fish11Eggs", "Golden"), new Choice("Fish12Eggs", "Velkia"),
+            new Choice("Fish13Eggs", "Galbea"), new Choice("Fish14Eggs", "Stabu"), new Choice("Fish15Eggs", "Atabu")
         };
 
         private static readonly Choice[] FrogEggs =
@@ -164,6 +174,12 @@ namespace RRSOS.PCC.Boosters
                 Machines = Machines("DroneStation1", "Drone Station"),
                 DefaultFuses = new string[0], Sides = true, Number = 4, Fill = Drones, FillDefault = "Drone3", FillTitle = "Drone Type", FillAnywhere = true },
 
+            // Fish farms float on water, so the beacon is on the water: a foundation goes in under it for the optimizers to stand on, and the farms are far enough out not to touch it.
+            // Stabu and Atabu are always on the list. The ring spacing is a guess (change it here when it is wrong).
+            new Kind { Key = "Fish", Name = "Fish", Aliases = new[] { "fish", "aqua", "pond" },
+                Machines = Machines("FishFarm1", "Fish Farm"),
+                DefaultFuses = new[] { "FusePlants1", "FuseAnimals1" }, Ring = true, Spacing = 9.0, Foundation = true, Fill = FishEggs, FillDefault = "Fish14Eggs", FillAlways = new[] { "Fish14Eggs", "Fish15Eggs" } },
+
             new Kind { Key = "Flowers", Name = "Flower", Aliases = new[] { "flower", "bloom" },
                 Machines = Machines("SeedSpreader1", "Flower Spreader T1", "SeedSpreader2", "Flower Spreader T2"),
                 DefaultFuses = new[] { "FuseOxygen1", "FusePlants1" }, Ring = true, Spacing = 7.3, Fill = FlowerSeeds, FillDefault = "SeedGold", Grown = true }
@@ -194,8 +210,11 @@ namespace RRSOS.PCC.Boosters
                 id = chosen == null ? "" : chosen.GId;
             }
 
-            return id.Length > 0 && !kind.FillAnywhere && !AvailableHere(id) ? "" : id;
+            return id.Length > 0 && !Offered(kind, id) ? "" : id;
         }
+
+        /// <summary>Whether a fill choice is on the list for this kind here: always for the ones the kind lists as always, anywhere for a kind that ignores planets, else by the planet rule.</summary>
+        public static bool Offered(Kind kind, string id) => kind.FillAnywhere || (kind.FillAlways != null && kind.FillAlways.Contains(id)) || AvailableHere(id);
 
         private static readonly System.Reflection.FieldInfo PlanetUsage = typeof(UnlockingInfos).GetField("_planetUsageType", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 
