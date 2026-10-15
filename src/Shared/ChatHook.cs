@@ -23,10 +23,41 @@ namespace RRSOS.PCC.Shared
         private ChatHandler _registeredOn;
 
         /// <summary>Adds a command (for example "/build") and a line for /help. Call it before the component starts.</summary>
-        public static void Add(string name, Action<string> handler, string help)
+        public static void Add(string name, Action<string> handler, string help, string usage = null)
         {
+            // listed on the terminal's /help as a chat command; an empty usage leaves it off the list (an alias)
+            if (usage != "")
+                ForTerminal.Add(new string[] { name, usage ?? name, help });
+
             Commands[name] = Guarded(handler);
             _helpLine = (_helpLine.Length == 0 ? "" : _helpLine + ", ") + name + " (" + help + ")";
+        }
+
+        private static readonly List<string[]> ForTerminal = new List<string[]>();
+        private static int _listed;   // how many of ForTerminal the terminal has been told about
+        private static int _listTries;
+
+        // Tells the terminal (the Commands mod, found by reflection with plain types) about this mod's chat commands, once it is loaded; its /help then lists them.
+        private static void ListOnTerminal()
+        {
+            if (_listed >= ForTerminal.Count || _listTries > 300)
+                return;
+
+            _listTries++;
+            if (!BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue("com.rrsos.pcc.commands", out var info) || info.Instance == null)
+                return;
+
+            var api = info.Instance.GetType().Assembly.GetType("RRSOS.PCC.Commands.TerminalApi");
+            var list = api == null ? null : api.GetMethod("ListChat", BindingFlags.Public | BindingFlags.Static);
+            if (list == null)
+            {
+                _listTries = int.MaxValue / 2; // a terminal from before this; leave it
+                return;
+            }
+
+            Func<bool> active = () => Enabled();
+            for (; _listed < ForTerminal.Count; _listed++)
+                list.Invoke(null, new object[] { ForTerminal[_listed][0], ForTerminal[_listed][1], ForTerminal[_listed][2], active });
         }
 
         public static void Say(string message)
@@ -44,6 +75,7 @@ namespace RRSOS.PCC.Shared
 
                 try
                 {
+                    ListOnTerminal();
                     var chat = ChatHandler.Instance;
                     if (!Enabled() || chat == null || chat == _registeredOn || Commands.Count == 0)
                         continue;
