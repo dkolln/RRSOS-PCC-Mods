@@ -176,7 +176,7 @@ namespace RRSOS.PCC.Boosters
 
             // Fish farms float on water, so the beacon is on the water: a foundation goes in under it for the optimizers to stand on, and the farms are far enough out not to touch it.
             // Stabu and Atabu are always on the list. The ring spacing is a guess (change it here when it is wrong).
-            new Kind { Key = "Fish", Name = "Fish", Aliases = new[] { "fish", "aqua", "pond" },
+            new Kind { Key = "Fish", Name = "Fish", Aliases = new[] { "fish" },
                 Machines = Machines("FishFarm1", "Fish Farm"),
                 DefaultFuses = new[] { "FusePlants1", "FuseAnimals1" }, Ring = true, Spacing = 9.0, Foundation = true, Fill = FishEggs, FillDefault = "Fish14Eggs", FillAlways = new[] { "Fish14Eggs", "Fish15Eggs" } },
 
