@@ -183,13 +183,33 @@ namespace RRSOS.PCC.Boosters
             return id.Length > 0 && !AvailableHere(id) ? "" : id;
         }
 
-        /// <summary>Whether the game lets this item be used on the planet the player is on (a seed that belongs to one planet is offered only there). When that cannot be told, it is offered.</summary>
+        private static readonly System.Reflection.FieldInfo PlanetUsage = typeof(UnlockingInfos).GetField("_planetUsageType", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+        /// <summary>
+        /// False only for an item the game ties to one planet or a few (its planet usage is not "can be used on all planets") when the player is not on one of them. An item that can be
+        /// used on every planet is offered everywhere, even when the planet it unlocks on has not been reached yet (the later trees, seeds the player already holds). When it cannot be told, it is offered.
+        /// </summary>
         public static bool AvailableHere(string groupId)
         {
             try
             {
                 var group = GroupsHandler.GetGroupViaId(groupId);
-                return group == null || group.GetUnlockingInfos() == null || group.GetUnlockingInfos().GetIsAvailableOnCurrentPlanet();
+                var infos = group == null ? null : group.GetUnlockingInfos();
+                if (infos == null)
+                    return true;
+
+                var usage = PlanetUsage == null ? null : PlanetUsage.GetValue(infos);
+                if (usage is DataConfig.GroupPlanetUsageType type && type == DataConfig.GroupPlanetUsageType.CanBeUsedOnAllPlanets)
+                    return true;
+
+                var here = infos.GetIsSpecificToCurrentPlanet();
+                if (!here)
+                {
+                    var planets = infos.GetUnlockingInPlanets();
+                    ModLog.LogOnce("boosters-hidden-" + groupId, "Boosters: " + groupId + " is not offered here (planet usage " + usage + ", planets " + (planets == null ? "none" : string.Join(", ", planets.Select(p => p == null ? "?" : p.id).ToArray())) + ").");
+                }
+
+                return here;
             }
             catch (Exception e)
             {
