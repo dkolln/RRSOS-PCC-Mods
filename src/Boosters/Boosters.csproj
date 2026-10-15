@@ -16,6 +16,8 @@
     <Compile Include="..\Shared\GroupCloner.cs" Link="Shared\GroupCloner.cs" />
     <Compile Include="..\Shared\CustomIcons.cs" Link="Shared\CustomIcons.cs" />
     <Compile Include="..\Shared\WorldState.cs" Link="Shared\WorldState.cs" />
+    <Compile Include="..\Shared\ChatHook.cs" Link="Shared\ChatHook.cs" />
+    <Compile Include="..\Shared\TerminalRegistration.cs" Link="Shared\TerminalRegistration.cs" />
   </ItemGroup>
 
   <ItemGroup>
