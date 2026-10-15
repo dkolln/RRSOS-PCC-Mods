@@ -27,6 +27,7 @@ namespace RRSOS.PCC.Base
 # ; turn=90 turns every building made as the last step 90 degrees to the right (clockwise from above; negative turns left).
 # ; ore=Iron,Silicon,... is for ore extractors: a building keeps the ore it already extracts (the vein it stands on) through every step; one that has no ore yet gets, when it becomes
 # the last step, whichever ore of this list the world has the fewest of, so the extractors spread evenly over the list.
+# ; fill=first moves the contents over and fills every slot still empty with the first kind the old building held (a butterfly farm T1 with two larvae becomes a T2 full of larvae).
 # ; fill=same fills the new building's empty slots with what the old one held (the fuse of a T1 optimizer fills all three slots of the T2), and tops up one that is part full of a single kind.
 # ; gate=Step:Name cuts the chain in two at that step while the config switch of that name is off (the buildings before it do not swap into it or beyond; from it on is a chain of its own).
 # gate=Name alone means the last step. Switches: SolarToNuclear, NuclearToFusion (in the Base config).
@@ -55,7 +56,7 @@ TreeSpreader0 > TreeSpreader1 > TreeSpreader2
 SeedSpreader1 > SeedSpreader2
 
 # Butterfly Farm T1 > T2 > T3
-ButterflyFarm1 > ButterflyFarm2 > ButterflyFarm3
+ButterflyFarm1 > ButterflyFarm2 > ButterflyFarm3 ; fill=first
 
 # Beehive T1 > T2
 Beehive1 > Beehive2
@@ -80,6 +81,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             public string Color;     // the game's own colour text
             public int OnlyIf;       // 0 = always; N = only when exactly N buildings of the swapped kind stand in the world
             public Dictionary<string, string> Gates = new Dictionary<string, string>(); // step id -> config switch (gate=Step:Name) that must be on for the chain to run into that step
+            public bool FillFirst;   // fill=first: at a swap the contents move over and every slot still empty is filled with the first kind the old building held (a farm: T1 two larvae, T2 three)
             public bool FillSame;    // fill=same: the new building's empty slots are filled with what the old one held (an optimizer has 1 slot at T1 and 3 at T2)
             public string[] Ore;     // ore group ids to spread over (ore extractors); null = the chain does not deal with ore
             public float Turn;       // degrees to the right (clockwise seen from above) that the last step is turned when it is made
@@ -198,6 +200,8 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                     }
                     else if (name == "fill" && string.Equals(value, "same", StringComparison.OrdinalIgnoreCase))
                         chain.FillSame = true;
+                    else if (name == "fill" && string.Equals(value, "first", StringComparison.OrdinalIgnoreCase))
+                        chain.FillFirst = true;
                     else if (name == "ore")
                     {
                         var ores = value.Split(',').Select(o => o.Trim()).Where(o => o.Length > 0).ToArray();
@@ -367,7 +371,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                 }
 
                 var result = new SwapResult();
-                yield return Swap(old, to, planetHash, result, null, color, label, turn, linked, chain.FillSame);
+                yield return Swap(old, to, planetHash, result, null, color, label, turn, linked, chain.FillSame || chain.FillFirst, chain.FillFirst);
                 if (result.Made != null)
                 {
                     swapped[pair] = (swapped.TryGetValue(pair, out var n) ? n : 0) + 1;
@@ -511,7 +515,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
         }
 
         /// <summary>Swaps one building: place the new one, move what is inside, and only then remove the old one. On any problem the old one stays.</summary>
-        private static IEnumerator Swap(WorldObject old, string to, int planetHash, SwapResult result, int[] panels = null, string color = null, string text = null, float turn = 0f, string linked = null, bool fillSame = false)
+        private static IEnumerator Swap(WorldObject old, string to, int planetHash, SwapResult result, int[] panels = null, string color = null, string text = null, float turn = 0f, string linked = null, bool fillSame = false, bool first = false)
         {
             var handler = WorldObjectsHandler.Instance;
             var from = old.GetGroup().GetId();
@@ -535,7 +539,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             if (oldInventory != null && oldInventory.GetInsideWorldObjects().Count > 0 && !from.StartsWith("OreExtractor", StringComparison.Ordinal))
             {
                 var content = oldInventory.GetInsideWorldObjects().Count;
-                var kind = fillSame ? MostCommon(oldInventory) : null;
+                var kind = !fillSame ? null : first ? oldInventory.GetInsideWorldObjects().Where(w => w != null && w.GetGroup() != null).Select(w => w.GetGroup()).FirstOrDefault() : MostCommon(oldInventory);
                 Inventory newInventory = null;
                 var until = Time.realtimeSinceStartup + WaitSeconds;
                 while (newInventory == null && Time.realtimeSinceStartup < until)
