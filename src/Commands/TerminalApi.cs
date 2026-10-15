@@ -41,6 +41,7 @@ namespace RRSOS.PCC.Commands
         internal sealed class ChatEntry
         {
             public string Name, Usage, Help;
+            public bool Hidden;   // an alias: known, not listed
             public Func<bool> Active;
         }
 
@@ -56,10 +57,10 @@ namespace RRSOS.PCC.Commands
                 return;
 
             var key = (name.StartsWith("/") ? name : "/" + name).Trim().ToLowerInvariant();
-            ChatCommands[key] = new ChatEntry { Name = key, Usage = string.IsNullOrWhiteSpace(usage) ? key : usage, Help = help ?? "", Active = active };
+            ChatCommands[key] = new ChatEntry { Name = key, Usage = string.IsNullOrEmpty(usage) ? key : usage, Help = help ?? "", Hidden = usage == "", Active = active };
         }
 
-        internal static List<ChatEntry> Chat() => ChatCommands.Values.Where(e => e.Active == null || e.Active()).OrderBy(e => e.Name).ToList();
+        internal static List<ChatEntry> Chat() => ChatCommands.Values.Where(e => !e.Hidden && (e.Active == null || e.Active())).OrderBy(e => e.Name).ToList();
 
         private const int RecentKept = 20;
         private static readonly List<string> Recent = new List<string>();
@@ -82,6 +83,8 @@ namespace RRSOS.PCC.Commands
         }
 
         internal static List<string> LatestNotices(int count) => Recent.Skip(System.Math.Max(0, Recent.Count - count)).ToList();
+
+        internal static ChatEntry FindChat(string key) => ChatCommands.TryGetValue(key, out var entry) ? entry : null;
 
         internal static Entry Find(string key) => Commands.TryGetValue(key, out var entry) ? entry : null;
 

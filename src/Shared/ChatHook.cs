@@ -25,9 +25,8 @@ namespace RRSOS.PCC.Shared
         /// <summary>Adds a command (for example "/build") and a line for /help. Call it before the component starts.</summary>
         public static void Add(string name, Action<string> handler, string help, string usage = null)
         {
-            // listed on the terminal's /help as a chat command; an empty usage leaves it off the list (an alias)
-            if (usage != "")
-                ForTerminal.Add(new string[] { name, usage ?? name, help });
+            // told to the terminal as a chat command: its /help lists it, and typing it there points the player to the chat; an empty usage keeps it off the list (an alias)
+            ForTerminal.Add(new string[] { name, usage ?? name, help });
 
             Commands[name] = Guarded(handler);
             _helpLine = (_helpLine.Length == 0 ? "" : _helpLine + ", ") + name + " (" + help + ")";

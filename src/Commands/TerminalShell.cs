@@ -34,6 +34,12 @@ namespace RRSOS.PCC.Commands
             }
 
             var command = TerminalApi.Find(key);
+            if (command == null && TerminalApi.FindChat(key) != null)
+            {
+                screen.Print(key + " is a chat command: type it in the game's chat, not here.");
+                return;
+            }
+
             if (command == null)
             {
                 screen.Print("Bad command or file name");
