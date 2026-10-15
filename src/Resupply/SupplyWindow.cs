@@ -185,6 +185,12 @@ namespace RRSOS.PCC.Resupply
             y += rowH;
             Row("Resupply", "Fill the empty slots of every crate with its item, at once.", m, y, buttonW, textX, textW, Lit, () => Do(ResupplyNow));
             y += rowH;
+            // Only while the T2 ore extractor is unlocked and the T3 is not: the T3 picks its ore itself, so the purge is not needed after that.
+            if (PurgeOffered())
+            {
+                Row("Purge Extractors", "Ore extractors on a vein keep only that vein's ore: everything else in them (iron, cobalt, ...) is deleted. Extractors on no vein are left alone.", m, y, buttonW, textX, textW, Lit, () => Do(PurgeNow));
+                y += rowH;
+            }
 
             var on = Plugin.AutoTopUp.Value;
             Row("Auto Top-Up: " + (on ? "ON" : "OFF"),
@@ -200,29 +206,53 @@ namespace RRSOS.PCC.Resupply
             _statusText = Label(_body, _status, m, h - 150f, w - 2 * m, 120f, 24f, _status.StartsWith("Could") || _status.StartsWith("The world") ? Warn : Dim, TextAlignmentOptions.TopLeft, true);
         }
 
-        private void Row(string label, string description, float x, float y, float buttonW, float textX, float textW, Color colour, Action onClick, bool alwaysEnabled = false, bool available = true)
+        private void Row(string label, string description, float x, float y, float buttonW, float textX, float textW, Color colour, Action onClick, bool alwaysEnabled = false, bool available = true, string lockedText = "Needs the drone station: it is not unlocked yet.")
         {
             Button(_body, label, x, y, buttonW, 64f, 28f, colour, available && (alwaysEnabled || !_busy), onClick);
-            Label(_body, available ? description : "Needs the drone station: it is not unlocked yet.", textX, y - 2f, textW, 80f, 20f, available ? Dim : Warn, TextAlignmentOptions.TopLeft, true);
+            Label(_body, available ? description : lockedText, textX, y - 2f, textW, 80f, 20f, available ? Dim : Warn, TextAlignmentOptions.TopLeft, true);
         }
 
         // The drone settings only make sense once the drone station is unlocked in the game (everything is, in a game with everything unlocked).
-        private static bool DronesUnlocked()
+        private static bool DronesUnlocked() => GroupUnlocked(Plugin.DroneStationGroup.Value);
+
+        // The purge is there from the moment the T2 ore extractor is unlocked until the T3 one is.
+        private static bool PurgeOffered() => GroupUnlocked(Plugin.PurgeRequiresGroup.Value) && !GroupReallyUnlocked(Plugin.PurgeUntilGroup.Value);
+
+        // Whether a building is unlocked in the game, with no benefit of the doubt: false when the group cannot be found or read.
+        private static bool GroupReallyUnlocked(string groupId)
         {
             try
             {
                 if (Managers.GetManager<GameSettingsHandler>().GetCurrentGameSettings().GetEverythingUnlocked())
                     return true;
 
-                var station = GroupsHandler.GetGroupViaId(Plugin.DroneStationGroup.Value);
-                if (station == null)
-                    return true;   // the game has no such group (it changed): do not lock the buttons for good
-
-                return station.GetUnlockingInfos().GetIsUnlocked(true) || station.GetIsGloballyUnlocked();
+                var group = GroupsHandler.GetGroupViaId(groupId);
+                return group != null && (group.GetUnlockingInfos().GetIsUnlocked(true) || group.GetIsGloballyUnlocked());
             }
             catch (Exception e)
             {
-                ModLog.LogOnce("supply-drones", "Supply Manager: could not tell whether the drone station is unlocked: " + e.GetType().Name + ": " + e.Message);
+                ModLog.LogOnce("supply-really-" + groupId, "Supply Manager: could not tell whether " + groupId + " is unlocked: " + e.GetType().Name + ": " + e.Message);
+                return false;
+            }
+        }
+
+        // Whether a building is unlocked in the game; true in a game with everything unlocked, and true when the group cannot be found or read, so a game update does not lock a button for good.
+        private static bool GroupUnlocked(string groupId)
+        {
+            try
+            {
+                if (Managers.GetManager<GameSettingsHandler>().GetCurrentGameSettings().GetEverythingUnlocked())
+                    return true;
+
+                var group = GroupsHandler.GetGroupViaId(groupId);
+                if (group == null)
+                    return true;
+
+                return group.GetUnlockingInfos().GetIsUnlocked(true) || group.GetIsGloballyUnlocked();
+            }
+            catch (Exception e)
+            {
+                ModLog.LogOnce("supply-unlocked-" + groupId, "Supply Manager: could not tell whether " + groupId + " is unlocked: " + e.GetType().Name + ": " + e.Message);
                 return true;
             }
         }
@@ -258,6 +288,12 @@ namespace RRSOS.PCC.Resupply
         {
             var result = DroneNetwork.SetSupply(planetHash);
             return "Set Drone Supply: " + result.Changed + " producers set, " + result.AlreadySet + " already set, " + result.NoItem + " making nothing yet.";
+        }
+
+        private static string PurgeNow(int planetHash)
+        {
+            var result = ExtractorPurge.Run(planetHash);
+            return "Purge Extractors: " + result.Items + " items removed from " + result.Purged + " extractors, " + result.Clean + " already clean, " + result.NoVein + " on no vein.";
         }
 
         private string ResupplyNow(int planetHash)
