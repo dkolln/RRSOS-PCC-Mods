@@ -8,7 +8,7 @@ using UnityEngine;
 namespace RRSOS.PCC.Boosters
 {
     /// <summary>
-    /// The chat command /booster teleport: every beacon named teleport or teleporter gets a teleporter on its other side (the way opposite to where the beacon points, as for every booster).
+    /// The chat command /teleport: every beacon named teleport or teleporter gets a teleporter on its other side (the way opposite to where the beacon points, as for every booster).
     /// A beacon standing on a foundation gets the connecting foundation first (the next one along, 6 m on), and the teleporter stands on that; a beacon on the ground gets the teleporter 3 m
     /// beyond it. Free, through the game's own placement; what already stands there is kept. The beacon is removed when the teleporter is built.
     /// </summary>
@@ -18,13 +18,6 @@ namespace RRSOS.PCC.Boosters
 
         internal static void OnCommand(string args)
         {
-            var word = (args ?? "").Trim().ToLowerInvariant();
-            if (word != "teleport" && word != "teleporter")
-            {
-                TerminalRegistration.Notice("Usage: /booster teleport (builds a teleporter at each beacon named teleport).");
-                return;
-            }
-
             try
             {
                 if (!WorldState.Ready(out var planetHash, out _) || GroupsHandler.GetGroupViaId("Teleporter1") == null)
@@ -46,7 +39,7 @@ namespace RRSOS.PCC.Boosters
             }
             catch (Exception e)
             {
-                ModLog.Note("/booster teleport: " + e.GetType().Name + ": " + e.Message);
+                ModLog.Note("/teleport: " + e.GetType().Name + ": " + e.Message);
                 TerminalRegistration.Notice("The teleporter could not be built; see the Boosters log.");
             }
         }
@@ -91,10 +84,10 @@ namespace RRSOS.PCC.Boosters
             }
             catch (Exception e)
             {
-                ModLog.Note("/booster teleport: could not remove the beacon: " + e.Message);
+                ModLog.Note("/teleport: could not remove the beacon: " + e.Message);
             }
 
-            ModLog.Note("/booster teleport: built " + placed + "teleporter \"" + name + "\" at " + spot + (under != null ? " (beacon on a foundation)" : " (beacon on the ground)") + ".");
+            ModLog.Note("/teleport: built " + placed + "teleporter \"" + name + "\" at " + spot + (under != null ? " (beacon on a foundation)" : " (beacon on the ground)") + ".");
             TerminalRegistration.Notice("Built " + placed + "teleporter \"" + name + "\".");
         }
     }

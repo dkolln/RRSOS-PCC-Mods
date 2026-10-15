@@ -168,7 +168,7 @@ namespace RRSOS.PCC.Resupply
 
         // ---- /resupply add ---------------------------------------------------------------------------------------------------------
 
-        /// <summary>/resupply add &lt;item id&gt; &lt;name&gt;: gives an item one more name for crate labels, saved in aliases.txt and used straight away.</summary>
+        /// <summary>/resupply on its own fills every crate. (/resupply add and /resupply duplicate dna still work: they are /add and /duplicate now.)</summary>
         internal void OnResupplyCommand(string args)
         {
             var words = (args ?? "").Trim().Split(new[] { ' ', '	' }, 2, StringSplitOptions.RemoveEmptyEntries);
@@ -176,10 +176,38 @@ namespace RRSOS.PCC.Resupply
                 ResupplyAllNow();
             else if (string.Equals(words[0], "add", StringComparison.OrdinalIgnoreCase))
                 AddName(words.Length > 1 ? words[1] : "");
-            else if (string.Equals(words[0], "duplicate", StringComparison.OrdinalIgnoreCase) && words.Length > 1 && string.Equals(words[1].Trim(), "dna", StringComparison.OrdinalIgnoreCase))
-                StartCoroutine(DnaDuplicate.Run(ChatHook.Say));
+            else if (string.Equals(words[0], "duplicate", StringComparison.OrdinalIgnoreCase))
+                OnDuplicateCommand(words.Length > 1 ? words[1] : "");
             else
-                ChatHook.Say("Usage: /resupply (fill every crate), /resupply add <item id> <name>, for example /resupply add waterbottle1 water, or /resupply duplicate dna (a second copy of every DNA in the backpack)");
+                ChatHook.Say("Usage: /resupply (fill every crate). See also /add <item id> <name> and /duplicate <trait | dna | item>.");
+        }
+
+        /// <summary>/add &lt;item id&gt; &lt;name&gt;: another name for an item.</summary>
+        internal void OnAddCommand(string args) => AddName(args);
+
+        /// <summary>/duplicate trait | dna | &lt;item&gt;: a second copy of every such item in the backpack.</summary>
+        internal void OnDuplicateCommand(string args)
+        {
+            var what = (args ?? "").Trim();
+            if (what.Length == 0)
+            {
+                ChatHook.Say("Usage: /duplicate trait, /duplicate dna, or /duplicate <item> (a second copy of every one of them in the backpack).");
+                return;
+            }
+
+            var key = ItemLookup.Plain(what);
+            if (key == "trait" || key == "traits")
+                StartCoroutine(DnaDuplicate.Run(ChatHook.Say, id => id == "GeneticTrait", "trait"));
+            else if (key == "dna")
+                StartCoroutine(DnaDuplicate.Run(ChatHook.Say, id => id == "GeneticTrait" || id == "DNASequence", "DNA"));
+            else
+            {
+                var item = Resupplier.Instance == null ? null : Lookup.Resolve(what);
+                if (item == null)
+                    ChatHook.Say("No item is called \"" + what + "\".");
+                else
+                    StartCoroutine(DnaDuplicate.Run(ChatHook.Say, id => id == item.GetId(), Readable.GetGroupName(item)));
+            }
         }
 
         /// <summary>/resupply on its own: every crate with an item is filled, as the Supply Manager's Resupply button does. One line in the chat when done.</summary>
@@ -214,7 +242,7 @@ namespace RRSOS.PCC.Resupply
             var parts = (args ?? "").Trim().Split(new[] { ' ', '\t' }, 2, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 2)
             {
-                say("Usage: /resupply add <item id> <name>, for example /resupply add waterbottle1 water");
+                say("Usage: /add <item id> <name>, for example /add waterbottle1 water");
                 return;
             }
 

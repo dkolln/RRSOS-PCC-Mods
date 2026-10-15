@@ -31,7 +31,7 @@ namespace RRSOS.PCC.Boosters
             BoosterKinds.BindFillSettings(Config);
 
             ChatHook.Enabled = () => Enabled.Value;
-            ChatHook.Add("/booster", TeleportBeacon.OnCommand, "teleport: build a teleporter at a beacon named teleport");
+            ChatHook.Add("/teleport", TeleportBeacon.OnCommand, "build a teleporter at each beacon named teleport");
             gameObject.AddComponent<ChatHook>();
 
             gameObject.AddComponent<BoosterItem>();
