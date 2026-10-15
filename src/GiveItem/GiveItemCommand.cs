@@ -47,9 +47,25 @@ namespace RRSOS.PCC.GiveItem
                     return;
                 }
 
+                // /giveitem traits [count]: random colour A and colour B genetic traits
+                if (parts.Length > 0 && string.Equals(parts[0], "traits", StringComparison.OrdinalIgnoreCase))
+                {
+                    var wanted = 20;
+                    if (parts.Length > 1 && !int.TryParse(parts[1], out wanted))
+                        wanted = 0;
+                    if (wanted < 1 || wanted > Plugin.MaxQuantity.Value)
+                    {
+                        print("Usage: /giveitem traits [count], 1 to " + Plugin.MaxQuantity.Value + " (20 when left out).");
+                        return;
+                    }
+
+                    StartCoroutine(GiveTraits(wanted, print));
+                    return;
+                }
+
                 if (parts.Length == 0)
                 {
-                    print("Usage: /giveitem <item> [quantity], for example /giveitem Iron 20. Another name for an item: /giveitem add <item id> <name>");
+                    print("Usage: /giveitem <item> [quantity], for example /giveitem Iron 20 (or /giveitem traits for 20 random colour traits). Another name for an item: /giveitem add <item id> <name>");
                     return;
                 }
 
@@ -124,6 +140,61 @@ namespace RRSOS.PCC.GiveItem
             _lookup.AddExplicit(name, item);
             ModLog.Append(ModLog.FileIn("aliases.txt"), item.GetId() + " = " + name);
             say("Name: " + name + " added.");
+        }
+
+        /// <summary>Random colour A and colour B genetic traits, made the way the game makes a looted one and put in the backpack.</summary>
+        private IEnumerator GiveTraits(int count, Action<string> print)
+        {
+            _busy = true;
+            var given = 0;
+            var a = 0;
+            try
+            {
+                var handler = GeneticTraitHandler.Instance;
+                var pool = handler == null || handler.GetAllAvailableTraits() == null ? new System.Collections.Generic.List<GeneticTraitData>()
+                    : handler.GetAllAvailableTraits().Where(t => t != null && (t.GetGeneticTraitType() == DataConfig.GeneticTraitType.ColorA || t.GetGeneticTraitType() == DataConfig.GeneticTraitType.ColorB)).ToList();
+                if (pool.Count == 0)
+                {
+                    print("The game has no colour traits to give yet.");
+                    yield break;
+                }
+
+                var backpack = Managers.GetManager<PlayersManager>().GetActivePlayerController().GetPlayerBackpack().GetInventory();
+                var room = Mathf.Max(backpack.GetSize() - backpack.GetInsideWorldObjects().Count, 0);
+                for (var i = 0; i < Mathf.Min(count, room); i++)
+                {
+                    var data = pool[UnityEngine.Random.Range(0, pool.Count)];
+                    var trait = handler.CreateNewTraitWorldObject(data, true);
+                    var done = false;
+                    var ok = false;
+                    InventoriesHandler.Instance.AddItemToInventory(trait, backpack.GetId(), true, success =>
+                    {
+                        ok = success;
+                        done = true;
+                    });
+
+                    var until = Time.realtimeSinceStartup + WaitForItemSeconds;
+                    while (!done && Time.realtimeSinceStartup < until)
+                        yield return null;
+
+                    if (!ok)
+                    {
+                        WorldObjectsHandler.Instance.DestroyWorldObject(trait);
+                        break;
+                    }
+
+                    given++;
+                    if (data.GetGeneticTraitType() == DataConfig.GeneticTraitType.ColorA)
+                        a++;
+                }
+            }
+            finally
+            {
+                _busy = false;
+            }
+
+            ModLog.Note("/giveitem traits x" + count + ": gave " + given + " (" + a + " colour A, " + (given - a) + " colour B).");
+            print(given == count ? "Gave " + given + " random colour traits (" + a + " colour A, " + (given - a) + " colour B)." : "Backpack full: gave " + given + " of " + count + " colour traits.");
         }
 
         private IEnumerator Give(GroupItem item, int quantity, Action<string> print)
