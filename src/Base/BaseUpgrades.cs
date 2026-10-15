@@ -473,14 +473,15 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             }
         }
 
-        /// <summary>For chains with fill=same: a building of the last step that is part full of one kind of item is filled up with it (the T2 optimizers upgraded before this existed hold one fuse in three slots).</summary>
+        /// <summary>For chains with fill=same: a building of the last step that is part full of one kind of item is filled up with it (with fill=first: every building after the first step, filled with the first kind it holds) (the T2 optimizers upgraded before this existed hold one fuse in three slots).</summary>
         private IEnumerator TopUpPartial(int planetHash)
         {
-            foreach (var chain in _chains.Where(c => c.FillSame).ToList())
+            foreach (var chain in _chains.Where(c => c.FillSame || c.FillFirst).ToList())
             {
-                var last = chain.Steps[chain.Steps.Length - 1];
+                // fill=same: the last step, when it holds one kind. fill=first: every step after the first (the T2 and T3 farms), with the first kind held.
+                var steps = chain.FillFirst ? chain.Steps.Skip(1).ToList() : new List<string> { chain.Steps[chain.Steps.Length - 1] };
                 foreach (var wo in WorldObjectsHandler.Instance.GetAllWorldObjects().Values
-                    .Where(w => w != null && w.GetGroup() != null && w.GetGroup().GetId() == last && w.GetPlanetHash() == planetHash && w.GetPosition().sqrMagnitude > 0f && w.GetLinkedInventoryId() != 0).ToList())
+                    .Where(w => w != null && w.GetGroup() != null && steps.Contains(w.GetGroup().GetId()) && w.GetPlanetHash() == planetHash && w.GetPosition().sqrMagnitude > 0f && w.GetLinkedInventoryId() != 0).ToList())
                 {
                     var inventory = InventoriesHandler.Instance.GetInventoryById(wo.GetLinkedInventoryId());
                     if (inventory == null)
@@ -491,12 +492,12 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                         continue;
 
                     var kinds = held.Where(w => w != null && w.GetGroup() != null).Select(w => w.GetGroup()).Distinct().ToList();
-                    if (kinds.Count != 1)
+                    if (kinds.Count == 0 || (kinds.Count != 1 && !chain.FillFirst))
                         continue;
 
                     var before = held.Count;
                     yield return FillRest(inventory, kinds[0]);
-                    ModLog.Note("Upgrades: topped up " + last + " #" + wo.GetId() + " with " + kinds[0].GetId() + " (" + before + " of " + inventory.GetSize() + " slots were full).");
+                    ModLog.Note("Upgrades: topped up " + wo.GetGroup().GetId() + " #" + wo.GetId() + " with " + kinds[0].GetId() + " (" + before + " of " + inventory.GetSize() + " slots were full).");
                 }
             }
         }
