@@ -8,6 +8,7 @@ namespace RRSOS.PCC.Boosters
     /// A Boosters screen to place in the world, which builds a booster (machines and their optimizers) at a beacon. A live-write mod, so it does nothing until <c>Enabled</c> is true in its config file.
     /// </summary>
     [BepInPlugin(Guid, Name, Version)]
+    [BepInDependency(TerminalRegistration.TerminalGuid, BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "com.rrsos.pcc.boosters";
@@ -28,6 +29,10 @@ namespace RRSOS.PCC.Boosters
             ExcludeBeacons = Config.Bind("General", "ExcludeBeacons", "Base", "Beacon names that are never offered on the Boosters screen, separated by commas (capitals and spaces around a name do not matter; the whole name must match).");
 
             BoosterKinds.BindFillSettings(Config);
+
+            ChatHook.Enabled = () => Enabled.Value;
+            ChatHook.Add("/booster", TeleportBeacon.OnCommand, "teleport: build a teleporter at a beacon named teleport");
+            gameObject.AddComponent<ChatHook>();
 
             gameObject.AddComponent<BoosterItem>();
             gameObject.AddComponent<BoosterWindow>();
