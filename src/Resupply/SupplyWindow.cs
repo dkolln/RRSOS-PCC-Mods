@@ -185,9 +185,12 @@ namespace RRSOS.PCC.Resupply
             y += rowH;
             Row("Resupply", "Fill the empty slots of every crate with its item, at once.", m, y, buttonW, textX, textW, Lit, () => Do(ResupplyNow));
             y += rowH;
-            Row("Purge Extractors", "Ore extractors on a vein keep only that vein's ore: everything else in them (iron, cobalt, ...) is deleted. Extractors on no vein are left alone.", m, y, buttonW, textX, textW, Lit, () => Do(PurgeNow), false,
-                GroupUnlocked(Plugin.PurgeRequiresGroup.Value), "Needs the T2 ore extractor: it is not unlocked yet.");
-            y += rowH;
+            // Only while the T2 ore extractor is unlocked and the T3 is not: the T3 picks its ore itself, so the purge is not needed after that.
+            if (PurgeOffered())
+            {
+                Row("Purge Extractors", "Ore extractors on a vein keep only that vein's ore: everything else in them (iron, cobalt, ...) is deleted. Extractors on no vein are left alone.", m, y, buttonW, textX, textW, Lit, () => Do(PurgeNow));
+                y += rowH;
+            }
 
             var on = Plugin.AutoTopUp.Value;
             Row("Auto Top-Up: " + (on ? "ON" : "OFF"),
@@ -211,6 +214,27 @@ namespace RRSOS.PCC.Resupply
 
         // The drone settings only make sense once the drone station is unlocked in the game (everything is, in a game with everything unlocked).
         private static bool DronesUnlocked() => GroupUnlocked(Plugin.DroneStationGroup.Value);
+
+        // The purge is there from the moment the T2 ore extractor is unlocked until the T3 one is.
+        private static bool PurgeOffered() => GroupUnlocked(Plugin.PurgeRequiresGroup.Value) && !GroupReallyUnlocked(Plugin.PurgeUntilGroup.Value);
+
+        // Whether a building is unlocked in the game, with no benefit of the doubt: false when the group cannot be found or read.
+        private static bool GroupReallyUnlocked(string groupId)
+        {
+            try
+            {
+                if (Managers.GetManager<GameSettingsHandler>().GetCurrentGameSettings().GetEverythingUnlocked())
+                    return true;
+
+                var group = GroupsHandler.GetGroupViaId(groupId);
+                return group != null && (group.GetUnlockingInfos().GetIsUnlocked(true) || group.GetIsGloballyUnlocked());
+            }
+            catch (Exception e)
+            {
+                ModLog.LogOnce("supply-really-" + groupId, "Supply Manager: could not tell whether " + groupId + " is unlocked: " + e.GetType().Name + ": " + e.Message);
+                return false;
+            }
+        }
 
         // Whether a building is unlocked in the game; true in a game with everything unlocked, and true when the group cannot be found or read, so a game update does not lock a button for good.
         private static bool GroupUnlocked(string groupId)
