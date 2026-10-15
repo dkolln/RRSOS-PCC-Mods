@@ -24,6 +24,9 @@ namespace RRSOS.PCC.Base
         private static readonly Vector3 StairAt = new Vector3(5.928f, -1.5345f, -5.641f);
         private const float FoundationTop = 2.519f, ExtractorYaw = 180f, Near = 14f;
 
+        // The ores that are generic (the game hands them to any extractor, a sulfur one included once it is a T3): they get no teleporter, only the special ores do.
+        private static readonly HashSet<string> Generic = new HashSet<string> { "Iron", "Silicon", "Titanium", "Cobalt", "Magnesium", "Sulfur" };
+
         private static readonly Regex Extractor = new Regex(@"^OreExtractor\d*$", RegexOptions.Compiled);
 
         private readonly HashSet<string> _done = new HashSet<string>();
@@ -59,7 +62,7 @@ namespace RRSOS.PCC.Base
 
                     work = WorldObjectsHandler.Instance.GetAllWorldObjects().Values
                         .Where(w => w != null && w.GetGroup() != null && Extractor.IsMatch(w.GetGroup().GetId()) && w.GetPlanetHash() == planetHash && w.GetPosition().sqrMagnitude > 0f
-                            && w.HasLinkedGroups() && w.GetLinkedGroups().Any(g => g != null) && !_done.Contains(Mark(w)))
+                            && w.HasLinkedGroups() && w.GetLinkedGroups().Any(g => g != null && !Generic.Contains(g.GetId())) && !_done.Contains(Mark(w)))
                         .ToList();
                 }
                 catch (Exception e)
@@ -90,7 +93,7 @@ namespace RRSOS.PCC.Base
 
         private IEnumerator Build(WorldObject extractor, int planetHash)
         {
-            var ore = extractor.GetLinkedGroups().Where(g => g != null).Select(g => g.GetId()).First();
+            var ore = extractor.GetLinkedGroups().Where(g => g != null && !Generic.Contains(g.GetId())).Select(g => g.GetId()).First();
             var name = Readable.GetGroupName(GroupsHandler.GetGroupViaId(ore));
             var at = extractor.GetPosition();
             var turn = Quaternion.Euler(0f, extractor.GetRotation().eulerAngles.y - ExtractorYaw, 0f);

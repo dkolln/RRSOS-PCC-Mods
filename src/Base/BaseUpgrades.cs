@@ -531,7 +531,8 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             // What is stored inside (the seeds of a vegetube) moves to the new building's own inventory.
             var inventories = InventoriesHandler.Instance;
             var oldInventory = old.GetLinkedInventoryId() > 0 ? inventories.GetInventoryById(old.GetLinkedInventoryId()) : null;
-            if (oldInventory != null && oldInventory.GetInsideWorldObjects().Count > 0)
+            // An ore extractor's contents are not moved: a T3 holds less than a T2, and mined ore is dumped with the old extractor.
+            if (oldInventory != null && oldInventory.GetInsideWorldObjects().Count > 0 && !from.StartsWith("OreExtractor", StringComparison.Ordinal))
             {
                 var content = oldInventory.GetInsideWorldObjects().Count;
                 var kind = fillSame ? MostCommon(oldInventory) : null;
