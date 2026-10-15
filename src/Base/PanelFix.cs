@@ -22,8 +22,11 @@ namespace RRSOS.PCC.Base
             try
             {
                 var harmony = new Harmony("com.rrsos.pcc.base.panelfix");
-                foreach (var name in new[] { "OnHover", "OnHoverOut" })
-                    harmony.Patch(AccessTools.Method(typeof(ActionPanelDeconstruct), name), finalizer: new HarmonyMethod(typeof(PanelFix), nameof(Swallow)));
+                // Also the hover of anything that opens (a crate): when its text proxy is missing the hover throws, which stops the game's aiming coroutine for good, so every look afterwards
+                // keeps the last thing aimed at (always the bottom crate of a stack, wherever the player looks).
+                foreach (var type in new[] { typeof(ActionPanelDeconstruct), typeof(ActionOpenable) })
+                    foreach (var name in new[] { "OnHover", "OnHoverOut" })
+                        harmony.Patch(AccessTools.Method(type, name), finalizer: new HarmonyMethod(typeof(PanelFix), nameof(Swallow)));
             }
             catch (Exception e)
             {
@@ -31,7 +34,7 @@ namespace RRSOS.PCC.Base
             }
         }
 
-        private static Exception Swallow(Exception __exception, ActionPanelDeconstruct __instance)
+        private static Exception Swallow(Exception __exception, MonoBehaviour __instance)
         {
             if (__exception == null)
                 return null;
@@ -41,8 +44,8 @@ namespace RRSOS.PCC.Base
                 var path = "";
                 for (var t = __instance == null ? null : __instance.transform; t != null; t = t.parent)
                     path = "/" + t.name + path;
-                var panel = PanelField == null || __instance == null ? null : PanelField.GetValue(__instance);
-                ModLog.LogOnce("panel-hover", "Panel hover: " + __exception.GetType().Name + " at " + path + " (panel: " + (panel == null ? "missing" : "present")
+                var panel = PanelField == null || !(__instance is ActionPanelDeconstruct) ? null : PanelField.GetValue(__instance);
+                ModLog.LogOnce("hover-" + (__instance == null ? "" : __instance.GetType().Name), "Hover of " + (__instance == null ? "?" : __instance.GetType().Name) + ": " + __exception.GetType().Name + " at " + path + " (panel: " + (panel == null ? "missing" : "present")
                     + ", GamepadConfig: " + (GamepadConfig.Instance == null ? "missing" : "present") + "): " + __exception.Message + " " + __exception.StackTrace);
             }
             catch
