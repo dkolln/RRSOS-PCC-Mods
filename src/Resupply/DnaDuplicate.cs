@@ -8,14 +8,14 @@ using UnityEngine;
 namespace RRSOS.PCC.Resupply
 {
     /// <summary>
-    /// /resupply duplicate dna: every DNA item in the backpack (a genetic trait, with its kind, colour and value, or a DNA sequence) gets a second copy in the backpack. Only what fits is
+    /// /duplicate trait, /duplicate dna or /duplicate &lt;item&gt;: every such item in the backpack (a genetic trait keeps its kind, colour and value) gets a second copy in the backpack. Only what fits is
     /// duplicated; the copies are made through the game's own calls, the way the game makes a trait.
     /// </summary>
     internal static class DnaDuplicate
     {
         private const float WaitSeconds = 3f;
 
-        public static IEnumerator Run(Action<string> say)
+        public static IEnumerator Run(Action<string> say, Func<string, bool> matches, string label)
         {
             var made = 0;
             var wanted = 0;
@@ -37,11 +37,11 @@ namespace RRSOS.PCC.Resupply
             }
 
             // a snapshot: the copies added below are not copied again
-            var originals = backpack.GetInsideWorldObjects().Where(w => w != null && w.GetGroup() != null && IsDna(w.GetGroup().GetId())).ToList();
+            var originals = backpack.GetInsideWorldObjects().Where(w => w != null && w.GetGroup() != null && matches(w.GetGroup().GetId())).ToList();
             wanted = originals.Count;
             if (wanted == 0)
             {
-                say("There is no DNA in the backpack.");
+                say("There is no " + label + " in the backpack.");
                 yield break;
             }
 
@@ -99,10 +99,9 @@ namespace RRSOS.PCC.Resupply
                 made++;
             }
 
-            ModLog.Note("Duplicate DNA: " + made + " of " + wanted + " copied.");
-            say(failed ? "That did not work; see the mod's log." : made == wanted ? "Copied " + made + " DNA." : "Backpack full: copied " + made + " of " + wanted + " DNA.");
+            ModLog.Note("Duplicate " + label + ": " + made + " of " + wanted + " copied.");
+            say(failed ? "That did not work; see the mod's log." : made == wanted ? "Copied " + made + " x " + label + "." : "Backpack full: copied " + made + " of " + wanted + " x " + label + ".");
         }
 
-        private static bool IsDna(string groupId) => groupId == "GeneticTrait" || groupId == "DNASequence";
     }
 }
