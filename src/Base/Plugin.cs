@@ -20,7 +20,7 @@ namespace RRSOS.PCC.Base
         internal static ConfigEntry<bool> UndoLastBuild;
         internal static ConfigEntry<bool> AutoUpgrade;
         internal static ConfigEntry<bool> NuclearToFusion, SolarToNuclear;
-        internal static ConfigEntry<bool> PowerButtons;
+        internal static ConfigEntry<bool> PowerButtons, ExtractorTeleporters;
         internal static ConfigEntry<float> PowerButtonsX, PowerButtonsY;
 
         /// <summary>Whether a chain's gate is open: the switch in the config that a chain names with gate=Name. An unknown name is open.</summary>
@@ -43,6 +43,7 @@ namespace RRSOS.PCC.Base
 
             NuclearToFusion = Config.Bind("Upgrades", "NuclearToFusion", true, "Also swap the T2 Nuclear Reactor for the Fusion Generator once that is unlocked (the last step of the nuclear chain in upgrades.txt, which says gate=NuclearToFusion). When false, reactors stop at T2.");
             SolarToNuclear = Config.Bind("Upgrades", "SolarToNuclear", false, "Also swap the T2 Solar Panel for the T1 Nuclear Reactor once that is unlocked (the step the energy chain in upgrades.txt marks gate=EnergyGenerator4:SolarToNuclear). When false, solar panels stop at T2 and reactors upgrade among themselves.");
+            ExtractorTeleporters = Config.Bind("Extractors", "Teleporters", false, "Once the Teleporter is unlocked, give each ore extractor on a vein a foundation, a stair and a teleporter named for its ore, laid out like the iridium extractor in the owner's save. Free; an extractor is done once.");
             PowerButtons = Config.Bind("Power", "Buttons", true, "Show [ ON ] and [ OFF ] buttons on the game's Energy window: they switch the base's energy output on or off. This is the only way to do it; nothing is reported in the chat or on the terminal.");
             PowerButtonsX = Config.Bind("Power", "ButtonsX", 0f, "Sideways offset of the buttons on the Energy window (UI units from the bottom centre).");
             PowerButtonsY = Config.Bind("Power", "ButtonsY", 40f, "Height of the buttons above the bottom edge of the Energy window (UI units).");
@@ -61,6 +62,7 @@ namespace RRSOS.PCC.Base
 
             gameObject.AddComponent<BaseBuilder>();
             gameObject.AddComponent<BaseUpgrades>();
+            gameObject.AddComponent<ExtractorTeleporter>();
             PanelFix.Apply();
             gameObject.AddComponent<BasePower>();
             gameObject.AddComponent<PowerButtons>();
