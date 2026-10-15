@@ -307,7 +307,7 @@ namespace RRSOS.PCC.Boosters
             if (_kind != null && _kind.Fill != null)
             {
                 var fill = new List<Option> { new Option { Key = "", Label = "No Fill", Selected = string.IsNullOrEmpty(_fill) } };
-                fill.AddRange(_kind.Fill.Where(c => _kind.FillAnywhere || BoosterKinds.AvailableHere(c.GId)).Select(c => new Option { Key = c.GId, Label = c.Label, Selected = c.GId == _fill }));
+                fill.AddRange(_kind.Fill.Where(c => BoosterKinds.Offered(_kind, c.GId)).Select(c => new Option { Key = c.GId, Label = c.Label, Selected = c.GId == _fill }));
                 yRight = Section(_kind.FillTitle, right, yRight, colW, 4, fill, key => _fill = key);
             }
 

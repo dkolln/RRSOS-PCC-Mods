@@ -135,6 +135,25 @@ namespace RRSOS.PCC.Boosters
                 }
             }
 
+            // a kind that floats (fish farms on water) stands its optimizers on a foundation under the beacon: placed first, its top at the beacon's height
+            if (kind.Foundation)
+            {
+                var under = new Vector3(at.x, at.y + PadDrop, at.z);
+                if (!all.Any(w => w.GetGroup().GetId() == "Foundation" && Mathf.Abs(w.GetPosition().x - under.x) < 0.5f && Mathf.Abs(w.GetPosition().z - under.z) < 0.5f && Mathf.Abs(w.GetPosition().y - under.y) < 1f))
+                {
+                    progress("Placing the foundation...");
+                    try
+                    {
+                        Placement.PlaceAt("Foundation", under, Quaternion.identity, planetHash);
+                        outcome.Foundations++;
+                    }
+                    catch (Exception e)
+                    {
+                        outcome.Problems.Add("Could not place the foundation: " + e.Message);
+                    }
+                }
+            }
+
             var total = toAdd.Count + fuses.Count + pad.Count;
             var done = 0;
 
