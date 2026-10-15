@@ -105,7 +105,7 @@ namespace RRSOS.PCC.Boosters
         }
 
         // The ids are the game's, not the tiers' numbering: the T5 drill is Drill4, the T1 tree spreader is TreeSpreader0. Tiers run lowest first.
-        // The grass spreader takes oxygen and plants fuses (the owner's choice); the flower spreader's fuse and both spacings are a guess from the tree spreader (change them on the screen), and the game has no
+        // The grass spreader takes oxygen and plants fuses (the owner's choice); the flower spreader takes the same two fuses (oxygen and plants), and both spacings are a guess from the tree spreader (change them on the screen), and the game has no
         // grass spreader above the first tier yet; a later one is one more entry in Machines (and a chain in the Base mod's upgrades.txt).
         public static readonly Kind[] All =
         {
@@ -152,7 +152,7 @@ namespace RRSOS.PCC.Boosters
 
             new Kind { Key = "Flowers", Name = "Flower", Aliases = new[] { "flower", "bloom" },
                 Machines = Machines("SeedSpreader1", "Flower Spreader T1", "SeedSpreader2", "Flower Spreader T2"),
-                DefaultFuses = new[] { "FusePlants1" }, Ring = true, Spacing = 7.3, Fill = FlowerSeeds, FillDefault = "SeedGold", Grown = true }
+                DefaultFuses = new[] { "FuseOxygen1", "FusePlants1" }, Ring = true, Spacing = 7.3, Fill = FlowerSeeds, FillDefault = "SeedGold", Grown = true }
         };
 
         private const string NoFill = "No Fill";
