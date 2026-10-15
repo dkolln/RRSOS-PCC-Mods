@@ -36,14 +36,11 @@ namespace RRSOS.PCC.Base
 # (T2 Solar to Nuclear only while SolarToNuclear is true in the Base config, which is off to begin with; T2 Nuclear to Fusion only while NuclearToFusion is true)
 EnergyGenerator1 > EnergyGenerator2 > EnergyGenerator3 > EnergyGenerator4 > EnergyGenerator5 > EnergyGenerator6 ; gate=EnergyGenerator4:SolarToNuclear ; gate=EnergyGenerator6:NuclearToFusion
 
-# Heater T1 > T2 > T3
-Heater1 > Heater2 > Heater3
+# Heater T1 > T2 > T3 > T4 > T5
+Heater1 > Heater2 > Heater3 > Heater4 > Heater5
 
 # Ore Extractor T1 > T2 > T3 (on a vein it keeps that vein's ore; off a vein the T3 takes the ore that is least mined)
 OreExtractor1 > OreExtractor2 > OreExtractor3 ; ore=Iron,Silicon,Titanium,Cobalt,Sulfur,Magnesium
-
-# Heater T4 > T5
-Heater4 > Heater5
 
 # Vegetube T1 > T2 (the seeds go with it)
 Vegetube1 > Vegetube2
