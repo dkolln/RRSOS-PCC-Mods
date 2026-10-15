@@ -17,7 +17,7 @@ namespace RRSOS.PCC.Resupply
         public const string Version = "0.2.0";
 
         internal static ConfigEntry<bool> Enabled;
-        internal static ConfigEntry<string> Groups, DroneStationGroup;
+        internal static ConfigEntry<string> Groups, DroneStationGroup, PurgeRequiresGroup;
         internal static ConfigEntry<float> NudgeX, NudgeY;
         internal static ConfigEntry<bool> AutoTopUp, FillOnRename;
         internal static ConfigEntry<int> TopUpBelowPercent;
@@ -29,6 +29,7 @@ namespace RRSOS.PCC.Resupply
             Enabled = Config.Bind("General", "Enabled", false, "Show the resupply icon on crate windows and the Supply Manager screen in the build menu. Writes into the running game.");
             Groups = Config.Bind("General", "Groups", "Container1,Container2,Container3", "The crates that get the resupply icon (and that Resupply and the auto top-up fill).");
             DroneStationGroup = Config.Bind("General", "DroneStationGroup", "DroneStation1", "The game's id for the drone station. Set Drone Demand and Set Drone Supply on the Supply Manager screen can be used once it is unlocked.");
+            PurgeRequiresGroup = Config.Bind("General", "PurgeRequiresGroup", "OreExtractor2", "The building that has to be unlocked before Purge Extractors on the Supply Manager screen can be used (the T2 ore extractor).");
             NudgeX = Config.Bind("Placement", "NudgeX", 0f, "Fine adjustment of the icon, sideways from its default spot (UI units, positive is right).");
             NudgeY = Config.Bind("Placement", "NudgeY", 0f, "Fine adjustment of the icon, up from its default spot (UI units, positive is up).");
 
