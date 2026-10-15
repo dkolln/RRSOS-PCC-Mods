@@ -33,6 +33,10 @@ namespace RRSOS.PCC.Boosters
         public Choice[] Machines;
         public string[] DefaultFuses;
         public bool Ring;
+        public bool Sides;                // two machines on each side of the beacon, turned toward it (drone stations); Number machines in all
+        public int Number = BoosterKinds.Count;
+        public string FillTitle = "Machine Fill";   // what the fill list is called on the screen
+        public bool FillAnywhere;                   // every choice is offered, whatever is unlocked or tied to a planet (drones)
         public double Spacing;
         public Choice[] Fill;             // what each machine's inventory can be filled with; null when the build leaves it empty
         public string FillDefault = "";   // the id chosen to begin with; "" leaves the machines empty
@@ -75,6 +79,11 @@ namespace RRSOS.PCC.Boosters
             new Choice("Seed1", "Shanga"), new Choice("Seed2", "Pestera"), new Choice("Seed3", "Nulna"), new Choice("Seed4", "Tuska"),
             new Choice("Seed5", "Orema"), new Choice("Seed6", "Volnus"), new Choice("Seed8Humble", "Brelea"), new Choice("Seed7Humble", "Snepea"),
             new Choice("Seed10Humble", "Furteo"), new Choice("Seed9Humble", "Seleus"), new Choice("SeedGold", "Golden")
+        };
+
+        private static readonly Choice[] Drones =
+        {
+            new Choice("Drone1", "Drone T1"), new Choice("Drone2", "Drone T2"), new Choice("Drone3", "Drone T3")
         };
 
         private static readonly Choice[] FrogEggs =
@@ -150,6 +159,11 @@ namespace RRSOS.PCC.Boosters
                 Machines = Machines("VegetubeOutside1", "T3 Vegetube"),
                 DefaultFuses = new[] { "FuseOxygen1" }, Ring = true, Spacing = 3.3, Fill = FlowerSeeds, FillDefault = "SeedGold" },
 
+            // Four drone stations, two on each side of the beacon and facing it; each filled with T3 drones.
+            new Kind { Key = "Drone", Name = "Drone", Aliases = new[] { "drone", "station" },
+                Machines = Machines("DroneStation1", "Drone Station"),
+                DefaultFuses = new string[0], Sides = true, Number = 4, Fill = Drones, FillDefault = "Drone3", FillTitle = "Drone Type", FillAnywhere = true },
+
             new Kind { Key = "Flowers", Name = "Flower", Aliases = new[] { "flower", "bloom" },
                 Machines = Machines("SeedSpreader1", "Flower Spreader T1", "SeedSpreader2", "Flower Spreader T2"),
                 DefaultFuses = new[] { "FuseOxygen1", "FusePlants1" }, Ring = true, Spacing = 7.3, Fill = FlowerSeeds, FillDefault = "SeedGold", Grown = true }
@@ -180,7 +194,7 @@ namespace RRSOS.PCC.Boosters
                 id = chosen == null ? "" : chosen.GId;
             }
 
-            return id.Length > 0 && !AvailableHere(id) ? "" : id;
+            return id.Length > 0 && !kind.FillAnywhere && !AvailableHere(id) ? "" : id;
         }
 
         private static readonly System.Reflection.FieldInfo PlanetUsage = typeof(UnlockingInfos).GetField("_planetUsageType", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);

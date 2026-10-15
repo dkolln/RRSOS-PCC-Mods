@@ -235,7 +235,7 @@ namespace RRSOS.PCC.Boosters
             });
 
             _status = outcome.Ok
-                ? "Built: " + outcome.Machines + " machines" + (outcome.Found > 0 ? " (" + outcome.Found + " were already there)" : "") + ", " + outcome.Optimizers + " optimizers. The beacon is gone."
+                ? "Built: " + (outcome.Foundations > 0 ? outcome.Foundations + " foundations, " : "") + outcome.Machines + " machines" + (outcome.Found > 0 ? " (" + outcome.Found + " were already there)" : "") + ", " + outcome.Optimizers + " optimizers. The beacon is gone."
                 : "Problem: " + string.Join(" ", outcome.Problems.ToArray());
             _building = false;
             RefreshBeacons();
@@ -295,17 +295,20 @@ namespace RRSOS.PCC.Boosters
                 yLeft = Section("Machine Tier", left, yLeft, colW, 5, _kind.Machines.Select((c, i) => new Option { Key = c.GId, Label = "T" + (i + 1), Enabled = Allowed(c.GId), Selected = c.GId == _machine }).ToList(), key => _machine = key);
 
             // right: the optimizer, its fuses, what fills the machines
-            var optimizers = new List<Option> { new Option { Key = "", Label = "None", Selected = _optimizer == null } };
-            optimizers.AddRange(BoosterKinds.Optimizers.Select(c => new Option { Key = c.GId, Label = c.Label, Enabled = Allowed(c.GId), Selected = c.GId == _optimizer }));
-            yRight = Section("Optimizers", right, yRight, colW, 3, optimizers, key => _optimizer = key.Length == 0 ? null : key);
+            if (_kind == null || _kind.DefaultFuses.Length > 0)
+            {
+                var optimizers = new List<Option> { new Option { Key = "", Label = "None", Selected = _optimizer == null } };
+                optimizers.AddRange(BoosterKinds.Optimizers.Select(c => new Option { Key = c.GId, Label = c.Label, Enabled = Allowed(c.GId), Selected = c.GId == _optimizer }));
+                yRight = Section("Optimizers", right, yRight, colW, 3, optimizers, key => _optimizer = key.Length == 0 ? null : key);
 
-            yRight = CheckBox("Pre-Fill Optimizers", right, yRight, _prefill, _optimizer != null && _kind != null, () => _prefill = !_prefill);
+                yRight = CheckBox("Pre-Fill Optimizers", right, yRight, _prefill, _optimizer != null && _kind != null, () => _prefill = !_prefill);
+            }
 
             if (_kind != null && _kind.Fill != null)
             {
                 var fill = new List<Option> { new Option { Key = "", Label = "No Fill", Selected = string.IsNullOrEmpty(_fill) } };
-                fill.AddRange(_kind.Fill.Where(c => BoosterKinds.AvailableHere(c.GId)).Select(c => new Option { Key = c.GId, Label = c.Label, Selected = c.GId == _fill }));
-                yRight = Section("Machine Fill", right, yRight, colW, 4, fill, key => _fill = key);
+                fill.AddRange(_kind.Fill.Where(c => _kind.FillAnywhere || BoosterKinds.AvailableHere(c.GId)).Select(c => new Option { Key = c.GId, Label = c.Label, Selected = c.GId == _fill }));
+                yRight = Section(_kind.FillTitle, right, yRight, colW, 4, fill, key => _fill = key);
             }
 
             // the bottom: what will be built, and the button
@@ -334,8 +337,8 @@ namespace RRSOS.PCC.Boosters
 
             var machine = _kind.Machines.First(c => c.GId == _machine).Label;
             var where = "at \"" + (_beacon.GetText() ?? "") + "\"";
-            var layout = _kind.Ring ? "in a ring of " : "stacked, ";
-            var text = BoosterKinds.Count + " x " + machine + " " + layout.Replace("stacked, ", "stacked ").Replace("in a ring of ", "in a ring ") + where;
+            var layout = _kind.Sides ? "on a foundation pad by " : _kind.Ring ? "in a ring " : "stacked ";
+            var text = _kind.Number + " x " + machine + " " + layout + where;
             if (_optimizer != null)
             {
                 var fuses = BoosterKinds.Fuses.Where(f => _kind.DefaultFuses.Contains(f.GId)).Select(f => f.Label).ToArray();
