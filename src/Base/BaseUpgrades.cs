@@ -27,6 +27,7 @@ namespace RRSOS.PCC.Base
 # ; turn=90 turns every building made as the last step 90 degrees to the right (clockwise from above; negative turns left).
 # ; ore=Iron,Silicon,... is for ore extractors: a building keeps the ore it already extracts (the vein it stands on) through every step; one that has no ore yet gets, when it becomes
 # the last step, whichever ore of this list the world has the fewest of, so the extractors spread evenly over the list.
+# ; fill=same fills the new building's empty slots with what the old one held (the fuse of a T1 optimizer fills all three slots of the T2), and tops up one that is part full of a single kind.
 # ; gate=Step:Name cuts the chain in two at that step while the config switch of that name is off (the buildings before it do not swap into it or beyond; from it on is a chain of its own).
 # gate=Name alone means the last step. Switches: SolarToNuclear, NuclearToFusion (in the Base config).
 # Colours: green red blue yellow orange purple cyan white.
@@ -62,8 +63,8 @@ ButterflyFarm1 > ButterflyFarm2 > ButterflyFarm3
 # Beehive T1 > T2
 Beehive1 > Beehive2
 
-# Machine Optimizer T1 > T2 (the fuses go with it)
-Optimizer1 > Optimizer2
+# Machine Optimizer T1 > T2 (the fuse goes with it, and fills all of the T2's slots)
+Optimizer1 > Optimizer2 ; fill=same
 
 # Outdoor lamp > Beacon; when there is only one lamp (the base's) it becomes the beacon ""Base"" in green
 OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
@@ -82,6 +83,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             public string Color;     // the game's own colour text
             public int OnlyIf;       // 0 = always; N = only when exactly N buildings of the swapped kind stand in the world
             public Dictionary<string, string> Gates = new Dictionary<string, string>(); // step id -> config switch (gate=Step:Name) that must be on for the chain to run into that step
+            public bool FillSame;    // fill=same: the new building's empty slots are filled with what the old one held (an optimizer has 1 slot at T1 and 3 at T2)
             public string[] Ore;     // ore group ids to spread over (ore extractors); null = the chain does not deal with ore
             public float Turn;       // degrees to the right (clockwise seen from above) that the last step is turned when it is made
         }
@@ -197,6 +199,8 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                         else
                             ModLog.Note("upgrades.txt: gate=" + value + " in \"" + line + "\" ignored (" + step + " is not a step of the chain).");
                     }
+                    else if (name == "fill" && string.Equals(value, "same", StringComparison.OrdinalIgnoreCase))
+                        chain.FillSame = true;
                     else if (name == "ore")
                     {
                         var ores = value.Split(',').Select(o => o.Trim()).Where(o => o.Length > 0).ToArray();
@@ -281,6 +285,8 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
 
         private IEnumerator Run(string key, int planetHash)
         {
+            yield return TopUpPartial(planetHash);
+
             var targets = Targets();
             if (targets.Count == 0)
                 yield break;
@@ -364,7 +370,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
                 }
 
                 var result = new SwapResult();
-                yield return Swap(old, to, planetHash, result, null, color, label, turn, linked);
+                yield return Swap(old, to, planetHash, result, null, color, label, turn, linked, chain.FillSame);
                 if (result.Made != null)
                 {
                     swapped[pair] = (swapped.TryGetValue(pair, out var n) ? n : 0) + 1;
@@ -429,6 +435,71 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             File.WriteAllLines(BaseBuilder.UndoFile, all.ToArray());
         }
 
+        /// <summary>The kind of item an inventory holds most of, or null when it is empty.</summary>
+        private static Group MostCommon(Inventory inventory)
+        {
+            return inventory.GetInsideWorldObjects().Where(w => w != null && w.GetGroup() != null).GroupBy(w => w.GetGroup()).OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefault();
+        }
+
+        /// <summary>Adds the item to every empty slot of the inventory, one at a time through the game's own add call.</summary>
+        private static IEnumerator FillRest(Inventory inventory, Group group)
+        {
+            var empty = inventory.GetSize() - inventory.GetInsideWorldObjects().Count;
+            for (var i = 0; i < empty; i++)
+            {
+                var done = false;
+                var ok = false;
+                try
+                {
+                    InventoriesHandler.Instance.AddItemToInventory(group, inventory, (success, woId) =>
+                    {
+                        ok = success;
+                        done = true;
+                    });
+                }
+                catch (Exception e)
+                {
+                    ModLog.Note("Upgrades: could not fill a slot with " + group.GetId() + ": " + e.GetType().Name + ": " + e.Message);
+                    yield break;
+                }
+
+                var until = Time.realtimeSinceStartup + WaitSeconds;
+                while (!done && Time.realtimeSinceStartup < until)
+                    yield return null;
+
+                if (!ok)
+                    yield break;
+            }
+        }
+
+        /// <summary>For chains with fill=same: a building of the last step that is part full of one kind of item is filled up with it (the T2 optimizers upgraded before this existed hold one fuse in three slots).</summary>
+        private IEnumerator TopUpPartial(int planetHash)
+        {
+            foreach (var chain in _chains.Where(c => c.FillSame).ToList())
+            {
+                var last = chain.Steps[chain.Steps.Length - 1];
+                foreach (var wo in WorldObjectsHandler.Instance.GetAllWorldObjects().Values
+                    .Where(w => w != null && w.GetGroup() != null && w.GetGroup().GetId() == last && w.GetPlanetHash() == planetHash && w.GetPosition().sqrMagnitude > 0f && w.GetLinkedInventoryId() != 0).ToList())
+                {
+                    var inventory = InventoriesHandler.Instance.GetInventoryById(wo.GetLinkedInventoryId());
+                    if (inventory == null)
+                        continue;
+
+                    var held = inventory.GetInsideWorldObjects();
+                    if (held.Count == 0 || held.Count >= inventory.GetSize())
+                        continue;
+
+                    var kinds = held.Where(w => w != null && w.GetGroup() != null).Select(w => w.GetGroup()).Distinct().ToList();
+                    if (kinds.Count != 1)
+                        continue;
+
+                    var before = held.Count;
+                    yield return FillRest(inventory, kinds[0]);
+                    ModLog.Note("Upgrades: topped up " + last + " #" + wo.GetId() + " with " + kinds[0].GetId() + " (" + before + " of " + inventory.GetSize() + " slots were full).");
+                }
+            }
+        }
+
         /// <summary>The distinct ores (group ids) a building extracts, in the order the game lists them; empty when it stands on no vein. A T2 extractor lists its ore once per slot.</summary>
         private static List<string> OreOf(WorldObject wo)
         {
@@ -443,7 +514,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
         }
 
         /// <summary>Swaps one building: place the new one, move what is inside, and only then remove the old one. On any problem the old one stays.</summary>
-        private static IEnumerator Swap(WorldObject old, string to, int planetHash, SwapResult result, int[] panels = null, string color = null, string text = null, float turn = 0f, string linked = null)
+        private static IEnumerator Swap(WorldObject old, string to, int planetHash, SwapResult result, int[] panels = null, string color = null, string text = null, float turn = 0f, string linked = null, bool fillSame = false)
         {
             var handler = WorldObjectsHandler.Instance;
             var from = old.GetGroup().GetId();
@@ -466,6 +537,7 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
             if (oldInventory != null && oldInventory.GetInsideWorldObjects().Count > 0)
             {
                 var content = oldInventory.GetInsideWorldObjects().Count;
+                var kind = fillSame ? MostCommon(oldInventory) : null;
                 Inventory newInventory = null;
                 var until = Time.realtimeSinceStartup + WaitSeconds;
                 while (newInventory == null && Time.realtimeSinceStartup < until)
@@ -518,6 +590,10 @@ OutsideLamp1 > Beacon ; label=Base ; color=green ; only=1
 
                     yield break;
                 }
+
+                // what was inside fills the new building's other slots too
+                if (kind != null)
+                    yield return FillRest(newInventory, kind);
             }
 
             try
