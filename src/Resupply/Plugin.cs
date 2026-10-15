@@ -31,7 +31,7 @@ namespace RRSOS.PCC.Resupply
             DroneStationGroup = Config.Bind("General", "DroneStationGroup", "DroneStation1", "The game's id for the drone station. Set Drone Demand and Set Drone Supply on the Supply Manager screen can be used once it is unlocked.");
             PurgeRequiresGroup = Config.Bind("General", "PurgeRequiresGroup", "OreExtractor2", "Purge Extractors on the Supply Manager screen is offered once this building is unlocked (the T2 ore extractor) ...");
             PurgeUntilGroup = Config.Bind("General", "PurgeUntilGroup", "OreExtractor3", "... and only until this one is unlocked (the T3 ore extractor, which picks its ore itself).");
-            MaxGive = Config.Bind("General", "MaxGive", 500, "The most one /give may ask for (the backpack's room is the real limit).");
+            MaxGive = Config.Bind("General", "MaxGive", 50, "The most one /give may ask for (the backpack's room is the real limit).");
             NudgeX = Config.Bind("Placement", "NudgeX", 0f, "Fine adjustment of the icon, sideways from its default spot (UI units, positive is right).");
             NudgeY = Config.Bind("Placement", "NudgeY", 0f, "Fine adjustment of the icon, up from its default spot (UI units, positive is up).");
 
