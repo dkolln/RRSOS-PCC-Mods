@@ -38,6 +38,29 @@ namespace RRSOS.PCC.Commands
             ModLog.Note("Terminal command registered: " + key);
         }
 
+        internal sealed class ChatEntry
+        {
+            public string Name, Usage, Help;
+            public Func<bool> Active;
+        }
+
+        private static readonly Dictionary<string, ChatEntry> ChatCommands = new Dictionary<string, ChatEntry>();
+
+        /// <summary>
+        /// A chat command of some mod, for /help to list (it is typed in the game's chat, not here). Active says whether that mod is switched on. Called by reflection with plain types
+        /// (see ChatHook in the shared source), so a mod needs no reference to this one.
+        /// </summary>
+        public static void ListChat(string name, string usage, string help, Func<bool> active)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return;
+
+            var key = (name.StartsWith("/") ? name : "/" + name).Trim().ToLowerInvariant();
+            ChatCommands[key] = new ChatEntry { Name = key, Usage = string.IsNullOrWhiteSpace(usage) ? key : usage, Help = help ?? "", Active = active };
+        }
+
+        internal static List<ChatEntry> Chat() => ChatCommands.Values.Where(e => e.Active == null || e.Active()).OrderBy(e => e.Name).ToList();
+
         private const int RecentKept = 20;
         private static readonly List<string> Recent = new List<string>();
 

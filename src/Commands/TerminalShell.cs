@@ -55,11 +55,18 @@ namespace RRSOS.PCC.Commands
         {
             screen.Print("Commands you can use here:");
             var commands = TerminalApi.All();
-            if (commands.Count == 0)
-                screen.Print("(no mod has added a command)");
-
             foreach (var command in commands)
                 screen.Print(command.Usage + (command.Help.Length == 0 ? "" : " - " + command.Help));
+
+            var chat = TerminalApi.Chat();
+            if (chat.Count > 0)
+            {
+                screen.Print("Chat commands (type these in the game's chat):");
+                foreach (var command in chat)
+                    screen.Print(command.Usage + (command.Help.Length == 0 ? "" : " - " + command.Help));
+            }
+            else if (commands.Count == 0)
+                screen.Print("(no mod has added a command)");
 
             screen.Print("/cls - clear the screen");
             screen.Print("/help - this list");

@@ -47,10 +47,10 @@ namespace RRSOS.PCC.Resupply
             ChatHook.Enabled = () => Enabled.Value;
             ChatHook.Add("/resupply", rename.OnResupplyCommand, "fill every crate with its item");
             var give = gameObject.AddComponent<GiveCommand>();
-            ChatHook.Add("/give", give.OnCommand, "put an item in your backpack: /give <item> [quantity], or /give traits [count]");
-            ChatHook.Add("/giveitem", give.OnCommand, "same as /give");
-            ChatHook.Add("/add", rename.OnAddCommand, "give an item another name: /add <item id> <name>");
-            ChatHook.Add("/duplicate", rename.OnDuplicateCommand, "a second copy of every trait, dna or item of that name in the backpack");
+            ChatHook.Add("/give", give.OnCommand, "put an item (or random colour traits) in your backpack", "/give <item> [quantity]  |  /give traits [count]");
+            ChatHook.Add("/giveitem", give.OnCommand, "same as /give", "");
+            ChatHook.Add("/add", rename.OnAddCommand, "give an item another name", "/add <item id> <name>");
+            ChatHook.Add("/duplicate", rename.OnDuplicateCommand, "a second copy of every one of them in your backpack", "/duplicate trait | dna | <item>");
             gameObject.AddComponent<ChatHook>();
             gameObject.AddComponent<SupplyItem>();
             gameObject.AddComponent<SupplyWindow>();
