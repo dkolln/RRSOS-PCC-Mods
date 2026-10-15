@@ -179,7 +179,10 @@ namespace RRSOS.PCC.Resupply
             var textW = w - textX - m;
 
             var drones = DronesUnlocked();
-            Row("Set Drone Demand", "Every crate with an item (its label, or its category) asks the drones for that item, and for nothing else. Crates already set are left alone.", m, y, buttonW, textX, textW, Lit, () => Do(SetDemand), false, drones);
+            var stocked = Plugin.AutoTopUp.Value;
+            Row(stocked ? "Set Crates To Supply" : "Set Drone Demand", stocked
+                    ? "Auto top-up is on, so the crates stock themselves: every crate with an item (its label, or its category) offers that item to the drones and asks for nothing. Crates already set are left alone."
+                    : "Every crate with an item (its label, or its category) asks the drones for that item, and for nothing else. Crates already set are left alone.", m, y, buttonW, textX, textW, Lit, () => Do(SetDemand), false, drones);
             y += rowH;
             Row("Set Drone Supply", "Producers (extractors, collectors, beehives, ecosystem, ...) offer what they make to the drones. A hive offers honey and bee larvae, an ecosystem its larvae and eggs.", m, y, buttonW, textX, textW, Lit, () => Do(SetSupply), false, drones);
             y += rowH;
@@ -281,7 +284,7 @@ namespace RRSOS.PCC.Resupply
         private static string SetDemand(int planetHash)
         {
             var result = DroneNetwork.SetDemand(planetHash, Resupplier.Instance.Lookup);
-            return "Set Drone Demand: " + result.Changed + " crates set, " + result.AlreadySet + " already set, " + result.NoItem + " with no item (no label or category that names one).";
+            return (Plugin.AutoTopUp.Value ? "Set Crates To Supply: " : "Set Drone Demand: ") + result.Changed + " crates set, " + result.AlreadySet + " already set, " + result.NoItem + " with no item (no label or category that names one).";
         }
 
         private static string SetSupply(int planetHash)

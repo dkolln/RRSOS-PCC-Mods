@@ -38,6 +38,7 @@ namespace RRSOS.PCC.Resupply
         /// <summary>
         /// Every storage crate on this planet that has an item (its label, or else its category, as CrateFill.ItemFor says) is made to ask the drones for that item, and for nothing
         /// else: it supplies nothing. A crate that already does so is left alone; one with no item is left as it is.
+        /// With the auto top-up on the crates stock themselves, so they are sources instead: each one offers its item to the drones and asks for nothing.
         /// </summary>
         public static Outcome SetDemand(int planetHash, ItemLookup lookup)
         {
@@ -61,20 +62,28 @@ namespace RRSOS.PCC.Resupply
                 }
 
                 var entity = inventory.GetLogisticEntity();
-                var demand = entity.GetDemandGroups();
-                if (demand.Count == 1 && demand.Contains(item) && entity.GetSupplyGroups().Count == 0)
+                var asSupply = Plugin.AutoTopUp.Value;
+                var mine = entity.GetSupplyGroups();
+                var other = entity.GetDemandGroups();
+                if (!asSupply)
+                {
+                    mine = entity.GetDemandGroups();
+                    other = entity.GetSupplyGroups();
+                }
+
+                if (mine.Count == 1 && mine.Contains(item) && other.Count == 0)
                 {
                     outcome.AlreadySet++;
                     continue;
                 }
 
-                entity.SetSupplyGroups(new HashSet<Group>());
-                entity.SetDemandGroups(new HashSet<Group> { item });
+                entity.SetSupplyGroups(asSupply ? new HashSet<Group> { item } : new HashSet<Group>());
+                entity.SetDemandGroups(asSupply ? new HashSet<Group>() : new HashSet<Group> { item });
                 InventoriesHandler.Instance.UpdateLogisticEntity(inventory);
                 outcome.Changed++;
             }
 
-            ModLog.Note("Drone demand: " + outcome.Changed + " crates set, " + outcome.AlreadySet + " already set, " + outcome.NoItem + " with no item.");
+            ModLog.Note((Plugin.AutoTopUp.Value ? "Drone supply (crates, auto top-up on): " : "Drone demand: ") + outcome.Changed + " crates set, " + outcome.AlreadySet + " already set, " + outcome.NoItem + " with no item.");
             return outcome;
         }
 
