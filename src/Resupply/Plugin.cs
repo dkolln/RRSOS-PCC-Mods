@@ -14,13 +14,13 @@ namespace RRSOS.PCC.Resupply
     {
         public const string Guid = "com.rrsos.pcc.resupply";
         public const string Name = "RRSOS PCC Resupply";
-        public const string Version = "0.2.0";
+        public const string Version = "0.3.0";
 
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<string> Groups, DroneStationGroup, PurgeRequiresGroup, PurgeUntilGroup;
         internal static ConfigEntry<float> NudgeX, NudgeY;
         internal static ConfigEntry<bool> AutoTopUp, FillOnRename;
-        internal static ConfigEntry<int> TopUpBelowPercent;
+        internal static ConfigEntry<int> TopUpBelowPercent, MaxGive;
         internal static ConfigEntry<float> TopUpSeconds, SettleSeconds;
 
         private void Awake()
@@ -31,6 +31,7 @@ namespace RRSOS.PCC.Resupply
             DroneStationGroup = Config.Bind("General", "DroneStationGroup", "DroneStation1", "The game's id for the drone station. Set Drone Demand and Set Drone Supply on the Supply Manager screen can be used once it is unlocked.");
             PurgeRequiresGroup = Config.Bind("General", "PurgeRequiresGroup", "OreExtractor2", "Purge Extractors on the Supply Manager screen is offered once this building is unlocked (the T2 ore extractor) ...");
             PurgeUntilGroup = Config.Bind("General", "PurgeUntilGroup", "OreExtractor3", "... and only until this one is unlocked (the T3 ore extractor, which picks its ore itself).");
+            MaxGive = Config.Bind("General", "MaxGive", 500, "The most one /give may ask for (the backpack's room is the real limit).");
             NudgeX = Config.Bind("Placement", "NudgeX", 0f, "Fine adjustment of the icon, sideways from its default spot (UI units, positive is right).");
             NudgeY = Config.Bind("Placement", "NudgeY", 0f, "Fine adjustment of the icon, up from its default spot (UI units, positive is up).");
 
@@ -45,6 +46,9 @@ namespace RRSOS.PCC.Resupply
             var rename = gameObject.AddComponent<RenameFill>();
             ChatHook.Enabled = () => Enabled.Value;
             ChatHook.Add("/resupply", rename.OnResupplyCommand, "fill every crate with its item");
+            var give = gameObject.AddComponent<GiveCommand>();
+            ChatHook.Add("/give", give.OnCommand, "put an item in your backpack: /give <item> [quantity], or /give traits [count]");
+            ChatHook.Add("/giveitem", give.OnCommand, "same as /give");
             ChatHook.Add("/add", rename.OnAddCommand, "give an item another name: /add <item id> <name>");
             ChatHook.Add("/duplicate", rename.OnDuplicateCommand, "a second copy of every trait, dna or item of that name in the backpack");
             gameObject.AddComponent<ChatHook>();
