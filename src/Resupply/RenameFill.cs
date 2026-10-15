@@ -176,8 +176,10 @@ namespace RRSOS.PCC.Resupply
                 ResupplyAllNow();
             else if (string.Equals(words[0], "add", StringComparison.OrdinalIgnoreCase))
                 AddName(words.Length > 1 ? words[1] : "");
+            else if (string.Equals(words[0], "duplicate", StringComparison.OrdinalIgnoreCase) && words.Length > 1 && string.Equals(words[1].Trim(), "dna", StringComparison.OrdinalIgnoreCase))
+                StartCoroutine(DnaDuplicate.Run(ChatHook.Say));
             else
-                ChatHook.Say("Usage: /resupply (fill every crate), or /resupply add <item id> <name>, for example /resupply add waterbottle1 water");
+                ChatHook.Say("Usage: /resupply (fill every crate), /resupply add <item id> <name>, for example /resupply add waterbottle1 water, or /resupply duplicate dna (a second copy of every DNA in the backpack)");
         }
 
         /// <summary>/resupply on its own: every crate with an item is filled, as the Supply Manager's Resupply button does. One line in the chat when done.</summary>
