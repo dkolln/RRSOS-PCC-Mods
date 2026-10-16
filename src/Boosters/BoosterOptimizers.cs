@@ -9,8 +9,8 @@ using UnityEngine;
 namespace RRSOS.PCC.Boosters
 {
     /// <summary>
-    /// Add Optimizers: finds the boosters already standing in the world (eight machines stacked on one spot, or eight in a ring) that have no optimizer by them, and gives each the
-    /// best optimizer that is unlocked, one for each of the kind's fuses, full of that fuse. Nothing to choose: no beacon, no config. A booster that has an optimizer near it is left as it is.
+    /// Add Optimizers: finds the boosters already standing in the world (eight machines stacked on one spot, eight in a ring, or the six food growers) that have no optimizer by them, and gives each the
+    /// best optimizer that is unlocked, one for each of the kind's fuses, full of that fuse. Nothing to choose: no beacon, no config; the six food growers are found too and get the growth fuse in the middle. A booster that has an optimizer near it is left as it is.
     /// The beacon is gone by then, so the way a stack faces is not known: its optimizers go 3 m along +X from it, side by side across Z.
     /// </summary>
     internal static class BoosterOptimizers
@@ -28,6 +28,7 @@ namespace RRSOS.PCC.Boosters
             public Kind Kind;
             public Vector3 Middle;
             public bool Ring;
+            public bool Placed;   // a fixed layout (the food growers): the middle is where the optimizer stands
         }
 
         private static bool Unlocked(string groupId)
@@ -66,12 +67,35 @@ namespace RRSOS.PCC.Boosters
             var optimizers = all.Where(w => w.GetGroup().GetId().StartsWith("Optimizer", StringComparison.Ordinal)).Select(w => w.GetPosition()).ToList();
 
             var found = new List<Grouping>();
-            foreach (var kind in BoosterKinds.All.Where(k => k.DefaultFuses.Length > 0 && k.Slots == null))
+            foreach (var kind in BoosterKinds.All.Where(k => k.DefaultFuses.Length > 0))
             {
                 foreach (var machineGroup in kind.Machines.Select(m => m.GId))
                 {
                     var machines = all.Where(w => w.GetGroup().GetId() == machineGroup).Select(w => w.GetPosition()).ToList();
-                    if (kind.Ring)
+                    if (kind.Slots != null)
+                    {
+                        // a fixed layout (the food growers, six in two rows): every machine can be its first place, in any of the four ways the layout may be turned
+                        foreach (var first in machines)
+                        {
+                            for (var quarter = 0; quarter < 4; quarter++)
+                            {
+                                var turn = Quaternion.Euler(0f, quarter * 90f, 0f);
+                                var origin = first - turn * new Vector3(kind.Slots[0].X, kind.Slots[0].Y, kind.Slots[0].Z);
+                                var complete = kind.Slots.All(slot =>
+                                {
+                                    var at = origin + turn * new Vector3(slot.X, slot.Y, slot.Z);
+                                    return machines.Any(m => Mathf.Abs(m.x - at.x) < 0.6f && Mathf.Abs(m.z - at.z) < 0.6f && Mathf.Abs(m.y - at.y) < 0.8f);
+                                });
+                                if (complete && kind.OptimizerAt != null)
+                                {
+                                    var middle = origin + turn * new Vector3(kind.OptimizerAt.X, kind.OptimizerAt.Y, kind.OptimizerAt.Z);
+                                    if (!found.Any(g => g.Placed && (g.Middle - middle).sqrMagnitude < 1f))
+                                        found.Add(new Grouping { Kind = kind, Middle = middle, Placed = true });
+                                }
+                            }
+                        }
+                    }
+                    else if (kind.Ring)
                     {
                         foreach (var corner in machines)
                         {
@@ -107,7 +131,8 @@ namespace RRSOS.PCC.Boosters
                 {
                     progress("Adding the " + fuses[i] + " optimizer to a " + group.Kind.Name + " booster...");
                     var shift = (float)((i - (fuses.Count - 1) / 2.0) * BoosterKinds.OptimizerGap);
-                    var spot = group.Ring ? new Vector3(group.Middle.x, group.Middle.y, group.Middle.z + shift)
+                    var spot = group.Placed ? new Vector3(group.Middle.x, group.Middle.y, group.Middle.z + shift)
+                        : group.Ring ? new Vector3(group.Middle.x, group.Middle.y, group.Middle.z + shift)
                         : new Vector3(group.Middle.x + (float)BoosterKinds.OptimizerDistance, group.Middle.y, group.Middle.z + shift);
 
                     WorldObject optimizer;
