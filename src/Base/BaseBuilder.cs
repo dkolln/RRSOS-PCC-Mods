@@ -36,6 +36,9 @@ namespace RRSOS.PCC.Base
         /// <summary>Set by the /build chat command; answered by the loop below within two seconds.</summary>
         private static volatile bool _buildRequested;
 
+        /// <summary>Set by the /undo chat command; answered by the loop below, after a backup save.</summary>
+        private static volatile bool _undoRequested;
+
         /// <summary>/build missing: place only the template pieces that are not there yet, instead of refusing when part of the base stands (to bring back what an earlier /undo took).</summary>
         private static volatile bool _missingRequested;
 
@@ -67,14 +70,14 @@ namespace RRSOS.PCC.Base
 
         internal static void OnUndoCommand(string args)
         {
-            if (!WorldState.Ready(out var planetHash, out var key))
+            if (!WorldState.Ready(out _, out _))
             {
                 ChatHook.Say("The world is not ready yet.");
                 return;
             }
 
-            var removed = Undo(key, planetHash);
-            ChatHook.Say(removed == 0 ? "Nothing of the base to undo in this save." : "Took back the base (" + removed + " pieces).");
+            _undoRequested = true;
+            ChatHook.Say("Saving a backup, then taking the base back...");
         }
 
         // ---- the loop --------------------------------------------------------------------------------------------------------
@@ -93,7 +96,7 @@ namespace RRSOS.PCC.Base
                     _autoHandled = false;
 
                 var wantBuild = File.Exists(BuildNowFile) || _buildRequested;
-                var wantUndo = File.Exists(UndoNowFile);
+                var wantUndo = File.Exists(UndoNowFile) || _undoRequested;
                 if (!wantBuild && !wantUndo && _autoHandled)
                     continue;
 
@@ -102,7 +105,7 @@ namespace RRSOS.PCC.Base
                 bool go = false;
                 try
                 {
-                    go = WorldState.Ready(out planetHash, out key) && (WorldState.OnPlanet(StartPlanet) || (wantBuild && FindBeacon(planetHash, out _, out _, out _)));
+                    go = WorldState.Ready(out planetHash, out key) && (WorldState.OnPlanet(StartPlanet) || wantUndo || (wantBuild && FindBeacon(planetHash, out _, out _, out _)));
                 }
                 catch (Exception e)
                 {
@@ -127,15 +130,28 @@ namespace RRSOS.PCC.Base
                 Boot.NewWorld(key);
                 if (wantUndo)
                 {
+                    var chat = _undoRequested;
                     ModLog.Consume(UndoNowFile);
+                    _undoRequested = false;
                     ModLog.Note("Undo requested.");
-                    try
+                    var backedUp = false;
+                    yield return SaveBackup.Make("undo", ok => backedUp = ok);
+                    if (!backedUp)
                     {
-                        Undo(key, planetHash);
+                        ChatHook.Say("No backup save could be made, so nothing was taken back.");
                     }
-                    catch (Exception e)
+                    else
                     {
-                        ModLog.Note("Undo failed: " + e.GetType().Name + ": " + e.Message);
+                        try
+                        {
+                            var removed = Undo(key, planetHash);
+                            if (chat)
+                                ChatHook.Say(removed == 0 ? "Nothing of the base to undo here." : "Took back the base (" + removed + " pieces). A backup save was made first.");
+                        }
+                        catch (Exception e)
+                        {
+                            ModLog.Note("Undo failed: " + e.GetType().Name + ": " + e.Message);
+                        }
                     }
                 }
                 else if (wantBuild)
@@ -143,7 +159,12 @@ namespace RRSOS.PCC.Base
                     ModLog.Consume(BuildNowFile);
                     _buildRequested = false;
                     ModLog.Note("Build requested for save " + key + ".");
-                    yield return PlaceIfEmpty(key, planetHash, false);
+                    var saved = false;
+                    yield return SaveBackup.Make("build", ok => saved = ok);
+                    if (saved)
+                        yield return PlaceIfEmpty(key, planetHash, false);
+                    else
+                        ChatHook.Say("No backup save could be made, so nothing was built.");
                 }
                 else
                 {
