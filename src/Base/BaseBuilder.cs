@@ -49,9 +49,10 @@ namespace RRSOS.PCC.Base
                 return;
             }
 
-            if (!WorldState.OnPlanet(StartPlanet))
+            WorldState.Ready(out var planetHash, out _);
+            if (!WorldState.OnPlanet(StartPlanet) && !FindBeacon(planetHash, out _, out _, out _))
             {
-                ChatHook.Say("No template location is set for this planet.");
+                ChatHook.Say("Build a foundation, put a beacon named Base on it and use /build again: the base is built on from there, on the side opposite to where the beacon points.");
                 return;
             }
 
@@ -96,7 +97,7 @@ namespace RRSOS.PCC.Base
                 bool go = false;
                 try
                 {
-                    go = WorldState.Ready(out planetHash, out key) && WorldState.OnPlanet(StartPlanet);
+                    go = WorldState.Ready(out planetHash, out key) && (WorldState.OnPlanet(StartPlanet) || (wantBuild && FindBeacon(planetHash, out _, out _, out _)));
                 }
                 catch (Exception e)
                 {
@@ -193,7 +194,65 @@ namespace RRSOS.PCC.Base
             }
         }
 
-        private static Vector3 WorldPosition(TemplatePiece piece) => Anchor + new Vector3(piece.x, piece.y, piece.z);
+        // Where this run puts the template: Prime's own anchor, or the foundation under a beacon named Base (and then turned to the beacon's way).
+        private Vector3 _anchor = Anchor;
+        private Quaternion _turn = Quaternion.identity;
+        private bool _atBeacon;
+        private WorldObject _beacon;
+
+        private Vector3 WorldPosition(TemplatePiece piece) => _anchor + _turn * new Vector3(piece.x, piece.y, piece.z);
+
+        // The template was captured with its Base beacon looking down -X (yaw 270) and the base on the other side of it, along +X.
+        private const float TemplateBeaconYaw = 270f;
+
+        /// <summary>
+        /// A beacon named Base standing on a foundation on this planet (the nearest to the player when there are several): the anchor is that foundation, and the base runs on from it
+        /// the way the template does from its own beacon: on the side opposite to where the beacon points (as every booster does), turned to the nearest quarter.
+        /// </summary>
+        private static bool FindBeacon(int planetHash, out WorldObject beacon, out Vector3 anchor, out Quaternion turn)
+        {
+            beacon = null;
+            anchor = Anchor;
+            turn = Quaternion.identity;
+            var all = WorldObjectsHandler.Instance.GetAllWorldObjects().Values.Where(w => w != null && w.GetGroup() != null && w.GetPlanetHash() == planetHash).ToList();
+            var foundations = all.Where(w => w.GetGroup().GetId() == "Foundation" && w.GetPosition().sqrMagnitude > 0f).ToList();
+            var player = Vector3.zero;
+            try
+            {
+                player = Managers.GetManager<PlayersManager>().GetActivePlayerController().transform.position;
+            }
+            catch (Exception)
+            {
+            }
+
+            WorldObject bestBeacon = null;
+            WorldObject bestFoundation = null;
+            var bestDistance = float.MaxValue;
+            foreach (var candidate in all.Where(w => w.GetGroup().GetId() == "Beacon" && string.Equals((w.GetText() ?? "").Trim(), "base", StringComparison.OrdinalIgnoreCase)))
+            {
+                var at = candidate.GetPosition();
+                var under = foundations.Where(f => Mathf.Abs(f.GetPosition().x - at.x) <= 3.1f && Mathf.Abs(f.GetPosition().z - at.z) <= 3.1f && at.y - f.GetPosition().y > 1f && at.y - f.GetPosition().y < 4f)
+                    .OrderBy(f => (f.GetPosition() - at).sqrMagnitude).FirstOrDefault();
+                if (under == null)
+                    continue;
+
+                var d = (at - player).sqrMagnitude;
+                if (d < bestDistance)
+                {
+                    bestDistance = d;
+                    bestBeacon = candidate;
+                    bestFoundation = under;
+                }
+            }
+
+            if (bestBeacon == null)
+                return false;
+
+            beacon = bestBeacon;
+            anchor = bestFoundation.GetPosition();
+            turn = Quaternion.Euler(0f, Mathf.Round((bestBeacon.GetRotation().eulerAngles.y - TemplateBeaconYaw) / 90f) * 90f, 0f);
+            return true;
+        }
 
         /// <summary>Builds the base if the site is empty. The automatic planetfall run marks the save as handled even when it places nothing; a request does not.</summary>
         private IEnumerator PlaceIfEmpty(string key, int planetHash, bool automatic)
@@ -211,9 +270,28 @@ namespace RRSOS.PCC.Base
                 yield break;
             }
 
+            // Where: a beacon named Base on a foundation if there is one (any planet), else Prime's own place.
+            _atBeacon = !automatic && FindBeacon(planetHash, out _beacon, out _anchor, out _turn);
+            if (!_atBeacon)
+            {
+                _anchor = Anchor;
+                _turn = Quaternion.identity;
+                _beacon = null;
+                if (!WorldState.OnPlanet(StartPlanet))
+                {
+                    if (!automatic)
+                        ChatHook.Say("Put a beacon named Base on a foundation and use /build again.");
+                    yield break;
+                }
+            }
+            else
+            {
+                ModLog.Note("Building at the beacon named Base: anchor foundation " + _anchor + ", turned " + _turn.eulerAngles.y + " degrees.");
+            }
+
             // Only into a world that has none of it, and with nothing of the player's own standing on the base's footprint.
             var handler = WorldObjectsHandler.Instance;
-            var pieces = template.pieces;
+            var pieces = _atBeacon ? template.pieces.Where(p => p.g != "OutsideLamp1").ToArray() : template.pieces;   // the beacon is the lamp
             float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
             foreach (var p in pieces)
             {
@@ -232,6 +310,9 @@ namespace RRSOS.PCC.Base
                 var pos = wo.GetPosition();
                 if (pos.sqrMagnitude <= 0f)
                     continue; // an item inside an inventory
+
+                if (_atBeacon && (wo == _beacon || (wo.GetGroup().GetId() == "Foundation" && (pos - _anchor).sqrMagnitude < SameSpot * SameSpot)))
+                    continue;   // the player's own beacon and the foundation it stands on are the start of the base
 
                 var id = wo.GetGroup().GetId();
                 if (pieces.Any(p => p.g == id && (pos - WorldPosition(p)).sqrMagnitude < SameSpot * SameSpot))
@@ -261,6 +342,9 @@ namespace RRSOS.PCC.Base
             var sinceFrame = 0;
             foreach (var piece in pieces)
             {
+                if (_atBeacon && piece.g == "Foundation" && (WorldPosition(piece) - _anchor).sqrMagnitude < SameSpot * SameSpot)
+                    continue;   // the foundation the beacon stands on
+
                 if (GroupsHandler.GetGroupViaId(piece.g) == null)
                 {
                     // a piece of a mod that is not installed (the Terminal without the Commands mod)
@@ -270,7 +354,7 @@ namespace RRSOS.PCC.Base
 
                 try
                 {
-                    var wo = Placement.PlaceAt(piece.g, WorldPosition(piece), DataTreatments.StringToQuaternion(piece.rot), planetHash,
+                    var wo = Placement.PlaceAt(piece.g, WorldPosition(piece), _turn * DataTreatments.StringToQuaternion(piece.rot), planetHash,
                         string.IsNullOrEmpty(piece.panels) ? null : DataTreatments.StringToIntList(piece.panels).ToArray(),
                         string.IsNullOrEmpty(piece.color) ? null : piece.color, piece.text, piece.groups);
                     created.Add(new KeyValuePair<WorldObject, TemplatePiece>(wo, piece));
