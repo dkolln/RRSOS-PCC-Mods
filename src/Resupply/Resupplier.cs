@@ -12,7 +12,7 @@ namespace RRSOS.PCC.Resupply
 {
     /// <summary>
     /// A recycle-arrows icon on a crate's window. One click fills that crate's empty slots with the item it is meant for (CrateFill.ItemFor: its label, or else its demand when that is
-    /// exactly one item); what is in the crate stays. The icon sits just to the left of the game's sort icon. The same fill serves
+    /// exactly one item); what is in the crate stays. The icon sits under the Trash mod's can, which is under the game's Move All icon (just under Move All when there is no can). The same fill serves
     /// the Supply Manager screen's Resupply button and the auto top-up, which go through every such crate on the planet.
     /// </summary>
     internal sealed class Resupplier : MonoBehaviour
@@ -111,24 +111,29 @@ namespace RRSOS.PCC.Resupply
             root.gameObject.SetActive(true);
             root.GetComponent<Target>().Crate = crate;
 
-            // Beside the sort icon, one icon slot to its left (the trash can sits the same way beside Move All). World space, so the UI's scale is allowed for.
+            // Under the trash can, which is under the Move All icon: Move All's centre plus the step from "Order" down to "MoveAll", once for the can and once more for this (just once when there is no can).
+            var trash = window.transform.Find(TrashName);
+            var slots = trash != null && trash.gameObject.activeInHierarchy ? 2 : 1;
             var scale = root.lossyScale.x;
             var order = Find(container.transform, "Order");
+            var moveAll = Find(container.transform, "MoveAll");
             Vector3 centre;
-            if (order != null)
+            if (order != null && moveAll != null)
             {
-                var o = order.TransformPoint(order.rect.center);
-                centre = o - new Vector3(order.rect.width * Mathf.Abs(order.lossyScale.x) + 8f * scale, 0f, 0f);
+                var m = moveAll.TransformPoint(moveAll.rect.center);
+                centre = m + (m - order.TransformPoint(order.rect.center)) * slots;
             }
             else
             {
                 var corners = new Vector3[4];
                 ((RectTransform)grid.transform).GetWorldCorners(corners);
-                centre = corners[1] + new Vector3(-90f * scale, 40f * scale, 0f);
+                centre = corners[1] + new Vector3(-40f * scale, (40f - 56f * slots) * scale, 0f);
             }
 
             root.position = centre + new Vector3(Plugin.NudgeX.Value * scale, Plugin.NudgeY.Value * scale, 0f);
         }
+
+        private const string TrashName = "RRSOS_TrashButton"; // the Trash mod's can; found by name, so the mods do not depend on each other
 
         private static RectTransform Find(Transform parent, string name) =>
             parent.GetComponentsInChildren<RectTransform>(false).FirstOrDefault(r => r.name == name);
