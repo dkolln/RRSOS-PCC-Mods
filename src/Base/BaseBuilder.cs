@@ -36,6 +36,9 @@ namespace RRSOS.PCC.Base
         /// <summary>Set by the /build chat command; answered by the loop below within two seconds.</summary>
         private static volatile bool _buildRequested;
 
+        /// <summary>/build missing: place only the template pieces that are not there yet, instead of refusing when part of the base stands (to bring back what an earlier /undo took).</summary>
+        private static volatile bool _missingRequested;
+
         private bool _autoHandled;
         private string _autoKey;
         internal static bool Busy;
@@ -57,8 +60,9 @@ namespace RRSOS.PCC.Base
                 return;
             }
 
+            _missingRequested = string.Equals((args ?? "").Trim(), "missing", StringComparison.OrdinalIgnoreCase);
             _buildRequested = true;
-            ChatHook.Say("Building the base...");
+            ChatHook.Say(_missingRequested ? "Placing the pieces of the base that are missing..." : "Building the base...");
         }
 
         internal static void OnUndoCommand(string args)
@@ -301,6 +305,9 @@ namespace RRSOS.PCC.Base
                 minZ = Mathf.Min(minZ, at.z); maxZ = Mathf.Max(maxZ, at.z);
             }
 
+            var missingOnly = !automatic && _missingRequested;
+            _missingRequested = false;
+            var existing = new List<KeyValuePair<string, Vector3>>();
             var present = 0;
             var near = new List<string>();
             foreach (var wo in handler.GetAllWorldObjects().Values.ToList())
@@ -316,6 +323,7 @@ namespace RRSOS.PCC.Base
                     continue;   // the player's own beacon and the foundation it stands on are the start of the base
 
                 var id = wo.GetGroup().GetId();
+                existing.Add(new KeyValuePair<string, Vector3>(id, pos));
                 if (pieces.Any(p => p.g == id && (pos - WorldPosition(p)).sqrMagnitude < SameSpot * SameSpot))
                     present++;
 
@@ -329,7 +337,19 @@ namespace RRSOS.PCC.Base
                     near.Add(id);
             }
 
-            if (present > 0 || near.Count > 0)
+            if (missingOnly)
+            {
+                // what is already there stays; only the pieces of the template with nothing of their kind in their place are made
+                var all = pieces.Length;
+                pieces = pieces.Where(p => !existing.Any(e => e.Key == p.g && (e.Value - WorldPosition(p)).sqrMagnitude < SameSpot * SameSpot)).ToArray();
+                ModLog.Note("Save " + key + ": placing only what is missing: " + pieces.Length + " of " + all + " template pieces.");
+                if (pieces.Length == 0)
+                {
+                    ChatHook.Say("Nothing is missing: every piece of the base is there.");
+                    yield break;
+                }
+            }
+            else if (present > 0 || near.Count > 0)
             {
                 ModLog.Note("Save " + key + ": the site is not empty (" + present + " template pieces already there; on the footprint: " + (near.Count == 0 ? "nothing" : string.Join(", ", near.Distinct().ToArray())) + "). Nothing placed.");
                 if (automatic)
