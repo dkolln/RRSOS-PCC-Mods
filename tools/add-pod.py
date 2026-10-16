@@ -27,7 +27,13 @@ TEMPLATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src',
 keep = args[args.index('--keep') + 1] if '--keep' in args else None
 
 POD_GROUPS = ('pod', 'podAngle', 'Pod4x', 'Pod9xA', 'Pod9xB', 'Pod9xC')
-HALF = 4.1          # a pod is 8 m wide: what stands within this of its middle is in it
+HALF = 4.1          # a pod is 8 m wide: what stands within this of its middle is in it (a 2x2 pod, Pod4x, is 16 m wide, a 3x3 pod 24)
+HALVES = {'Pod4x': 8.1, 'Pod9xA': 12.1, 'Pod9xB': 12.1, 'Pod9xC': 12.1}
+
+
+def half(r):
+    return HALVES.get(r['gId'], HALF)
+
 ABOVE, BELOW = 8.0, 1.0   # and from a little under its floor to the roof and what stands on it
 
 text = open(SRC, encoding='utf-8-sig').read()
@@ -49,12 +55,19 @@ pods = [r for r in placed if r['gId'] in POD_GROUPS]
 if not pods:
     sys.exit('no pod in the save')
 # the level the player is on: nearest across and, among pods stacked there, the one whose floor is just under the player (their feet are about 1 m above the floor)
-pod = min(pods, key=lambda r: (pos(r)[0] - player[0]) ** 2 + (pos(r)[2] - player[2]) ** 2 + 4 * (pos(r)[1] + 1.0 - player[1]) ** 2)
+def contains(r):
+    return abs(pos(r)[0] - player[0]) <= half(r) and abs(pos(r)[2] - player[2]) <= half(r)
+
+
+# the pod the player is inside (a 2x2 pod is 16 m wide, so its middle can be 8 m away); else the nearest middle
+inside_pods = [r for r in pods if contains(r)] or pods
+pod = min(inside_pods, key=lambda r: (pos(r)[0] - player[0]) ** 2 + (pos(r)[2] - player[2]) ** 2 + 4 * (pos(r)[1] + 1.0 - player[1]) ** 2)
 px, py, pz = pos(pod)
 gap = ((px - player[0]) ** 2 + (pz - player[2]) ** 2) ** 0.5
 LEVEL = 6.0   # a level is 6 m high: a pod above this one has its floor 6 m higher
-print('pod under the player: %s at %.2f, %.2f, %.2f (%.1f m from the player)' % (pod['gId'], px, py, pz, gap))
-if gap > 5:
+print('player at %.1f, %.1f, %.1f' % tuple(player))
+print('pod under the player: %s at %.2f, %.2f, %.2f (%.1f m from its middle)' % (pod['gId'], px, py, pz, gap))
+if not contains(pod) and gap > 5:
     print('  (more than 5 m away: stand inside the pod and save again if this is not the one)')
 
 # Pods in front of the player in a row (--ahead N): the way the player faces (from playerRotation), snapped to one of the four directions, 8 m apart.
@@ -72,23 +85,32 @@ if ahead:
         step = (0.0, 8.0 if fz > 0 else -8.0)
     print('facing %s' % ('+x' if step[0] > 0 else '-x' if step[0] < 0 else '+z' if step[1] > 0 else '-z'))
     for n in range(1, ahead + 1):
-        want = (px + step[0] * n, pz + step[1] * n)
-        hit = [r for r in pods if abs(pos(r)[0] - want[0]) < 2.0 and abs(pos(r)[2] - want[1]) < 2.0 and abs(pos(r)[1] - py) < 1.0]
-        if not hit:
+        last = chain[-1]
+        lx, ly, lz = pos(last)
+        cand = []
+        for r in pods:
+            if r in chain:
+                continue
+            rx, ry, rz = pos(r)
+            along = (rx - lx) * (1 if step[0] > 0 else -1 if step[0] < 0 else 0) + (rz - lz) * (1 if step[1] > 0 else -1 if step[1] < 0 else 0)
+            lateral = abs((rz - lz) if step[0] else (rx - lx))
+            if abs(ry - ly) < 1.0 and along > 0 and lateral < 2.5 and along <= half(last) + half(r) + 1.0:
+                cand.append((along, r))
+        if not cand:
             print('  no pod %d ahead of the player' % n)
             break
-        chain.append(hit[0])
+        chain.append(min(cand, key=lambda c: c[0])[1])
 
 
 def level(pod):
     """Only this level: nothing from a pod above or below. With a pod above, the level ends at its ceiling; with none, what stands on the roof (an antenna) counts too."""
     qx, qy, qz = pos(pod)
-    above = any(r is not pod and abs(pos(r)[0] - qx) <= HALF and abs(pos(r)[2] - qz) <= HALF and abs(pos(r)[1] - (qy + LEVEL)) < 1.0 for r in pods)
+    above = any(r is not pod and abs(pos(r)[0] - qx) <= half(pod) and abs(pos(r)[2] - qz) <= half(pod) and abs(pos(r)[1] - (qy + LEVEL)) < 1.0 for r in pods)
     top = qy + (LEVEL - 0.1 if above else ABOVE)
     things = [r for r in placed if r is not pod and r['gId'] not in POD_GROUPS and r['gId'] != 'Foundation'
-              and abs(pos(r)[0] - qx) <= HALF and abs(pos(r)[2] - qz) <= HALF and qy - BELOW <= pos(r)[1] <= top]
+              and abs(pos(r)[0] - qx) <= half(pod) and abs(pos(r)[2] - qz) <= half(pod) and qy - BELOW <= pos(r)[1] <= top]
     things.sort(key=lambda r: (r['gId'], pos(r)[1]))
-    floor = [r for r in placed if r['gId'] == 'Foundation' and abs(pos(r)[0] - qx) <= HALF and abs(pos(r)[2] - qz) <= HALF and abs(pos(r)[1] - (qy - 2.5)) < 1.0]
+    floor = [r for r in placed if r['gId'] == 'Foundation' and abs(pos(r)[0] - qx) <= half(pod) and abs(pos(r)[2] - qz) <= half(pod) and abs(pos(r)[1] - (qy - 2.5)) < 1.0]
     return above, things, floor
 
 
@@ -163,7 +185,7 @@ for p in new:
                 q.pop(f, None)
         updated.append('%s "%s"' % (p['g'], p.get('text', '')))
 added = [p for p in new if find(p) is None]
-order = {'Foundation': 0, 'pod': 1, 'OutsideLamp1': 3}
+order = {'Foundation': 0, 'pod': 1, 'podAngle': 1, 'Pod4x': 1, 'Pod9xA': 1, 'Pod9xB': 1, 'Pod9xC': 1, 'OutsideLamp1': 3}
 template['pieces'] = sorted(template['pieces'] + added, key=lambda p: (order.get(p['g'], 2), p['x'], p['z'], p['y']))
 with open(TEMPLATE, 'w', encoding='utf-8', newline='\n') as f:
     json.dump(template, f, indent=1)
