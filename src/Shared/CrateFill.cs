@@ -21,14 +21,14 @@ namespace RRSOS.PCC.Shared
 
         /// <summary>
         /// What a crate is meant to hold: the item its label names; failing that, its demand (the drone supply setting) when that is exactly one item. Null when neither says
-        /// (no label, the label supplier or misc, a label that is not an item name, a demand of several groups or of a group that is not a single item), so nothing is guessed.
+        /// (no label, the label supplier, misc or miscellaneous, a label that is not an item name, a demand of several groups or of a group that is not a single item), so nothing is guessed.
         /// </summary>
         public static GroupItem ItemFor(WorldObject crate, ItemLookup lookup)
         {
             var label = Label(crate);
             var plain = label.Trim();
-            if (string.Equals(plain, "supplier", StringComparison.OrdinalIgnoreCase) || string.Equals(plain, "misc", StringComparison.OrdinalIgnoreCase))
-                return null;   // a crate labelled supplier or misc is never filled (by the icon, the Resupply button, the auto top-up, a rename or the drone buttons)
+            if (string.Equals(plain, "supplier", StringComparison.OrdinalIgnoreCase) || string.Equals(plain, "misc", StringComparison.OrdinalIgnoreCase) || string.Equals(plain, "miscellaneous", StringComparison.OrdinalIgnoreCase))
+                return null;   // a crate labelled supplier, misc or miscellaneous is never filled (by the icon, the Resupply button, the auto top-up, a rename or the drone buttons)
 
             var item = label.Length == 0 ? null : lookup.Resolve(label);
             if (item != null)
