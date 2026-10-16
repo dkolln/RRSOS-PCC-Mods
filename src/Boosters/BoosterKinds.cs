@@ -209,16 +209,11 @@ namespace RRSOS.PCC.Boosters
                 DefaultFuses = new string[0], Ring = true, Spacing = 7.3, YOffset = -0.25,
                 Supply = "Phytoplankton1,Fish1Eggs,Fish2Eggs,Fish3Eggs,Fish4Eggs,Fish5Eggs,Fish6Eggs,Fish7Eggs,Fish8Eggs,Fish9Eggs,Fish10Eggs,Fish11Eggs,Fish12Eggs,Fish13Eggs,Fish14Eggs,Fish15Eggs" },
 
-            // Food: six vegetable growers in a pod on two foundations, measured from the owner's save (three along each long wall), the optimizer (growth fuse) in the middle. Each grower gets
+            // Food: six vegetable growers, measured from the owner's save (three along each of two rows), the optimizer (growth fuse) in the middle between them. Only the growers are built, not the pod they stood in. Each grower gets
             // its own seed: eggplant, squash, bean, cocoa, wheat, mushroom.
             new Kind { Key = "Food", Name = "Food", Aliases = new[] { "food" },
                 Machines = Machines("VegetableGrower1", "Vegetable Grower T1", "VegetableGrower2", "Vegetable Grower T2"),
                 DefaultFuses = new[] { "FuseGrowth1" }, Number = 6,
-                Parts = new[]
-                {
-                    new Slot("Foundation", 0.37f, -3.54f, -2.03f, 0f), new Slot("Foundation", 0.37f, -3.54f, 3.97f, 0f),
-                    new Slot("pod", 2.37f, -1.04f, -0.14f, 0f, "1,1,1,2,5,7")
-                },
                 Slots = new[]
                 {
                     new Slot(null, 0.37f, 0f, -2.03f, 90f), new Slot(null, 2.37f, 0f, -2.03f, 90f), new Slot(null, 4.37f, 0f, -2.03f, 90f),
