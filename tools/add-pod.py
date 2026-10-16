@@ -8,6 +8,8 @@ Stand inside the pod and save the game. Then:
   python tools/add-pod.py <save.json> --keep all         add the pod, the foundations under it and everything listed
   python tools/add-pod.py <save.json> --keep new         add the pod and only the pieces the template does not have yet
   python tools/add-pod.py <save.json> --keep none        add only the pod and the foundations under it
+  --only PREFIX                                          list (and keep) only pieces whose group starts with this, for example Container
+  --half M                                               reach M metres each way from the pod's middle for this run (for a row against the outside of the wall)
   --at X,Z                                               use that place (world x and z) instead of where the player stands
   --ahead N                                              also the N pods in a row in front of the player (the way they face), listed and added together
 
@@ -34,6 +36,8 @@ HALVES = {'Pod4x': 8.6, 'Pod9xA': 12.6, 'Pod9xB': 12.6, 'Pod9xC': 12.6}   # a li
 
 
 def half(r):
+    if '--half' in args:   # a wider reach for this run, for a row that stands against the wall outside the pod's own box
+        return float(args[args.index('--half') + 1])
     return HALVES.get(r['gId'], HALF)
 
 ABOVE, BELOW = 8.0, 1.0   # and from a little under its floor to the roof and what stands on it
@@ -115,6 +119,8 @@ def level(pod):
     things = [r for r in placed if r is not pod and r['gId'] not in POD_GROUPS and r['gId'] != 'Foundation'
               and abs(pos(r)[0] - qx) <= half(pod) and abs(pos(r)[2] - qz) <= half(pod) and qy - BELOW <= pos(r)[1] <= top]
     things.sort(key=lambda r: (r['gId'], pos(r)[1]))
+    if '--only' in args:   # list only groups starting with this (--only Container for the crates)
+        things = [r for r in things if r['gId'].startswith(args[args.index('--only') + 1])]
     floor = [r for r in placed if r['gId'] == 'Foundation' and abs(pos(r)[0] - qx) <= half(pod) and abs(pos(r)[2] - qz) <= half(pod) and abs(pos(r)[1] - (qy - 2.5)) < 1.0]
     return above, things, floor
 
