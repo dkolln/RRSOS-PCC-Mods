@@ -273,7 +273,7 @@
    "y": 2.5,
    "z": -8.094,
    "rot": "0,0,0,1",
-   "panels": "2,1,2,1,5,7"
+   "panels": "2,2,2,2,5,7"
   },
   {
    "g": "pod",
@@ -297,7 +297,7 @@
    "y": 2.5,
    "z": -8.094,
    "rot": "0,0,0,1",
-   "panels": "2,1,2,2,5,7"
+   "panels": "2,2,2,2,5,7"
   },
   {
    "g": "pod",
@@ -321,7 +321,7 @@
    "y": 2.5,
    "z": -8.094,
    "rot": "0,0,0,1",
-   "panels": "2,1,1,2,5,7"
+   "panels": "2,11,2,2,5,7"
   },
   {
    "g": "pod",
@@ -475,8 +475,8 @@
    "y": 3.56749,
    "z": -9.8,
    "rot": "0,0.7071068,0,-0.7071068",
-   "text": "smart fabric",
-   "groups": "SmartFabric"
+   "text": "ice",
+   "groups": "ice"
   },
   {
    "g": "Container1",
@@ -484,8 +484,8 @@
    "y": 4.56749,
    "z": -9.8,
    "rot": "0,0.7071068,0,-0.7071068",
-   "text": "fabric",
-   "groups": "FabricBlue"
+   "text": "obsidian",
+   "groups": "Obsidian"
   },
   {
    "g": "Container1",
@@ -502,7 +502,8 @@
    "y": 3.56749,
    "z": -5.6,
    "rot": "0,0.7071068,0,0.7071068",
-   "text": "seeds"
+   "text": "seeds",
+   "groups": "Vegetable0Seed"
   },
   {
    "g": "Container1",
@@ -510,7 +511,8 @@
    "y": 4.56749,
    "z": -5.6,
    "rot": "0,0.7071068,0,0.7071068",
-   "text": "plants"
+   "text": "seeds",
+   "groups": "Vegetable0Seed"
   },
   {
    "g": "Container1",
@@ -518,7 +520,8 @@
    "y": 5.56749,
    "z": -5.6,
    "rot": "0,0.7071068,0,0.7071068",
-   "text": "suits"
+   "text": "suits",
+   "groups": "Skin-01"
   },
   {
    "g": "Container1",
@@ -552,14 +555,18 @@
    "x": 26.8,
    "y": 3.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "astrofood",
+   "groups": "astrofood"
   },
   {
    "g": "Container1",
    "x": 26.8,
    "y": 4.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "seed4",
+   "groups": "Seed4"
   },
   {
    "g": "Container1",
@@ -567,7 +574,8 @@
    "y": 5.53583,
    "z": -5.6,
    "rot": "0,0.7071068,0,0.7071068",
-   "text": "blueprintchips"
+   "text": "blueprintchips",
+   "groups": "BlueprintT1"
   },
   {
    "g": "Container1",
@@ -601,189 +609,270 @@
    "x": 29.0,
    "y": 3.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "trophies",
+   "groups": "GoldenEffigie2"
   },
   {
    "g": "Container1",
    "x": 29.0,
    "y": 4.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "gear",
+   "groups": "EquipmentIncrease1"
   },
   {
    "g": "Container1",
    "x": 29.0,
    "y": 5.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "astrofood",
+   "groups": "astrofood"
   },
   {
    "g": "Container1",
    "x": 31.2,
    "y": 3.56749,
    "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068"
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "bioplastic1",
+   "groups": "Bioplastic1"
   },
   {
    "g": "Container1",
    "x": 31.2,
    "y": 4.56749,
    "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068"
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "circuitboard",
+   "groups": "CircuitBoard1"
   },
   {
    "g": "Container1",
    "x": 31.2,
    "y": 5.56749,
    "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068"
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "flare",
+   "groups": "Flare"
   },
   {
    "g": "Container1",
    "x": 31.2,
    "y": 3.56749,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "pestera seed",
+   "groups": "Seed2"
   },
   {
    "g": "Container1",
    "x": 31.2,
    "y": 4.56749,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "shanga seed",
+   "groups": "Seed1"
   },
   {
    "g": "Container1",
    "x": 31.2,
    "y": 5.56749,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "lirma seed",
+   "groups": "Seed0"
   },
   {
    "g": "Container1",
    "x": 33.4,
    "y": 3.53583,
    "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068"
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "pulsar quartz",
+   "groups": "PulsarQuartz"
   },
   {
    "g": "Container1",
    "x": 33.4,
    "y": 4.53583,
    "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068"
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "balzar quartz",
+   "groups": "BalzarQuartz"
   },
   {
    "g": "Container1",
    "x": 33.4,
    "y": 5.53583,
    "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068"
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "solar quartz",
+   "groups": "SolarQuartz"
   },
   {
    "g": "Container1",
    "x": 33.4,
    "y": 3.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "orema plant",
+   "groups": "Seed5"
   },
   {
    "g": "Container1",
    "x": 33.4,
    "y": 4.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "tuska seed",
+   "groups": "Seed4"
   },
   {
    "g": "Container1",
    "x": 33.4,
    "y": 5.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "nulna seed",
+   "groups": "Seed3"
   },
   {
    "g": "Container1",
    "x": 35.6,
    "y": 3.53583,
    "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068"
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "magnetar quartz",
+   "groups": "MagnetarQuartz"
   },
   {
    "g": "Container1",
    "x": 35.6,
    "y": 4.53583,
    "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068"
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "quasar quartz",
+   "groups": "QuasarQuartz"
   },
   {
    "g": "Container1",
    "x": 35.6,
    "y": 5.53583,
    "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068"
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fertilizer",
+   "groups": "Fertilizer1"
   },
   {
    "g": "Container1",
    "x": 35.6,
    "y": 3.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "snepea seed",
+   "groups": "Seed7Humble"
   },
   {
    "g": "Container1",
    "x": 35.6,
    "y": 4.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "brelea seed",
+   "groups": "Seed8Humble"
   },
   {
    "g": "Container1",
    "x": 35.6,
    "y": 5.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "volnus plant",
+   "groups": "Seed6"
   },
   {
    "g": "Container1",
    "x": 37.8,
    "y": 3.53583,
    "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068"
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "algae",
+   "groups": "Algae1Seed"
   },
   {
    "g": "Container1",
    "x": 37.8,
    "y": 4.53583,
    "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068"
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "explosive powder",
+   "groups": "RedPowder1"
   },
   {
    "g": "Container1",
    "x": 37.8,
    "y": 5.53583,
    "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068"
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fertilizer 2",
+   "groups": "Fertilizer2"
   },
   {
    "g": "Container1",
    "x": 37.8,
    "y": 3.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "tree bark",
+   "groups": "TreeRoot"
   },
   {
    "g": "Container1",
    "x": 37.8,
    "y": 4.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "seed gold",
+   "groups": "SeedGold"
   },
   {
    "g": "Container1",
    "x": 37.8,
    "y": 5.53583,
    "z": -5.6,
-   "rot": "0,0.7071068,0,0.7071068"
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "mutagen",
+   "groups": "Mutagen1"
+  },
+  {
+   "g": "Container1",
+   "x": 40.0,
+   "y": 3.56749,
+   "z": -9.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Silk",
+   "groups": "Silk"
+  },
+  {
+   "g": "Container1",
+   "x": 40.0,
+   "y": 4.56749,
+   "z": -9.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Honey",
+   "groups": "honey"
+  },
+  {
+   "g": "Container1",
+   "x": 40.0,
+   "y": 5.56749,
+   "z": -9.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "bacteria",
+   "groups": "Bacteria1"
   },
   {
    "g": "OutsideLamp1",
