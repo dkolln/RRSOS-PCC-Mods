@@ -255,7 +255,18 @@ namespace RRSOS.PCC.Boosters
                     else
                     {
                         var seeded = new Result();
+                        var seedGroup = GroupsHandler.GetGroupViaId(kind.SlotItems[toAddSlot[n]]);
                         yield return Add(own, kind.SlotItems[toAddSlot[n]], seeded);
+
+                        // A new grower can answer the add late (its inventory is still being set up) although the seed does arrive: look in the inventory itself before calling it a failure.
+                        var lookUntil = Time.realtimeSinceStartup + 6f;
+                        while (!seeded.Ok && seedGroup != null && Time.realtimeSinceStartup < lookUntil)
+                        {
+                            seeded.Ok = own.ContainGroup(seedGroup);
+                            if (!seeded.Ok)
+                                yield return null;
+                        }
+
                         if (!seeded.Ok)
                             outcome.Problems.Add("Could not put " + kind.SlotItems[toAddSlot[n]] + " in a " + request.Machine + ".");
                         else
