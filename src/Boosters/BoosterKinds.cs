@@ -21,6 +21,23 @@ namespace RRSOS.PCC.Boosters
         }
     }
 
+    /// <summary>One place in a booster's fixed layout, in metres from the beacon in the frame of the save it was measured in (the beacon looking down -X, the layout on the far side of it).</summary>
+    internal sealed class Slot
+    {
+        public readonly string Group, Panels;
+        public readonly float X, Y, Z, Yaw;
+
+        public Slot(string group, float x, float y, float z, float yaw, string panels = null)
+        {
+            Group = group;
+            X = x;
+            Y = y;
+            Z = z;
+            Yaw = yaw;
+            Panels = panels;
+        }
+    }
+
     /// <summary>
     /// One kind of booster, as a preset the screen lets you change: the machine (and its tiers, lowest first), the fuses its optimizers start with (one optimizer each), and what its
     /// machines can be filled with. Taken from the dashboard's Boosters page (RRSOS-PCC-Live), with the same spacings. Eight machines always: a stack of eight at the beacon, or eight
@@ -38,6 +55,10 @@ namespace RRSOS.PCC.Boosters
         public string FillTitle = "Machine Fill";   // what the fill list is called on the screen
         public string[] FillAlways;                 // choices offered whatever planet they belong to (the planet filter does not hide them)
         public double YOffset;                      // the machines stand this much above (negative: below) the beacon, for ones that sit in the water
+        public Slot[] Slots;                        // a fixed layout: where each machine stands (instead of a ring or a stack), turned with the beacon
+        public Slot[] Parts;                        // and what is built first for them to stand in (foundations, a pod)
+        public string[] SlotItems;                  // the item each machine of Slots is given in its secondary inventory (a grower's seed)
+        public Slot OptimizerAt;                    // where the optimizer stands in a fixed layout
         public bool Foundation;                     // a foundation is placed under the beacon first, and the optimizers stand on it (a ring of floating machines on water)
         public bool FillAnywhere;                   // every choice is offered, whatever is unlocked or tied to a planet (drones)
         public double Spacing;
@@ -187,6 +208,24 @@ namespace RRSOS.PCC.Boosters
                 Machines = Machines("WaterLifeCollector1", "Water Life Collector"),
                 DefaultFuses = new string[0], Ring = true, Spacing = 7.3, YOffset = -0.25,
                 Supply = "Phytoplankton1,Fish1Eggs,Fish2Eggs,Fish3Eggs,Fish4Eggs,Fish5Eggs,Fish6Eggs,Fish7Eggs,Fish8Eggs,Fish9Eggs,Fish10Eggs,Fish11Eggs,Fish12Eggs,Fish13Eggs,Fish14Eggs,Fish15Eggs" },
+
+            // Food: six vegetable growers in a pod on two foundations, measured from the owner's save (three along each long wall), the optimizer (growth fuse) in the middle. Each grower gets
+            // its own seed: eggplant, squash, bean, cocoa, wheat, mushroom.
+            new Kind { Key = "Food", Name = "Food", Aliases = new[] { "food" },
+                Machines = Machines("VegetableGrower1", "Vegetable Grower T1", "VegetableGrower2", "Vegetable Grower T2"),
+                DefaultFuses = new[] { "FuseGrowth1" }, Number = 6,
+                Parts = new[]
+                {
+                    new Slot("Foundation", 0.37f, -3.54f, -2.03f, 0f), new Slot("Foundation", 0.37f, -3.54f, 3.97f, 0f),
+                    new Slot("pod", 2.37f, -1.04f, -0.14f, 0f, "1,1,1,2,5,7")
+                },
+                Slots = new[]
+                {
+                    new Slot(null, 0.37f, 0f, -2.03f, 90f), new Slot(null, 2.37f, 0f, -2.03f, 90f), new Slot(null, 4.37f, 0f, -2.03f, 90f),
+                    new Slot(null, 0.37f, 0f, 2.22f, -90f), new Slot(null, 2.12f, 0f, 2.22f, -90f), new Slot(null, 3.87f, 0f, 2.22f, -90f)
+                },
+                OptimizerAt = new Slot(null, 2.37f, 0f, 0.1f, 0f),
+                SlotItems = new[] { "Vegetable0Seed", "Vegetable1Seed", "Vegetable2Seed", "CookCocoaSeed", "CookWheatSeed", "Vegetable3Seed" } },
 
             new Kind { Key = "Flowers", Name = "Flower", Aliases = new[] { "flower", "bloom" },
                 Machines = Machines("SeedSpreader1", "Flower Spreader T1", "SeedSpreader2", "Flower Spreader T2"),

@@ -62,6 +62,8 @@ namespace RRSOS.PCC.Boosters
             var spots = new List<Vector3>();
             var turns = new List<Quaternion>();
             var pad = new List<Vector3>();
+            var parts = new List<KeyValuePair<Slot, KeyValuePair<Vector3, Quaternion>>>();
+            Vector3? layoutOptimizer = null;
             if (kind.Sides)
             {
                 // The pad is laid out as the owner built it: a 4 x 4 foundation lying behind the beacon (the way opposite to where it points), a drone station at each end of its two long
@@ -84,6 +86,23 @@ namespace RRSOS.PCC.Boosters
                         turns.Add(turn * (z > 0 ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity));
                     }
             }
+            else if (kind.Slots != null)
+            {
+                // a fixed layout, measured with the beacon looking down -X and the layout on the other side of it; turned with the beacon to the nearest quarter
+                var yaw = Mathf.Round((beacon.GetRotation().eulerAngles.y - 270f) / 90f) * 90f;
+                var turn = Quaternion.Euler(0f, yaw, 0f);
+                foreach (var slot in kind.Slots)
+                {
+                    spots.Add(at + turn * new Vector3(slot.X, slot.Y, slot.Z));
+                    turns.Add(turn * Quaternion.Euler(0f, slot.Yaw, 0f));
+                }
+
+                foreach (var part in kind.Parts ?? new Slot[0])
+                    parts.Add(new KeyValuePair<Slot, KeyValuePair<Vector3, Quaternion>>(part, new KeyValuePair<Vector3, Quaternion>(at + turn * new Vector3(part.X, part.Y, part.Z), turn * Quaternion.Euler(0f, part.Yaw, 0f))));
+
+                if (kind.OptimizerAt != null)
+                    layoutOptimizer = at + turn * new Vector3(kind.OptimizerAt.X, kind.OptimizerAt.Y, kind.OptimizerAt.Z);
+            }
             else if (kind.Ring)
             {
                 foreach (var (dx, dz) in RingCells)
@@ -100,7 +119,9 @@ namespace RRSOS.PCC.Boosters
             for (var i = 0; i < fuses.Count; i++)
             {
                 var shift = (float)((i - (fuses.Count - 1) / 2.0) * BoosterKinds.OptimizerGap);
-                if (kind.Ring)
+                if (layoutOptimizer.HasValue)
+                    optimizerSpots.Add(layoutOptimizer.Value + new Vector3(0f, 0f, shift));
+                else if (kind.Ring)
                     optimizerSpots.Add(new Vector3(at.x, at.y, at.z + shift));
                 else
                     optimizerSpots.Add(new Vector3(at.x + dirX * (float)BoosterKinds.OptimizerDistance + Mathf.Abs(dirZ) * shift, at.y, at.z + dirZ * (float)BoosterKinds.OptimizerDistance + Mathf.Abs(dirX) * shift));
@@ -112,7 +133,8 @@ namespace RRSOS.PCC.Boosters
             // machines: a ring cell that has one is kept; a stack counts what stands at its spot
             var toAdd = new List<Vector3>();
             var toAddTurn = new List<Quaternion>();
-            if (kind.Ring || kind.Sides)
+            var toAddSlot = new List<int>();
+            if (kind.Ring || kind.Sides || kind.Slots != null)
             {
                 for (var n = 0; n < spots.Count; n++)
                 {
@@ -121,7 +143,8 @@ namespace RRSOS.PCC.Boosters
                     else
                     {
                         toAdd.Add(spots[n]);
-                        toAddTurn.Add(kind.Sides ? turns[n] : Quaternion.identity);
+                        toAddSlot.Add(n);
+                        toAddTurn.Add(kind.Sides || kind.Slots != null ? turns[n] : Quaternion.identity);
                     }
                 }
             }
@@ -131,6 +154,7 @@ namespace RRSOS.PCC.Boosters
                 for (var i = outcome.Found; i < BoosterKinds.Count; i++)
                 {
                     toAdd.Add(at);
+                    toAddSlot.Add(i);
                     toAddTurn.Add(Quaternion.identity);
                 }
             }
@@ -152,6 +176,28 @@ namespace RRSOS.PCC.Boosters
                         outcome.Problems.Add("Could not place the foundation: " + e.Message);
                     }
                 }
+            }
+
+            // what a fixed layout stands in (foundations, a pod): made first, skipping what is already there
+            foreach (var part in parts)
+            {
+                var where = part.Value.Key;
+                if (all.Any(w => w.GetGroup().GetId() == part.Key.Group && Mathf.Abs(w.GetPosition().x - where.x) < 0.5f && Mathf.Abs(w.GetPosition().z - where.z) < 0.5f && Mathf.Abs(w.GetPosition().y - where.y) < 1f))
+                    continue;
+
+                progress("Placing the " + part.Key.Group + "...");
+                try
+                {
+                    Placement.PlaceAt(part.Key.Group, where, part.Value.Value, planetHash, string.IsNullOrEmpty(part.Key.Panels) ? null : DataTreatments.StringToIntList(part.Key.Panels).ToArray());
+                    outcome.Foundations++;
+                }
+                catch (Exception e)
+                {
+                    outcome.Problems.Add("Could not place the " + part.Key.Group + ": " + e.Message);
+                    break;
+                }
+
+                yield return null;
             }
 
             var total = toAdd.Count + fuses.Count + pad.Count;
@@ -199,6 +245,23 @@ namespace RRSOS.PCC.Boosters
                     ModLog.LogOnce("boosters-linked-" + request.Machine, "Boosters: a new " + request.Machine + " has linked groups: " + (machine.HasLinkedGroups() ? string.Join(", ", machine.GetLinkedGroups().Where(g => g != null).Select(g => g.GetId()).ToArray()) : "none") + ".");
                 if (kind.Grown)
                     machine.SetGrowth(100f);
+
+                if (kind.SlotItems != null && toAddSlot[n] < kind.SlotItems.Length)
+                {
+                    var second = machine.GetSecondaryInventoriesId();
+                    var secondary = second != null && second.Count > 0 ? InventoriesHandler.Instance.GetInventoryById(second[0]) : null;
+                    if (secondary == null)
+                        outcome.Problems.Add("The " + request.Machine + " has no seed slot.");
+                    else
+                    {
+                        var seeded = new Result();
+                        yield return Add(secondary, kind.SlotItems[toAddSlot[n]], seeded);
+                        if (!seeded.Ok)
+                            outcome.Problems.Add("Could not put " + kind.SlotItems[toAddSlot[n]] + " in a " + request.Machine + ".");
+                        else
+                            outcome.Items++;
+                    }
+                }
 
                 var inventory = machine.GetLinkedInventoryId() > 0 ? InventoriesHandler.Instance.GetInventoryById(machine.GetLinkedInventoryId()) : null;
                 if (inventory != null)
