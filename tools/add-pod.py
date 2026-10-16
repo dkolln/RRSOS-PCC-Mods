@@ -7,6 +7,7 @@ Stand inside the pod and save the game. Then:
   python tools/add-pod.py <save.json> --keep 1,3,4       add the pod, the foundations under it and those pieces
   python tools/add-pod.py <save.json> --keep all         add the pod, the foundations under it and everything listed
   python tools/add-pod.py <save.json> --keep none        add only the pod and the foundations under it
+  --ahead N                                              also the N pods in a row in front of the player (the way they face), listed and added together
 
 Positions are stored the way the template stores them: as offsets from its anchor foundation (the T0.json "anchor", in the save's own world axes), so the pod lands where it
 stands in the base now. Crates keep their label ("text") and linked groups; what is in a crate is not stored (the Resupply mod fills them). A piece the template already has
@@ -56,13 +57,40 @@ print('pod under the player: %s at %.2f, %.2f, %.2f (%.1f m from the player)' % 
 if gap > 5:
     print('  (more than 5 m away: stand inside the pod and save again if this is not the one)')
 
-# only this level: nothing from a pod above or below. With a pod above, this level ends at its ceiling; with none, what stands on the roof (an antenna) counts too.
-above_here = any(r is not pod and abs(pos(r)[0] - px) <= HALF and abs(pos(r)[2] - pz) <= HALF and abs(pos(r)[1] - (py + LEVEL)) < 1.0 for r in pods)
-top = py + (LEVEL - 0.1 if above_here else ABOVE)
-inside = [r for r in placed if r is not pod and r['gId'] not in POD_GROUPS and r['gId'] != 'Foundation'
-          and abs(pos(r)[0] - px) <= HALF and abs(pos(r)[2] - pz) <= HALF and py - BELOW <= pos(r)[1] <= top]
-inside.sort(key=lambda r: (r['gId'], pos(r)[1]))
-under = [r for r in placed if r['gId'] == 'Foundation' and abs(pos(r)[0] - px) <= HALF and abs(pos(r)[2] - pz) <= HALF and abs(pos(r)[1] - (py - 2.5)) < 1.0]
+# Pods in front of the player in a row (--ahead N): the way the player faces (from playerRotation), snapped to one of the four directions, 8 m apart.
+ahead = int(args[args.index('--ahead') + 1]) if '--ahead' in args else 0
+chain = [pod]
+if ahead:
+    qy, qw = [float(v) for v in re.search(r'"playerRotation":"[^,]*,([^,]*),[^,]*,([^"]*)"', text).groups()]
+    import math
+    yaw = math.degrees(2 * math.atan2(qy, qw))
+    fx, fz = math.sin(math.radians(yaw)), math.cos(math.radians(yaw))
+    step = (8.0 * round(fx), 8.0 * round(fz)) if abs(fx) >= abs(fz) else (0.0, 8.0 * round(fz))
+    if abs(fx) >= abs(fz):
+        step = (8.0 if fx > 0 else -8.0, 0.0)
+    else:
+        step = (0.0, 8.0 if fz > 0 else -8.0)
+    print('facing %s' % ('+x' if step[0] > 0 else '-x' if step[0] < 0 else '+z' if step[1] > 0 else '-z'))
+    for n in range(1, ahead + 1):
+        want = (px + step[0] * n, pz + step[1] * n)
+        hit = [r for r in pods if abs(pos(r)[0] - want[0]) < 2.0 and abs(pos(r)[2] - want[1]) < 2.0 and abs(pos(r)[1] - py) < 1.0]
+        if not hit:
+            print('  no pod %d ahead of the player' % n)
+            break
+        chain.append(hit[0])
+
+
+def level(pod):
+    """Only this level: nothing from a pod above or below. With a pod above, the level ends at its ceiling; with none, what stands on the roof (an antenna) counts too."""
+    qx, qy, qz = pos(pod)
+    above = any(r is not pod and abs(pos(r)[0] - qx) <= HALF and abs(pos(r)[2] - qz) <= HALF and abs(pos(r)[1] - (qy + LEVEL)) < 1.0 for r in pods)
+    top = qy + (LEVEL - 0.1 if above else ABOVE)
+    things = [r for r in placed if r is not pod and r['gId'] not in POD_GROUPS and r['gId'] != 'Foundation'
+              and abs(pos(r)[0] - qx) <= HALF and abs(pos(r)[2] - qz) <= HALF and qy - BELOW <= pos(r)[1] <= top]
+    things.sort(key=lambda r: (r['gId'], pos(r)[1]))
+    floor = [r for r in placed if r['gId'] == 'Foundation' and abs(pos(r)[0] - qx) <= HALF and abs(pos(r)[2] - qz) <= HALF and abs(pos(r)[1] - (qy - 2.5)) < 1.0]
+    return above, things, floor
+
 
 template = json.load(open(TEMPLATE, encoding='utf-8'))
 ax, ay, az = template['anchor']
@@ -98,13 +126,19 @@ def have(p):
     return find(p) is not None and not changed(p)
 
 
-print('in the pod (this level only%s):' % (', a pod above caps it' if above_here else ', roof included'))
-for i, r in enumerate(inside, 1):
-    p = piece(r)
-    print('  %2d  %-22s %s%s%s' % (i, r['gId'], '(%.1f, %.1f, %.1f)' % (p['x'], p['y'], p['z']), '  label "%s"' % r['text'] if r.get('text') else '', '  [already in T0]' if have(p) else '  [in T0 with a different label; will be updated]' if changed(p) else ''))
-if not inside:
-    print('  nothing')
-print('pod %s: %s; foundations under it: %d (%d already in T0)' % (pod['gId'], 'already in T0' if have(piece(pod)) else 'in T0, panels differ (--keep updates them)' if changed(piece(pod)) else 'not in T0 yet', len(under), sum(1 for r in under if have(piece(r)))))
+inside, under, owner = [], [], {}
+for pod_i, pod_r in enumerate(chain, 1):
+    above_here, things, floor = level(pod_r)
+    under += floor
+    print('pod %d of %d, %s at %.1f, %.1f (this level only%s): %s; foundations under it: %d (%d already in T0)' % (
+        pod_i, len(chain), pod_r['gId'], pos(pod_r)[0], pos(pod_r)[2], ', a pod above caps it' if above_here else ', roof included',
+        'already in T0' if have(piece(pod_r)) else 'in T0, panels differ (--keep updates them)' if changed(piece(pod_r)) else 'not in T0 yet', len(floor), sum(1 for r in floor if have(piece(r)))))
+    if not things:
+        print('       nothing in it')
+    for r in things:
+        inside.append(r)
+        p = piece(r)
+        print('  %3d  %-22s %s%s%s' % (len(inside), r['gId'], '(%.1f, %.1f, %.1f)' % (p['x'], p['y'], p['z']), '  label "%s"' % r['text'] if r.get('text') else '', '  [already in T0]' if have(p) else '  [in T0 with a different label; will be updated]' if changed(p) else ''))
 
 if keep is None:
     sys.exit(0)
@@ -116,7 +150,7 @@ elif keep.lower() != 'none':
     for n in keep.split(','):
         chosen.append(inside[int(n) - 1])
 
-new = [piece(r) for r in [pod] + under + chosen]
+new = [piece(r) for r in chain + under + chosen]
 # a piece that is there but differs in label (or linked groups, panels, colour) takes the save's values
 updated = []
 for p in new:
