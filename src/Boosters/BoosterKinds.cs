@@ -222,6 +222,12 @@ namespace RRSOS.PCC.Boosters
                 OptimizerAt = new Slot(null, 2.37f, 0f, 0.1f, 0f),
                 SlotItems = new[] { "Vegetable0Seed", "Vegetable1Seed", "Vegetable2Seed", "CookCocoaSeed", "CookWheatSeed", "Vegetable3Seed" } },
 
+            // Algae collectors (the game calls them algae generators) float on water like the water life collectors: a foundation goes under the beacon for the optimizer (an oxygen fuse) to stand on, and the
+            // ring is the plankton ring: 7.3 m out, a little below the beacon. Only the first tier is offered. Each one offers the algae it makes to the drones.
+            new Kind { Key = "Algae", Name = "Algae", Aliases = new[] { "algae" },
+                Machines = Machines("AlgaeGenerator1", "Algae Collector T1"),
+                DefaultFuses = new[] { "FuseOxygen1" }, Ring = true, Spacing = 7.3, YOffset = -0.25, Foundation = true, Supply = "Algae1Seed" },
+
             new Kind { Key = "Flowers", Name = "Flower", Aliases = new[] { "flower", "bloom" },
                 Machines = Machines("SeedSpreader1", "Flower Spreader T1", "SeedSpreader2", "Flower Spreader T2"),
                 DefaultFuses = new[] { "FuseOxygen1", "FusePlants1" }, Ring = true, Spacing = 7.3, Fill = FlowerSeeds, FillDefault = "SeedGold", Grown = true }
