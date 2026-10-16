@@ -30,6 +30,7 @@ namespace RRSOS.PCC.Base
 
         private const float Margin = 6f;        // nothing of the player's own may stand within this of the base's footprint (metres, along the ground)
         private const float SameSpot = 0.5f;    // a piece this close to a template piece, of the same kind, counts as already there
+        private const float PieceReach = 3.2f;    // at a beacon: a building of the player's within this (each way, along the ground) of a template piece is in its way
         private const int PiecesPerFrame = 4;
 
         /// <summary>Set by the /build chat command; answered by the loop below within two seconds.</summary>
@@ -318,7 +319,13 @@ namespace RRSOS.PCC.Base
                 if (pieces.Any(p => p.g == id && (pos - WorldPosition(p)).sqrMagnitude < SameSpot * SameSpot))
                     present++;
 
-                if (wo.GetGroup() is GroupConstructible && pos.x > minX - Margin && pos.x < maxX + Margin && pos.z > minZ - Margin && pos.z < maxZ + Margin)
+                // Prime: nothing of the player's may stand within a margin of the whole footprint. At a beacon only what is in the way of a piece counts (the start of the player's own
+                // base, a stair up to the foundation, may stand beside it).
+                var blocks = !(wo.GetGroup() is GroupConstructible) ? false : _atBeacon
+                    ? pieces.Any(p => !(p.g == "Foundation" && (WorldPosition(p) - _anchor).sqrMagnitude < SameSpot * SameSpot)
+                        && Mathf.Abs(WorldPosition(p).x - pos.x) < PieceReach && Mathf.Abs(WorldPosition(p).z - pos.z) < PieceReach && Mathf.Abs(WorldPosition(p).y - pos.y) < 6f)
+                    : pos.x > minX - Margin && pos.x < maxX + Margin && pos.z > minZ - Margin && pos.z < maxZ + Margin;
+                if (wo.GetGroup() is GroupConstructible && blocks)
                     near.Add(id);
             }
 
