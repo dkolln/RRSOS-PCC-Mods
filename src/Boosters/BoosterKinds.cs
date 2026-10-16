@@ -226,7 +226,7 @@ namespace RRSOS.PCC.Boosters
             // ring is the plankton ring: 7.3 m out, a little below the beacon. Only the first tier is offered. Each one offers the algae it makes to the drones.
             new Kind { Key = "Algae", Name = "Algae", Aliases = new[] { "algae" },
                 Machines = Machines("AlgaeGenerator1", "Algae Collector T1"),
-                DefaultFuses = new[] { "FuseOxygen1" }, Ring = true, Spacing = 7.3, YOffset = -0.25, Foundation = true, Supply = "Algae1Seed" },
+                DefaultFuses = new[] { "FuseOxygen1", "FusePlants1" }, Ring = true, Spacing = 7.3, YOffset = -0.25, Foundation = true, Supply = "Algae1Seed" },
 
             new Kind { Key = "Flowers", Name = "Flower", Aliases = new[] { "flower", "bloom" },
                 Machines = Machines("SeedSpreader1", "Flower Spreader T1", "SeedSpreader2", "Flower Spreader T2"),
