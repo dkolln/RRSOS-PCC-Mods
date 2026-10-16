@@ -87,7 +87,7 @@ namespace RRSOS.PCC.Boosters
             else if (kind.Ring)
             {
                 foreach (var (dx, dz) in RingCells)
-                    spots.Add(new Vector3(at.x + (float)(dx * kind.Spacing), at.y, at.z + (float)(dz * kind.Spacing)));
+                    spots.Add(new Vector3(at.x + (float)(dx * kind.Spacing), at.y + (float)kind.YOffset, at.z + (float)(dz * kind.Spacing)));
             }
             else
             {
@@ -107,7 +107,7 @@ namespace RRSOS.PCC.Boosters
             }
 
             var all = WorldObjectsHandler.Instance.GetAllWorldObjects().Values.Where(w => w != null && w.GetGroup() != null).ToList();
-            bool Standing(string groupId, Vector3 p) => all.Any(w => w.GetGroup().GetId() == groupId && Mathf.Abs(w.GetPosition().x - p.x) < 0.3f && Mathf.Abs(w.GetPosition().z - p.z) < 0.3f && Mathf.Abs(w.GetPosition().y - at.y) < 0.5f);
+            bool Standing(string groupId, Vector3 p) => all.Any(w => w.GetGroup().GetId() == groupId && Mathf.Abs(w.GetPosition().x - p.x) < 0.3f && Mathf.Abs(w.GetPosition().z - p.z) < 0.3f && Mathf.Abs(w.GetPosition().y - at.y) < 0.8f);
 
             // machines: a ring cell that has one is kept; a stack counts what stands at its spot
             var toAdd = new List<Vector3>();
@@ -195,6 +195,8 @@ namespace RRSOS.PCC.Boosters
                 }
 
                 outcome.Machines++;
+                if (kind.Supply != null)
+                    ModLog.LogOnce("boosters-linked-" + request.Machine, "Boosters: a new " + request.Machine + " has linked groups: " + (machine.HasLinkedGroups() ? string.Join(", ", machine.GetLinkedGroups().Where(g => g != null).Select(g => g.GetId()).ToArray()) : "none") + ".");
                 if (kind.Grown)
                     machine.SetGrowth(100f);
 

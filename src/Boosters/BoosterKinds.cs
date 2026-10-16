@@ -37,6 +37,7 @@ namespace RRSOS.PCC.Boosters
         public int Number = BoosterKinds.Count;
         public string FillTitle = "Machine Fill";   // what the fill list is called on the screen
         public string[] FillAlways;                 // choices offered whatever planet they belong to (the planet filter does not hide them)
+        public double YOffset;                      // the machines stand this much above (negative: below) the beacon, for ones that sit in the water
         public bool Foundation;                     // a foundation is placed under the beacon first, and the optimizers stand on it (a ring of floating machines on water)
         public bool FillAnywhere;                   // every choice is offered, whatever is unlocked or tied to a planet (drones)
         public double Spacing;
@@ -179,6 +180,13 @@ namespace RRSOS.PCC.Boosters
             new Kind { Key = "Fish", Name = "Fish", Aliases = new[] { "fish" },
                 Machines = Machines("FishFarm1", "Fish Farm"),
                 DefaultFuses = new[] { "FusePlants1", "FuseAnimals1" }, Ring = true, Spacing = 9.0, Foundation = true, Fill = FishEggs, FillDefault = "Fish14Eggs", FillAlways = new[] { "Fish14Eggs", "Fish15Eggs" } },
+
+            // Water life collectors float, so they stand a little below the beacon. Measured from a save: one collector 7.2 m from the beacon and 0.25 m lower. No optimizers. A collector can pick up
+            // fish eggs as well as plankton depending on where it floats, so each one offers every fish egg to the drones too.
+            new Kind { Key = "Plankton", Name = "Plankton", Aliases = new[] { "plankton" },
+                Machines = Machines("WaterLifeCollector1", "Water Life Collector"),
+                DefaultFuses = new string[0], Ring = true, Spacing = 7.3, YOffset = -0.25,
+                Supply = "Phytoplankton1,Fish1Eggs,Fish2Eggs,Fish3Eggs,Fish4Eggs,Fish5Eggs,Fish6Eggs,Fish7Eggs,Fish8Eggs,Fish9Eggs,Fish10Eggs,Fish11Eggs,Fish12Eggs,Fish13Eggs,Fish14Eggs,Fish15Eggs" },
 
             new Kind { Key = "Flowers", Name = "Flower", Aliases = new[] { "flower", "bloom" },
                 Machines = Machines("SeedSpreader1", "Flower Spreader T1", "SeedSpreader2", "Flower Spreader T2"),
