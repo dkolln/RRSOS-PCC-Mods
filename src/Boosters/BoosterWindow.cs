@@ -337,7 +337,7 @@ namespace RRSOS.PCC.Boosters
 
             var machine = _kind.Machines.First(c => c.GId == _machine).Label;
             var where = "at \"" + (_beacon.GetText() ?? "") + "\"";
-            var layout = _kind.Slots != null ? "in a pod by " : _kind.Sides ? "on a foundation pad by " : _kind.Ring ? "in a ring " : "stacked ";
+            var layout = _kind.Slots != null ? "in two rows by " : _kind.Sides ? "on a foundation pad by " : _kind.Ring ? "in a ring " : "stacked ";
             var text = _kind.Number + " x " + machine + " " + layout + where;
             if (_optimizer != null)
             {
