@@ -2023,33 +2023,6 @@
    "groups": "Mutagen1"
   },
   {
-   "g": "Container1",
-   "x": 40.0,
-   "y": 3.56749,
-   "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068",
-   "text": "Silk",
-   "groups": "Silk"
-  },
-  {
-   "g": "Container1",
-   "x": 40.0,
-   "y": 4.56749,
-   "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068",
-   "text": "Honey",
-   "groups": "honey"
-  },
-  {
-   "g": "Container1",
-   "x": 40.0,
-   "y": 5.56749,
-   "z": -9.8,
-   "rot": "0,0.7071068,0,-0.7071068",
-   "text": "bacteria",
-   "groups": "Bacteria1"
-  },
-  {
    "g": "OutsideLamp1",
    "x": -0.1135,
    "y": 2.519,
