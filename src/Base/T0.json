@@ -53,6 +53,20 @@
    "g": "Foundation",
    "x": 12.0,
    "y": 0.0,
+   "z": -30.0,
+   "rot": "0,0,0,1"
+  },
+  {
+   "g": "Foundation",
+   "x": 12.0,
+   "y": 0.0,
+   "z": -24.0,
+   "rot": "0,0,0,1"
+  },
+  {
+   "g": "Foundation",
+   "x": 12.0,
+   "y": 0.0,
    "z": -12.0,
    "rot": "0,0,0,1"
   },
@@ -88,6 +102,20 @@
    "g": "Foundation",
    "x": 18.0,
    "y": 0.0,
+   "z": -30.0,
+   "rot": "0,0,0,1"
+  },
+  {
+   "g": "Foundation",
+   "x": 18.0,
+   "y": 0.0,
+   "z": -24.0,
+   "rot": "0,0,0,1"
+  },
+  {
+   "g": "Foundation",
+   "x": 18.0,
+   "y": 0.0,
    "z": -12.0,
    "rot": "0,0,0,1"
   },
@@ -123,6 +151,20 @@
    "g": "Foundation",
    "x": 24.0,
    "y": 0.0,
+   "z": -30.0,
+   "rot": "0,0,0,1"
+  },
+  {
+   "g": "Foundation",
+   "x": 24.0,
+   "y": 0.0,
+   "z": -24.0,
+   "rot": "0,0,0,1"
+  },
+  {
+   "g": "Foundation",
+   "x": 24.0,
+   "y": 0.0,
    "z": -12.0,
    "rot": "0,0,0,1"
   },
@@ -158,6 +200,13 @@
    "g": "Foundation",
    "x": 30.0,
    "y": 0.0,
+   "z": -30.0,
+   "rot": "0,0,0,1"
+  },
+  {
+   "g": "Foundation",
+   "x": 30.0,
+   "y": 0.0,
    "z": -12.0,
    "rot": "0,0,0,1"
   },
@@ -193,6 +242,20 @@
    "g": "Foundation",
    "x": 36.0,
    "y": 0.0,
+   "z": -30.0,
+   "rot": "0,0,0,1"
+  },
+  {
+   "g": "Foundation",
+   "x": 36.0,
+   "y": 0.0,
+   "z": -24.0,
+   "rot": "0,0,0,1"
+  },
+  {
+   "g": "Foundation",
+   "x": 36.0,
+   "y": 0.0,
    "z": -12.0,
    "rot": "0,0,0,1"
   },
@@ -222,6 +285,20 @@
    "x": 36.0,
    "y": 0.0,
    "z": 12.0,
+   "rot": "0,0,0,1"
+  },
+  {
+   "g": "Foundation",
+   "x": 42.0,
+   "y": 0.0,
+   "z": -30.0,
+   "rot": "0,0,0,1"
+  },
+  {
+   "g": "Foundation",
+   "x": 42.0,
+   "y": 0.0,
+   "z": -24.0,
    "rot": "0,0,0,1"
   },
   {
@@ -276,6 +353,14 @@
    "panels": "1,1,2,4,5,7"
   },
   {
+   "g": "Pod4x",
+   "x": 20.0,
+   "y": 2.5,
+   "z": -26.948,
+   "rot": "0,0,0,1",
+   "panels": "1,2,10,8,11,2,10,8,1,1,10,8,2,1,10,8"
+  },
+  {
    "g": "pod",
    "x": 20.0,
    "y": 2.5,
@@ -324,6 +409,14 @@
    "panels": "1,2,2,2,5,7"
   },
   {
+   "g": "Pod4x",
+   "x": 36.0,
+   "y": 2.5,
+   "z": -26.948,
+   "rot": "0,0,0,1",
+   "panels": "4,1,10,8,2,1,10,8,1,2,10,8,11,2,10,8"
+  },
+  {
    "g": "pod",
    "x": 36.0,
    "y": 2.5,
@@ -355,6 +448,33 @@
    "rot": "0,0,8.42937E-08,1"
   },
   {
+   "g": "Container1",
+   "x": 13.4,
+   "y": 3.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog14Eggs",
+   "groups": "Frog14Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 13.4,
+   "y": 4.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog13Eggs",
+   "groups": "Frog13Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 13.4,
+   "y": 5.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog12Eggs",
+   "groups": "Frog12Eggs"
+  },
+  {
    "g": "Container3",
    "x": 14.0,
    "y": 3.53583,
@@ -363,11 +483,119 @@
    "text": "supplier"
   },
   {
+   "g": "Container1",
+   "x": 15.2,
+   "y": 3.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "tungsten",
+   "groups": "Minable-Tungsten"
+  },
+  {
+   "g": "Container1",
+   "x": 15.2,
+   "y": 4.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "methanecartridge",
+   "groups": "MethanCapsule1"
+  },
+  {
+   "g": "Container1",
+   "x": 15.2,
+   "y": 5.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "nitrogen",
+   "groups": "NitrogenCapsule1"
+  },
+  {
+   "g": "Container1",
+   "x": 15.6,
+   "y": 3.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog11Eggs",
+   "groups": "Frog11Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 15.6,
+   "y": 4.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog10Eggs",
+   "groups": "Frog10Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 15.6,
+   "y": 5.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "FrogGoldeggs",
+   "groups": "FrogGoldEggs"
+  },
+  {
+   "g": "Container1",
+   "x": 17.4,
+   "y": 3.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "plastic polymer",
+   "groups": "PlasticPolymer"
+  },
+  {
+   "g": "Container1",
+   "x": 17.4,
+   "y": 4.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "tungsten rod",
+   "groups": "Rod-tungsten"
+  },
+  {
+   "g": "Container1",
+   "x": 17.4,
+   "y": 5.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "selenium",
+   "groups": "Selenium"
+  },
+  {
    "g": "CraftStation1",
    "x": 17.75,
    "y": 3.53583,
    "z": 10.5,
    "rot": "0,0.9063078,0,-0.4226183"
+  },
+  {
+   "g": "Container1",
+   "x": 17.8,
+   "y": 3.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog9Eggs",
+   "groups": "Frog9Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 17.8,
+   "y": 4.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog8Eggs",
+   "groups": "Frog8Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 17.8,
+   "y": 5.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog7Eggs",
+   "groups": "Frog7Eggs"
   },
   {
    "g": "Container1",
@@ -425,6 +653,60 @@
   },
   {
    "g": "Container1",
+   "x": 19.6,
+   "y": 3.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "smart fabric",
+   "groups": "SmartFabric"
+  },
+  {
+   "g": "Container1",
+   "x": 19.6,
+   "y": 4.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "fabric",
+   "groups": "FabricBlue"
+  },
+  {
+   "g": "Container1",
+   "x": 19.6,
+   "y": 5.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "plastic rod",
+   "groups": "Rod-plastic"
+  },
+  {
+   "g": "Container1",
+   "x": 20.0,
+   "y": 3.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog6Eggs",
+   "groups": "Frog6Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 20.0,
+   "y": 4.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog5Eggs",
+   "groups": "Frog5Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 20.0,
+   "y": 5.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog4Eggs",
+   "groups": "Frog4Eggs"
+  },
+  {
+   "g": "Container1",
    "x": 20.2,
    "y": 3.53583,
    "z": -9.8,
@@ -452,6 +734,60 @@
   },
   {
    "g": "Container1",
+   "x": 21.8,
+   "y": 3.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "heat fuse",
+   "groups": "FuseHeat1"
+  },
+  {
+   "g": "Container1",
+   "x": 21.8,
+   "y": 4.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "energy fuse",
+   "groups": "FuseEnergy1"
+  },
+  {
+   "g": "Container1",
+   "x": 21.8,
+   "y": 5.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "trade fuse",
+   "groups": "FuseTradeRocketsSpeed1"
+  },
+  {
+   "g": "Container1",
+   "x": 22.2,
+   "y": 3.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog3Eggs",
+   "groups": "Frog3Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 22.2,
+   "y": 4.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog2Eggs",
+   "groups": "Frog2Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 22.2,
+   "y": 5.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "Frog1Eggs",
+   "groups": "Frog1Eggs"
+  },
+  {
+   "g": "Container1",
    "x": 22.4,
    "y": 3.53583,
    "z": -9.8,
@@ -476,6 +812,60 @@
    "rot": "0,0.7071068,0,-0.7071068",
    "text": "alloy",
    "groups": "Alloy"
+  },
+  {
+   "g": "Container1",
+   "x": 24.0,
+   "y": 3.56749,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "oxygen fuse",
+   "groups": "FuseOxygen1"
+  },
+  {
+   "g": "Container1",
+   "x": 24.0,
+   "y": 4.56749,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "plant fuse",
+   "groups": "FusePlants1"
+  },
+  {
+   "g": "Container1",
+   "x": 24.0,
+   "y": 5.56749,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "pressure fuse",
+   "groups": "FusePressure1"
+  },
+  {
+   "g": "Container1",
+   "x": 24.4,
+   "y": 3.56749,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish15eggs",
+   "groups": "Fish15Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 24.4,
+   "y": 4.56749,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish14eggs",
+   "groups": "Fish14Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 24.4,
+   "y": 5.56749,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish13eggs",
+   "groups": "Fish13Eggs"
   },
   {
    "g": "Container1",
@@ -533,6 +923,60 @@
   },
   {
    "g": "Container1",
+   "x": 26.2,
+   "y": 3.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "insect fuse",
+   "groups": "FuseInsects1"
+  },
+  {
+   "g": "Container1",
+   "x": 26.2,
+   "y": 4.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "growth fuse",
+   "groups": "FuseGrowth1"
+  },
+  {
+   "g": "Container1",
+   "x": 26.2,
+   "y": 5.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "animal fuse",
+   "groups": "FuseAnimals1"
+  },
+  {
+   "g": "Container1",
+   "x": 26.6,
+   "y": 3.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish12eggs",
+   "groups": "Fish12Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 26.6,
+   "y": 4.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish11eggs",
+   "groups": "Fish11Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 26.6,
+   "y": 5.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish10eggs",
+   "groups": "Fish10Eggs"
+  },
+  {
+   "g": "Container1",
    "x": 26.8,
    "y": 3.53583,
    "z": -9.8,
@@ -584,6 +1028,60 @@
    "rot": "0,0.7071068,0,0.7071068",
    "text": "blueprintchips",
    "groups": "BlueprintT1"
+  },
+  {
+   "g": "Container1",
+   "x": 28.4,
+   "y": 3.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "cosmic quartz",
+   "groups": "CosmicQuartz"
+  },
+  {
+   "g": "Container1",
+   "x": 28.4,
+   "y": 4.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "fuse cartridge",
+   "groups": "FuseCartridge"
+  },
+  {
+   "g": "Container1",
+   "x": 28.4,
+   "y": 5.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "production fuse",
+   "groups": "FuseProduction1"
+  },
+  {
+   "g": "Container1",
+   "x": 28.8,
+   "y": 3.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish9eggs",
+   "groups": "Fish9Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 28.8,
+   "y": 4.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish8eggs",
+   "groups": "Fish8Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 28.8,
+   "y": 5.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish7eggs",
+   "groups": "Fish7Eggs"
   },
   {
    "g": "Container1",
@@ -641,6 +1139,60 @@
   },
   {
    "g": "Container1",
+   "x": 30.6,
+   "y": 3.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "plankton c",
+   "groups": "Phytoplankton3"
+  },
+  {
+   "g": "Container1",
+   "x": 30.6,
+   "y": 4.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "plankton b",
+   "groups": "Phytoplankton2"
+  },
+  {
+   "g": "Container1",
+   "x": 30.6,
+   "y": 5.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "plankton a",
+   "groups": "Phytoplankton1"
+  },
+  {
+   "g": "Container1",
+   "x": 31.0,
+   "y": 3.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish6eggs",
+   "groups": "Fish6Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 31.0,
+   "y": 4.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish5eggs",
+   "groups": "Fish5Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 31.0,
+   "y": 5.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish4eggs",
+   "groups": "Fish4Eggs"
+  },
+  {
+   "g": "Container1",
    "x": 31.2,
    "y": 3.56749,
    "z": -9.8,
@@ -692,6 +1244,60 @@
    "rot": "0,0.7071068,0,0.7071068",
    "text": "lirma seed",
    "groups": "Seed0"
+  },
+  {
+   "g": "Container1",
+   "x": 32.8,
+   "y": 3.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "animalfood3",
+   "groups": "AnimalFood3"
+  },
+  {
+   "g": "Container1",
+   "x": 32.8,
+   "y": 4.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "animalfood2",
+   "groups": "AnimalFood2"
+  },
+  {
+   "g": "Container1",
+   "x": 32.8,
+   "y": 5.53583,
+   "z": -22.0,
+   "rot": "0,0.7071068,0,0.7071068",
+   "text": "animal food",
+   "groups": "AnimalFood1"
+  },
+  {
+   "g": "Container1",
+   "x": 33.2,
+   "y": 3.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish3eggs",
+   "groups": "Fish3Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 33.2,
+   "y": 4.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish2eggs",
+   "groups": "Fish2Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 33.2,
+   "y": 5.53583,
+   "z": -25.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "fish1eggs",
+   "groups": "Fish1Eggs"
   },
   {
    "g": "Container1",

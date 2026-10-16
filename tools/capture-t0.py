@@ -56,7 +56,7 @@ anchor_rec = min(foundations, key=lambda r: sum((a - b) ** 2 for a, b in zip(vec
 anchor = vec(anchor_rec['pos'])
 print('anchor foundation', [str(v) for v in anchor], 'lamp', [str(v) for v in lamp])
 
-order = {'Foundation': 0, 'pod': 1, 'OutsideLamp1': 3}
+order = {'Foundation': 0, 'pod': 1, 'podAngle': 1, 'Pod4x': 1, 'Pod9xA': 1, 'Pod9xB': 1, 'Pod9xC': 1, 'OutsideLamp1': 3}
 pieces = []
 for r in placed:
     p = vec(r['pos'])
