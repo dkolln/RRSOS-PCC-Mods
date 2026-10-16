@@ -6,7 +6,9 @@ Stand inside the pod and save the game. Then:
   python tools/add-pod.py <save.json>                    list the pod under the player and everything in it, numbered
   python tools/add-pod.py <save.json> --keep 1,3,4       add the pod, the foundations under it and those pieces
   python tools/add-pod.py <save.json> --keep all         add the pod, the foundations under it and everything listed
+  python tools/add-pod.py <save.json> --keep new         add the pod and only the pieces the template does not have yet
   python tools/add-pod.py <save.json> --keep none        add only the pod and the foundations under it
+  --at X,Z                                               use that place (world x and z) instead of where the player stands
   --ahead N                                              also the N pods in a row in front of the player (the way they face), listed and added together
 
 Positions are stored the way the template stores them: as offsets from its anchor foundation (the T0.json "anchor", in the save's own world axes), so the pod lands where it
@@ -28,7 +30,7 @@ keep = args[args.index('--keep') + 1] if '--keep' in args else None
 
 POD_GROUPS = ('pod', 'podAngle', 'Pod4x', 'Pod9xA', 'Pod9xB', 'Pod9xC')
 HALF = 4.1          # a pod is 8 m wide: what stands within this of its middle is in it (a 2x2 pod, Pod4x, is 16 m wide, a 3x3 pod 24)
-HALVES = {'Pod4x': 8.1, 'Pod9xA': 12.1, 'Pod9xB': 12.1, 'Pod9xC': 12.1}
+HALVES = {'Pod4x': 8.6, 'Pod9xA': 12.6, 'Pod9xB': 12.6, 'Pod9xC': 12.6}   # a little over half the room: the crate row along a big pod's wall stands 8.15 m from its middle
 
 
 def half(r):
@@ -38,6 +40,9 @@ ABOVE, BELOW = 8.0, 1.0   # and from a little under its floor to the roof and wh
 
 text = open(SRC, encoding='utf-8-sig').read()
 player = [float(v) for v in re.search(r'"playerPosition":"([^"]*)"', text).group(1).split(',')]
+if '--at' in args:   # use a place in the base instead of where the player stands: --at X,Z (a ground-level pod) or X,Y,Z
+    at = [float(v) for v in args[args.index('--at') + 1].split(',')]
+    player = [at[0], 32.6, at[1]] if len(at) == 2 else at
 records = []
 for m in re.findall(r'\{"id":\d+,"gId":"[^"]+"[^{}]*\}', text):
     try:
@@ -168,6 +173,8 @@ if keep is None:
 chosen = []
 if keep.lower() == 'all':
     chosen = inside
+elif keep.lower() == 'new':   # only what the template does not have yet
+    chosen = [r for r in inside if find(piece(r)) is None]
 elif keep.lower() != 'none':
     for n in keep.split(','):
         chosen.append(inside[int(n) - 1])

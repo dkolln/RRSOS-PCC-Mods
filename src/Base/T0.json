@@ -532,6 +532,33 @@
   },
   {
    "g": "Container1",
+   "x": 15.2,
+   "y": 3.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "bee larva",
+   "groups": "Bee1Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 15.2,
+   "y": 4.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "rare larva",
+   "groups": "LarvaeBase3"
+  },
+  {
+   "g": "Container1",
+   "x": 15.2,
+   "y": 5.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "uncommon larva",
+   "groups": "LarvaeBase2"
+  },
+  {
+   "g": "Container1",
    "x": 15.6,
    "y": 3.53583,
    "z": -25.8,
@@ -583,6 +610,33 @@
    "rot": "0,0.7071068,0,0.7071068",
    "text": "selenium",
    "groups": "Selenium"
+  },
+  {
+   "g": "Container1",
+   "x": 17.4,
+   "y": 3.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "common larva",
+   "groups": "LarvaeBase1"
+  },
+  {
+   "g": "Container1",
+   "x": 17.4,
+   "y": 4.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "silk worm",
+   "groups": "SilkWorm"
+  },
+  {
+   "g": "Container1",
+   "x": 17.4,
+   "y": 5.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "mutagen4",
+   "groups": "Mutagen4"
   },
   {
    "g": "CraftStation1",
@@ -701,6 +755,33 @@
   },
   {
    "g": "Container1",
+   "x": 19.6,
+   "y": 3.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "mutagen3",
+   "groups": "Mutagen3"
+  },
+  {
+   "g": "Container1",
+   "x": 19.6,
+   "y": 4.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "mutagen2",
+   "groups": "Mutagen2"
+  },
+  {
+   "g": "Container1",
+   "x": 19.6,
+   "y": 5.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "mutagen",
+   "groups": "Mutagen1"
+  },
+  {
+   "g": "Container1",
    "x": 20.0,
    "y": 3.53583,
    "z": -25.8,
@@ -779,6 +860,33 @@
    "rot": "0,0.7071068,0,0.7071068",
    "text": "trade fuse",
    "groups": "FuseTradeRocketsSpeed1"
+  },
+  {
+   "g": "Container1",
+   "x": 21.8,
+   "y": 3.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly21larvae",
+   "groups": "Butterfly21Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 21.8,
+   "y": 4.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly20larvae",
+   "groups": "Butterfly20Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 21.8,
+   "y": 5.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly19larvae",
+   "groups": "Butterfly19Larvae"
   },
   {
    "g": "Container1",
@@ -1000,6 +1108,33 @@
    "g": "Container1",
    "x": 26.8,
    "y": 3.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly18larvae",
+   "groups": "Butterfly18Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 26.8,
+   "y": 4.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly17larvae",
+   "groups": "Butterfly17Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 26.8,
+   "y": 5.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly16larvae",
+   "groups": "Butterfly16Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 26.8,
+   "y": 3.53583,
    "z": -9.8,
    "rot": "0,0.7071068,0,-0.7071068",
    "text": "super alloy rod",
@@ -1108,6 +1243,33 @@
    "g": "Container1",
    "x": 29.0,
    "y": 3.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly15larvae",
+   "groups": "Butterfly15Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 29.0,
+   "y": 4.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly14larvae",
+   "groups": "Butterfly14Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 29.0,
+   "y": 5.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly13larvae",
+   "groups": "Butterfly13Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 29.0,
+   "y": 3.53583,
    "z": -9.8,
    "rot": "0,0.7071068,0,-0.7071068",
    "text": "osmium rod",
@@ -1211,6 +1373,33 @@
    "rot": "0,0.7071068,0,-0.7071068",
    "text": "fish4eggs",
    "groups": "Fish4Eggs"
+  },
+  {
+   "g": "Container1",
+   "x": 31.2,
+   "y": 3.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly12larvae",
+   "groups": "Butterfly12Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 31.2,
+   "y": 4.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly11larvae",
+   "groups": "Butterfly11Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 31.2,
+   "y": 5.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly10larvae",
+   "groups": "Butterfly10Larvae"
   },
   {
    "g": "Container1",
@@ -1324,6 +1513,33 @@
    "g": "Container1",
    "x": 33.4,
    "y": 3.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly9larvae",
+   "groups": "Butterfly9Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 33.4,
+   "y": 4.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly8larvae",
+   "groups": "Butterfly8Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 33.4,
+   "y": 5.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly7larvae",
+   "groups": "Butterfly7Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 33.4,
+   "y": 3.53583,
    "z": -9.8,
    "rot": "0,0.7071068,0,-0.7071068",
    "text": "pulsar quartz",
@@ -1378,6 +1594,33 @@
    "g": "Container1",
    "x": 35.6,
    "y": 3.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly6larvae",
+   "groups": "Butterfly6Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 35.6,
+   "y": 4.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly5larvae",
+   "groups": "Butterfly5Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 35.6,
+   "y": 5.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly4larvae",
+   "groups": "Butterfly4Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 35.6,
+   "y": 3.53583,
    "z": -9.8,
    "rot": "0,0.7071068,0,-0.7071068",
    "text": "magnetar quartz",
@@ -1427,6 +1670,33 @@
    "rot": "0,0.7071068,0,0.7071068",
    "text": "volnus plant",
    "groups": "Seed6"
+  },
+  {
+   "g": "Container1",
+   "x": 37.8,
+   "y": 3.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly3larvae",
+   "groups": "Butterfly3Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 37.8,
+   "y": 4.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly2larvae",
+   "groups": "Butterfly2Larvae"
+  },
+  {
+   "g": "Container1",
+   "x": 37.8,
+   "y": 5.53583,
+   "z": -18.8,
+   "rot": "0,0.7071068,0,-0.7071068",
+   "text": "butterfly1larvae",
+   "groups": "Butterfly1Larvae"
   },
   {
    "g": "Container1",
