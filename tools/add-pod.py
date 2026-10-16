@@ -10,7 +10,7 @@ Stand inside the pod and save the game. Then:
 
 Positions are stored the way the template stores them: as offsets from its anchor foundation (the T0.json "anchor", in the save's own world axes), so the pod lands where it
 stands in the base now. Crates keep their label ("text") and linked groups; what is in a crate is not stored (the Resupply mod fills them). A piece the template already has
-(same group, same place) is not added twice. Needs only Python 3.
+(same group, same place) is not added twice, but takes the save's label, linked groups, panels and colour when those differ. Needs only Python 3.
 """
 import json
 import os
@@ -82,17 +82,29 @@ def piece(r):
     return p
 
 
+def find(p):
+    return next((q for q in template['pieces'] if q['g'] == p['g'] and abs(q['x'] - p['x']) < 0.05 and abs(q['y'] - p['y']) < 0.05 and abs(q['z'] - p['z']) < 0.05), None)
+
+
+FIELDS = ('text', 'groups', 'panels', 'color')   # what the save can change about a piece that is already there: its label, linked groups, panels and colour
+
+
+def changed(p):
+    q = find(p)
+    return q is not None and any(q.get(f) != p.get(f) for f in FIELDS)
+
+
 def have(p):
-    return any(q['g'] == p['g'] and abs(q['x'] - p['x']) < 0.05 and abs(q['y'] - p['y']) < 0.05 and abs(q['z'] - p['z']) < 0.05 for q in template['pieces'])
+    return find(p) is not None and not changed(p)
 
 
 print('in the pod (this level only%s):' % (', a pod above caps it' if above_here else ', roof included'))
 for i, r in enumerate(inside, 1):
     p = piece(r)
-    print('  %2d  %-22s %s%s%s' % (i, r['gId'], '(%.1f, %.1f, %.1f)' % (p['x'], p['y'], p['z']), '  label "%s"' % r['text'] if r.get('text') else '', '  [already in T0]' if have(p) else ''))
+    print('  %2d  %-22s %s%s%s' % (i, r['gId'], '(%.1f, %.1f, %.1f)' % (p['x'], p['y'], p['z']), '  label "%s"' % r['text'] if r.get('text') else '', '  [already in T0]' if have(p) else '  [in T0 with a different label; will be updated]' if changed(p) else ''))
 if not inside:
     print('  nothing')
-print('pod %s: %s; foundations under it: %d (%d already in T0)' % (pod['gId'], 'already in T0' if have(piece(pod)) else 'not in T0 yet', len(under), sum(1 for r in under if have(piece(r)))))
+print('pod %s: %s; foundations under it: %d (%d already in T0)' % (pod['gId'], 'already in T0' if have(piece(pod)) else 'in T0, panels differ (--keep updates them)' if changed(piece(pod)) else 'not in T0 yet', len(under), sum(1 for r in under if have(piece(r)))))
 
 if keep is None:
     sys.exit(0)
@@ -105,10 +117,23 @@ elif keep.lower() != 'none':
         chosen.append(inside[int(n) - 1])
 
 new = [piece(r) for r in [pod] + under + chosen]
-added = [p for p in new if not have(p)]
+# a piece that is there but differs in label (or linked groups, panels, colour) takes the save's values
+updated = []
+for p in new:
+    if changed(p):
+        q = find(p)
+        for f in FIELDS:
+            if f in p:
+                q[f] = p[f]
+            else:
+                q.pop(f, None)
+        updated.append('%s "%s"' % (p['g'], p.get('text', '')))
+added = [p for p in new if find(p) is None]
 order = {'Foundation': 0, 'pod': 1, 'OutsideLamp1': 3}
 template['pieces'] = sorted(template['pieces'] + added, key=lambda p: (order.get(p['g'], 2), p['x'], p['z'], p['y']))
 with open(TEMPLATE, 'w', encoding='utf-8', newline='\n') as f:
     json.dump(template, f, indent=1)
     f.write('\n')
 print('added %d pieces to %s (%d were already there): %s' % (len(added), os.path.abspath(TEMPLATE), len(new) - len(added), ', '.join(p['g'] for p in added) or 'none'))
+if updated:
+    print('updated from the save: ' + ', '.join(updated))
