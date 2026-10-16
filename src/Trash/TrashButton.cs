@@ -114,14 +114,14 @@ namespace RRSOS.PCC.Trash
 
         private static void Place(RectTransform root, Transform container, GridLayoutGroup grid)
         {
-            // Beside the game's Move All icon, one icon slot to its left (its left edge lines up with where Move All's column begins). Centres are in world space, so the UI's scale is allowed for.
+            // (The Move All glyph is mirrored, so its scale is negative: its width is taken as a size.) Beside the game's Move All icon, one icon slot to its left (its left edge lines up with where Move All's column begins). Centres are in world space, so the UI's scale is allowed for.
             var scale = root.lossyScale.x;
             var moveAll = Find(container, "MoveAll");
             Vector3 centre;
             if (moveAll != null)
             {
                 var m = moveAll.TransformPoint(moveAll.rect.center);
-                centre = m - new Vector3(moveAll.rect.width * moveAll.lossyScale.x + 8f * scale, 0f, 0f);
+                centre = m - new Vector3(moveAll.rect.width * Mathf.Abs(moveAll.lossyScale.x) + 8f * scale, 0f, 0f);
             }
             else
             {

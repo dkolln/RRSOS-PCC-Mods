@@ -118,7 +118,7 @@ namespace RRSOS.PCC.Resupply
             if (order != null)
             {
                 var o = order.TransformPoint(order.rect.center);
-                centre = o - new Vector3(order.rect.width * order.lossyScale.x + 8f * scale, 0f, 0f);
+                centre = o - new Vector3(order.rect.width * Mathf.Abs(order.lossyScale.x) + 8f * scale, 0f, 0f);
             }
             else
             {
