@@ -63,13 +63,13 @@ namespace RRSOS.PCC.Base
 
         internal static void OnUndoCommand(string args)
         {
-            if (!WorldState.Ready(out _, out var key))
+            if (!WorldState.Ready(out var planetHash, out var key))
             {
                 ChatHook.Say("The world is not ready yet.");
                 return;
             }
 
-            var removed = Undo(key);
+            var removed = Undo(key, planetHash);
             ChatHook.Say(removed == 0 ? "Nothing of the base to undo in this save." : "Took back the base (" + removed + " pieces).");
         }
 
@@ -127,7 +127,7 @@ namespace RRSOS.PCC.Base
                     ModLog.Note("Undo requested.");
                     try
                     {
-                        Undo(key);
+                        Undo(key, planetHash);
                     }
                     catch (Exception e)
                     {
@@ -159,7 +159,7 @@ namespace RRSOS.PCC.Base
             {
                 try
                 {
-                    Undo(key);
+                    Undo(key, planetHash);
                 }
                 catch (Exception e)
                 {
@@ -515,7 +515,11 @@ namespace RRSOS.PCC.Base
         }
 
         /// <summary>Removes what this mod placed in the save and clears the save's "handled" mark. Returns how many pieces it removed.</summary>
-        private static int Undo(string key)
+        /// <summary>
+        /// Takes back what this mod placed in the save on the planet the player is on. What it placed on another planet stays, and so does its record: undoing the base on one planet
+        /// must never take pieces from another (the T0 base of Prime, built first, is not the base being tried on Humble).
+        /// </summary>
+        private static int Undo(string key, int planetHash)
         {
             var handler = WorldObjectsHandler.Instance;
             var lines = ModLog.ReadLines(UndoFile);
@@ -527,19 +531,31 @@ namespace RRSOS.PCC.Base
             }
 
             var removed = 0;
+            var kept = new List<string>();
             foreach (var line in mine)
             {
                 var parts = line.Split('|');
-                if (int.TryParse(parts[parts.Length - 2], out var id) && handler.GetWorldObjectViaId(id) != null)
+                if (!int.TryParse(parts[parts.Length - 2], out var id))
+                    continue;
+
+                var wo = handler.GetWorldObjectViaId(id);
+                if (wo == null)
+                    continue;   // already gone
+
+                if (wo.GetPlanetHash() != planetHash)
                 {
-                    handler.DestroyWorldObject(id, true);
-                    removed++;
+                    kept.Add(line);   // placed on another planet: left alone
+                    continue;
                 }
+
+                handler.DestroyWorldObject(id, true);
+                removed++;
             }
 
-            ModLog.Note("Undo: removed " + removed + " pieces.");
-            File.WriteAllLines(UndoFile, lines.Where(l => !l.StartsWith(key + "|")).ToArray());
-            File.WriteAllLines(DoneFile, ModLog.ReadLines(DoneFile).Where(l => l != key).ToArray());
+            ModLog.Note("Undo: removed " + removed + " pieces on this planet" + (kept.Count > 0 ? "; " + kept.Count + " placed on another planet were left alone" : "") + ".");
+            File.WriteAllLines(UndoFile, lines.Where(l => !l.StartsWith(key + "|")).Concat(kept).ToArray());
+            if (kept.Count == 0)
+                File.WriteAllLines(DoneFile, ModLog.ReadLines(DoneFile).Where(l => l != key).ToArray());
             return removed;
         }
     }
