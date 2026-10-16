@@ -12,7 +12,7 @@ using UnityEngine.UI;
 namespace RRSOS.PCC.Trash
 {
     /// <summary>
-    /// A small trash can on a container's window, one slot above the sort icon, on the left of its grid (the game's own icons there are sort, move all and the drone supply icon). One click deletes
+    /// A small trash can on a container's window, just to the left of the Move All icon, on the left of its grid (the game's own icons there are sort, move all and the drone supply icon). One click deletes
     /// everything in that container for good. On a container window it is shown only for the groups in the Groups setting; on the personal inventory window (TrashOnPerson) it empties the backpack only, never the equipment.
     /// </summary>
     internal sealed class TrashButton : MonoBehaviour
@@ -114,15 +114,14 @@ namespace RRSOS.PCC.Trash
 
         private static void Place(RectTransform root, Transform container, GridLayoutGroup grid)
         {
-            // One icon slot above the game's sort icon: the sort icon's centre plus the step from "MoveAll" up to "Order". Centres are in world space, so the UI's scale is allowed for.
+            // Beside the game's Move All icon, one icon slot to its left (its left edge lines up with where Move All's column begins). Centres are in world space, so the UI's scale is allowed for.
             var scale = root.lossyScale.x;
-            var order = Find(container, "Order");
             var moveAll = Find(container, "MoveAll");
             Vector3 centre;
-            if (order != null && moveAll != null)
+            if (moveAll != null)
             {
-                var o = order.TransformPoint(order.rect.center);
-                centre = o + (o - moveAll.TransformPoint(moveAll.rect.center));
+                var m = moveAll.TransformPoint(moveAll.rect.center);
+                centre = m - new Vector3(moveAll.rect.width * moveAll.lossyScale.x + 8f * scale, 0f, 0f);
             }
             else
             {
