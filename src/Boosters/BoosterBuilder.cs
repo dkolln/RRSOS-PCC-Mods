@@ -246,16 +246,16 @@ namespace RRSOS.PCC.Boosters
                 if (kind.Grown)
                     machine.SetGrowth(100f);
 
+                // The seed goes in the machine's own inventory: a grower grows from the seed in it and fills its second inventory (the harvest) with the plants itself.
                 if (kind.SlotItems != null && toAddSlot[n] < kind.SlotItems.Length)
                 {
-                    var second = machine.GetSecondaryInventoriesId();
-                    var secondary = second != null && second.Count > 0 ? InventoriesHandler.Instance.GetInventoryById(second[0]) : null;
-                    if (secondary == null)
+                    var own = machine.GetLinkedInventoryId() > 0 ? InventoriesHandler.Instance.GetInventoryById(machine.GetLinkedInventoryId()) : null;
+                    if (own == null)
                         outcome.Problems.Add("The " + request.Machine + " has no seed slot.");
                     else
                     {
                         var seeded = new Result();
-                        yield return Add(secondary, kind.SlotItems[toAddSlot[n]], seeded);
+                        yield return Add(own, kind.SlotItems[toAddSlot[n]], seeded);
                         if (!seeded.Ok)
                             outcome.Problems.Add("Could not put " + kind.SlotItems[toAddSlot[n]] + " in a " + request.Machine + ".");
                         else
