@@ -27,7 +27,7 @@ namespace RRSOS.PCC.Boosters
     /// </summary>
     internal static class BoosterBuilder
     {
-        private static readonly (int Dx, int Dz)[] RingCells = { (-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1) };
+        internal static readonly (int Dx, int Dz)[] RingCells = { (-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1) };
 
         // the drone pad, in metres from the beacon (see Build): foundation centres, station places
         private static readonly float[] PadX = { 6.3f, 12.3f, 18.3f, 24.3f }, PadZ = { -6f, 0f, 6f, 12f };
@@ -357,13 +357,13 @@ namespace RRSOS.PCC.Boosters
                 + (outcome.Ok ? "" : " Problems: " + string.Join(" ", outcome.Problems.ToArray())));
         }
 
-        private sealed class Result
+        internal sealed class Result
         {
             public bool Ok;
         }
 
         // one item into an inventory through the game's own call, waited for
-        private static IEnumerator Add(Inventory inventory, string groupId, Result result)
+        internal static IEnumerator Add(Inventory inventory, string groupId, Result result)
         {
             var group = GroupsHandler.GetGroupViaId(groupId);
             if (group == null)

@@ -221,6 +221,35 @@ namespace RRSOS.PCC.Boosters
             StartCoroutine(Run(request));
         }
 
+        // Finds the boosters in the world that have no optimizer and gives each the best unlocked one with its fuse.
+        private void StartAddOptimizers()
+        {
+            if (!_building)
+                StartCoroutine(RunAddOptimizers());
+        }
+
+        private IEnumerator RunAddOptimizers()
+        {
+            _building = true;
+            _status = "Looking for boosters without an optimizer...";
+            Redraw();
+
+            var outcome = new BoosterOptimizers.Outcome();
+            yield return BoosterOptimizers.Run(outcome, text =>
+            {
+                _status = text;
+                SetStatusText();
+            });
+
+            _status = outcome.Problems.Count > 0
+                ? "Problem: " + string.Join(" ", outcome.Problems.ToArray())
+                : outcome.Boosters == 0
+                    ? "No booster without an optimizer was found" + (outcome.Already > 0 ? " (" + outcome.Already + " already have one)." : ".")
+                    : "Added " + outcome.Optimizers + " optimizer" + (outcome.Optimizers == 1 ? "" : "s") + " to " + outcome.Boosters + " booster" + (outcome.Boosters == 1 ? "" : "s") + ".";
+            _building = false;
+            Redraw();
+        }
+
         private IEnumerator Run(Request request)
         {
             _building = true;
@@ -317,7 +346,8 @@ namespace RRSOS.PCC.Boosters
 
             var ready = !_building && _beacon != null && _kind != null && _machine != null;
             Button(_body, "[ BUILD ]", left, bottom + 44f, 260f, 56f, 32f, ready ? Lit : Off, ready, StartBuild);
-            _statusText = Label(_body, _status, left + 290f, bottom + 50f, w - 2 * m - 290f, 48f, 22f, _status.StartsWith("Problem") ? Warn : Dim, TextAlignmentOptions.Left);
+            Button(_body, "[ ADD OPTIMIZERS ]", left + 280f, bottom + 44f, 420f, 56f, 28f, _building ? Off : Lit, !_building, StartAddOptimizers);
+            _statusText = Label(_body, _status, left + 730f, bottom + 50f, w - 2 * m - 730f, 48f, 22f, _status.StartsWith("Problem") ? Warn : Dim, TextAlignmentOptions.Left);
         }
 
         private void SetStatusText()
